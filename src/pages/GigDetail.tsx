@@ -195,7 +195,7 @@ export default function GigDetail() {
                   {gig.balancePaid && ' ✓'}
                 </span>
               </div>
-              <button className="btn-primary w-full text-xs mt-3">Create Invoice</button>
+              <button onClick={() => navigate(`/invoices/create?gigId=${id}`)} className="btn-primary w-full text-xs mt-3">Create Invoice</button>
             </div>
           </div>
 

@@ -9,6 +9,8 @@ import GigDetail from './pages/GigDetail';
 import Clients from './pages/Clients';
 import Equipment from './pages/Equipment';
 import Invoices from './pages/Invoices';
+import InvoiceDetail from './pages/InvoiceDetail';
+import InvoiceCreate from './pages/InvoiceCreate';
 import Crew from './pages/Crew';
 import Subscribers from './pages/Subscribers';
 import Settings from './pages/Settings';
@@ -28,6 +30,8 @@ export default function App() {
             <Route path="/clients" element={<Clients />} />
             <Route path="/equipment" element={<Equipment />} />
             <Route path="/invoices" element={<Invoices />} />
+            <Route path="/invoices/create" element={<InvoiceCreate />} />
+            <Route path="/invoices/:id" element={<InvoiceDetail />} />
             <Route path="/crew" element={<Crew />} />
             <Route path="/subscribers" element={<Subscribers />} />
             <Route path="/settings" element={<Settings />} />
