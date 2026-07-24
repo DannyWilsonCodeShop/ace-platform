@@ -1,0 +1,46 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-[#0e0e0e] text-white;
+  }
+}
+
+@layer components {
+  .card {
+    @apply bg-[#1e1e1e] border border-[rgba(255,255,255,0.06)] rounded-xl p-6;
+  }
+  .btn-primary {
+    @apply bg-gradient-to-r from-ace-cyan via-ace-purple to-ace-magenta text-white font-semibold px-6 py-3 rounded-lg hover:opacity-90 transition-opacity;
+  }
+  .btn-secondary {
+    @apply border border-[rgba(255,255,255,0.06)] text-white px-6 py-3 rounded-lg hover:border-ace-cyan hover:text-ace-cyan transition-colors;
+  }
+  .input {
+    @apply bg-[#0e0e0e] border border-[rgba(255,255,255,0.06)] rounded-lg px-4 py-3 text-white placeholder-ace-muted focus:outline-none focus:border-ace-purple transition-colors w-full;
+  }
+  .badge {
+    @apply text-xs font-semibold px-2.5 py-1 rounded-full;
+  }
+  .badge-new { @apply bg-ace-cyan/20 text-ace-cyan; }
+  .badge-reviewed { @apply bg-ace-purple/20 text-ace-purple; }
+  .badge-quoted { @apply bg-yellow-500/20 text-yellow-400; }
+  .badge-accepted { @apply bg-green-500/20 text-green-400; }
+  .badge-declined { @apply bg-red-500/20 text-red-400; }
+}
+
+/* Override Amplify UI theme */
+[data-amplify-authenticator] {
+  --amplify-colors-background-primary: #0e0e0e;
+  --amplify-colors-background-secondary: #1e1e1e;
+  --amplify-colors-font-primary: #f0f0f0;
+  --amplify-colors-font-secondary: #a0a0a0;
+  --amplify-colors-brand-primary-10: #7b2ff7;
+  --amplify-colors-brand-primary-80: #7b2ff7;
+  --amplify-colors-brand-primary-100: #5a1fd6;
+  --amplify-colors-border-primary: rgba(255, 255, 255, 0.06);
+  --amplify-radii-small: 8px;
+  --amplify-radii-medium: 12px;
+}
