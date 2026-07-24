@@ -45,7 +45,7 @@ export default function GigDetail() {
       try {
         const { data } = await client.models.Gig.get({ id });
         setGig(data);
-        setChecklist(data?.checklist ? JSON.parse(data.checklist) : {});
+        setChecklist(data?.checklist ? JSON.parse(data.checklist as string) : {});
       } catch (err) {
         console.error('Failed to load gig:', err);
       } finally {

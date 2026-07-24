@@ -44,11 +44,12 @@ export default function InvoiceCreate() {
         }
         // Pre-populate line items from gig services
         if (gigData?.services?.length) {
-          const items: LineItem[] = gigData.services.map((svc: string) => ({
+          const services = gigData.services.filter((s): s is string => s !== null);
+          const items: LineItem[] = services.map((svc) => ({
             description: svc,
             quantity: 1,
-            unitPrice: gigData.quotedAmount ? Math.round(gigData.quotedAmount / gigData.services.length) : 0,
-            total: gigData.quotedAmount ? Math.round(gigData.quotedAmount / gigData.services.length) : 0,
+            unitPrice: gigData.quotedAmount ? Math.round(gigData.quotedAmount / services.length) : 0,
+            total: gigData.quotedAmount ? Math.round(gigData.quotedAmount / services.length) : 0,
           }));
           setLineItems(items);
         }
