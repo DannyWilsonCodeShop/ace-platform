@@ -1,0 +1,2130 @@
+{
+ "Parameters": {
+  "DynamoDBModelTableReadIOPS": {
+   "Type": "Number",
+   "Default": 5,
+   "Description": "The number of read IOPS the table should support."
+  },
+  "DynamoDBModelTableWriteIOPS": {
+   "Type": "Number",
+   "Default": 5,
+   "Description": "The number of write IOPS the table should support."
+  },
+  "DynamoDBBillingMode": {
+   "Type": "String",
+   "Default": "PAY_PER_REQUEST",
+   "AllowedValues": [
+    "PAY_PER_REQUEST",
+    "PROVISIONED"
+   ],
+   "Description": "Configure @model types to create DynamoDB tables with PAY_PER_REQUEST or PROVISIONED billing modes."
+  },
+  "DynamoDBEnablePointInTimeRecovery": {
+   "Type": "String",
+   "Default": "false",
+   "AllowedValues": [
+    "true",
+    "false"
+   ],
+   "Description": "Whether to enable Point in Time Recovery on the table."
+  },
+  "DynamoDBEnableServerSideEncryption": {
+   "Type": "String",
+   "Default": "true",
+   "AllowedValues": [
+    "true",
+    "false"
+   ],
+   "Description": "Enable server side encryption powered by KMS."
+  },
+  "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132dataamplifyDataAmplifyTableManagerNestedStackAmplifyTableManagerNestedStackResource8CF4AB38Outputsamplifyaceplatformdannywilsonsandbox62ec12a132dataamplifyDataAmplifyTableManagerTableC1D129B2": {
+   "Type": "String"
+  },
+  "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132dataamplifyDataGraphQLAPI1643E516ApiId": {
+   "Type": "String"
+  },
+  "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132dataamplifyDataGraphQLAPINONEDS8ED56022Name": {
+   "Type": "String"
+  },
+  "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132authNestedStackauthNestedStackResource699DB456Outputsamplifyaceplatformdannywilsonsandbox62ec12a132authamplifyAuthauthenticatedUserRole8F54B8ECRef": {
+   "Type": "String"
+  },
+  "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132authNestedStackauthNestedStackResource699DB456Outputsamplifyaceplatformdannywilsonsandbox62ec12a132authamplifyAuthunauthenticatedUserRoleEAFB7608Ref": {
+   "Type": "String"
+  },
+  "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132authNestedStackauthNestedStackResource699DB456Outputsamplifyaceplatformdannywilsonsandbox62ec12a132authamplifyAuthIdentityPool856F4105Ref": {
+   "Type": "String"
+  }
+ },
+ "Conditions": {
+  "HasEnvironmentParameter": {
+   "Fn::Not": [
+    {
+     "Fn::Equals": [
+      "NONE",
+      "NONE"
+     ]
+    }
+   ]
+  },
+  "ShouldUsePayPerRequestBilling": {
+   "Fn::Equals": [
+    {
+     "Ref": "DynamoDBBillingMode"
+    },
+    "PAY_PER_REQUEST"
+   ]
+  },
+  "ShouldUsePointInTimeRecovery": {
+   "Fn::Equals": [
+    {
+     "Ref": "DynamoDBEnablePointInTimeRecovery"
+    },
+    "true"
+   ]
+  },
+  "CDKMetadataAvailable": {
+   "Fn::Or": [
+    {
+     "Fn::Or": [
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "af-south-1"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "ap-east-1"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "ap-northeast-1"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "ap-northeast-2"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "ap-northeast-3"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "ap-south-1"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "ap-south-2"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "ap-southeast-1"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "ap-southeast-2"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "ap-southeast-3"
+       ]
+      }
+     ]
+    },
+    {
+     "Fn::Or": [
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "ap-southeast-4"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "ca-central-1"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "ca-west-1"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "cn-north-1"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "cn-northwest-1"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "eu-central-1"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "eu-central-2"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "eu-north-1"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "eu-south-1"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "eu-south-2"
+       ]
+      }
+     ]
+    },
+    {
+     "Fn::Or": [
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "eu-west-1"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "eu-west-2"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "eu-west-3"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "il-central-1"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "me-central-1"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "me-south-1"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "sa-east-1"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "us-east-1"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "us-east-2"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "us-west-1"
+       ]
+      }
+     ]
+    },
+    {
+     "Fn::Equals": [
+      {
+       "Ref": "AWS::Region"
+      },
+      "us-west-2"
+     ]
+    }
+   ]
+  }
+ },
+ "Resources": {
+  "GigTable": {
+   "Type": "Custom::AmplifyDynamoDBTable",
+   "Properties": {
+    "ServiceToken": {
+     "Ref": "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132dataamplifyDataAmplifyTableManagerNestedStackAmplifyTableManagerNestedStackResource8CF4AB38Outputsamplifyaceplatformdannywilsonsandbox62ec12a132dataamplifyDataAmplifyTableManagerTableC1D129B2"
+    },
+    "tableName": {
+     "Fn::Join": [
+      "",
+      [
+       "Gig-",
+       {
+        "Ref": "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132dataamplifyDataGraphQLAPI1643E516ApiId"
+       },
+       "-NONE"
+      ]
+     ]
+    },
+    "attributeDefinitions": [
+     {
+      "attributeName": "id",
+      "attributeType": "S"
+     },
+     {
+      "attributeName": "clientId",
+      "attributeType": "S"
+     }
+    ],
+    "keySchema": [
+     {
+      "attributeName": "id",
+      "keyType": "HASH"
+     }
+    ],
+    "globalSecondaryIndexes": [
+     {
+      "indexName": "gsi-Client.gigs",
+      "keySchema": [
+       {
+        "attributeName": "clientId",
+        "keyType": "HASH"
+       }
+      ],
+      "projection": {
+       "projectionType": "ALL"
+      },
+      "provisionedThroughput": {
+       "Fn::If": [
+        "ShouldUsePayPerRequestBilling",
+        {
+         "Ref": "AWS::NoValue"
+        },
+        {
+         "ReadCapacityUnits": {
+          "Ref": "DynamoDBModelTableReadIOPS"
+         },
+         "WriteCapacityUnits": {
+          "Ref": "DynamoDBModelTableWriteIOPS"
+         }
+        }
+       ]
+      }
+     }
+    ],
+    "provisionedThroughput": {
+     "Fn::If": [
+      "ShouldUsePayPerRequestBilling",
+      {
+       "Ref": "AWS::NoValue"
+      },
+      {
+       "ReadCapacityUnits": {
+        "Ref": "DynamoDBModelTableReadIOPS"
+       },
+       "WriteCapacityUnits": {
+        "Ref": "DynamoDBModelTableWriteIOPS"
+       }
+      }
+     ]
+    },
+    "sseSpecification": {
+     "sseEnabled": false
+    },
+    "streamSpecification": {
+     "streamViewType": "NEW_AND_OLD_IMAGES"
+    },
+    "deletionProtectionEnabled": false,
+    "allowDestructiveGraphqlSchemaUpdates": true,
+    "replaceTableUponGsiUpdate": true,
+    "pointInTimeRecoverySpecification": {
+     "Fn::If": [
+      "ShouldUsePointInTimeRecovery",
+      {
+       "PointInTimeRecoveryEnabled": true
+      },
+      {
+       "Ref": "AWS::NoValue"
+      }
+     ]
+    },
+    "billingMode": {
+     "Fn::If": [
+      "ShouldUsePayPerRequestBilling",
+      "PAY_PER_REQUEST",
+      {
+       "Ref": "AWS::NoValue"
+      }
+     ]
+    }
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-aceplatform-dannywilson-sandbox-62ec12a132/data/amplifyData/Gig/GigTable/Default/Default"
+   }
+  },
+  "GigIAMRole056ABFE7": {
+   "Type": "AWS::IAM::Role",
+   "Properties": {
+    "AssumeRolePolicyDocument": {
+     "Statement": [
+      {
+       "Action": "sts:AssumeRole",
+       "Effect": "Allow",
+       "Principal": {
+        "Service": "appsync.amazonaws.com"
+       }
+      }
+     ],
+     "Version": "2012-10-17"
+    },
+    "Policies": [
+     {
+      "PolicyDocument": {
+       "Statement": [
+        {
+         "Action": [
+          "dynamodb:BatchGetItem",
+          "dynamodb:BatchWriteItem",
+          "dynamodb:PutItem",
+          "dynamodb:DeleteItem",
+          "dynamodb:GetItem",
+          "dynamodb:Scan",
+          "dynamodb:Query",
+          "dynamodb:UpdateItem",
+          "dynamodb:ConditionCheckItem",
+          "dynamodb:DescribeTable",
+          "dynamodb:GetRecords",
+          "dynamodb:GetShardIterator"
+         ],
+         "Effect": "Allow",
+         "Resource": [
+          {
+           "Fn::Sub": [
+            "arn:${AWS::Partition}:dynamodb:${AWS::Region}:${AWS::AccountId}:table/${tablename}",
+            {
+             "tablename": {
+              "Fn::Join": [
+               "",
+               [
+                "Gig-",
+                {
+                 "Ref": "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132dataamplifyDataGraphQLAPI1643E516ApiId"
+                },
+                "-NONE"
+               ]
+              ]
+             }
+            }
+           ]
+          },
+          {
+           "Fn::Sub": [
+            "arn:${AWS::Partition}:dynamodb:${AWS::Region}:${AWS::AccountId}:table/${tablename}/*",
+            {
+             "tablename": {
+              "Fn::Join": [
+               "",
+               [
+                "Gig-",
+                {
+                 "Ref": "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132dataamplifyDataGraphQLAPI1643E516ApiId"
+                },
+                "-NONE"
+               ]
+              ]
+             }
+            }
+           ]
+          }
+         ]
+        }
+       ],
+       "Version": "2012-10-17"
+      },
+      "PolicyName": "DynamoDBAccess"
+     }
+    ],
+    "RoleName": {
+     "Fn::Join": [
+      "",
+      [
+       "GigIAMRole8dfd7b-",
+       {
+        "Ref": "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132dataamplifyDataGraphQLAPI1643E516ApiId"
+       },
+       "-NONE"
+      ]
+     ]
+    },
+    "Tags": [
+     {
+      "Key": "amplify:deployment-type",
+      "Value": "sandbox"
+     },
+     {
+      "Key": "amplify:friendly-name",
+      "Value": "amplifyData"
+     },
+     {
+      "Key": "created-by",
+      "Value": "amplify"
+     }
+    ]
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-aceplatform-dannywilson-sandbox-62ec12a132/data/amplifyData/Gig/GigIAMRole/Resource"
+   }
+  },
+  "GigDataSource": {
+   "Type": "AWS::AppSync::DataSource",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132dataamplifyDataGraphQLAPI1643E516ApiId"
+    },
+    "DynamoDBConfig": {
+     "AwsRegion": {
+      "Ref": "AWS::Region"
+     },
+     "TableName": {
+      "Fn::Select": [
+       1,
+       {
+        "Fn::Split": [
+         "/",
+         {
+          "Fn::Select": [
+           5,
+           {
+            "Fn::Split": [
+             ":",
+             {
+              "Fn::GetAtt": [
+               "GigTable",
+               "TableArn"
+              ]
+             }
+            ]
+           }
+          ]
+         }
+        ]
+       }
+      ]
+     }
+    },
+    "Name": "GigTable",
+    "ServiceRoleArn": {
+     "Fn::GetAtt": [
+      "GigIAMRole056ABFE7",
+      "Arn"
+     ]
+    },
+    "Type": "AMAZON_DYNAMODB"
+   },
+   "DependsOn": [
+    "GigIAMRole056ABFE7"
+   ],
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-aceplatform-dannywilson-sandbox-62ec12a132/data/amplifyData/Gig/GigDataSource/Resource"
+   }
+  },
+  "QuerygetGigauth0FunctionQuerygetGigauth0FunctionAppSyncFunctionCB9DEEE5": {
+   "Type": "AWS::AppSync::FunctionConfiguration",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132dataamplifyDataGraphQLAPI1643E516ApiId"
+    },
+    "DataSourceName": {
+     "Ref": "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132dataamplifyDataGraphQLAPINONEDS8ED56022Name"
+    },
+    "FunctionVersion": "2018-05-29",
+    "Name": "QuerygetGigauth0Function",
+    "RequestMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/740bd36b4e3b85af0d63c1768ce6a0ce253e0f635b255c0201cef0123f8993be.vtl"
+    },
+    "ResponseMappingTemplate": "$util.toJson({})"
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-aceplatform-dannywilson-sandbox-62ec12a132/data/amplifyData/Gig/QuerygetGigauth0Function/QuerygetGigauth0Function.AppSyncFunction"
+   }
+  },
+  "QuerygetGigpostAuth0FunctionQuerygetGigpostAuth0FunctionAppSyncFunction8FA04D6C": {
+   "Type": "AWS::AppSync::FunctionConfiguration",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132dataamplifyDataGraphQLAPI1643E516ApiId"
+    },
+    "DataSourceName": {
+     "Ref": "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132dataamplifyDataGraphQLAPINONEDS8ED56022Name"
+    },
+    "FunctionVersion": "2018-05-29",
+    "Name": "QuerygetGigpostAuth0Function",
+    "RequestMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/c1721bcd774e27c514d3454b5be4f9bdd094c0161b57ddf053d618e3b0086a77.vtl"
+    },
+    "ResponseMappingTemplate": "$util.toJson({})"
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-aceplatform-dannywilson-sandbox-62ec12a132/data/amplifyData/Gig/QuerygetGigpostAuth0Function/QuerygetGigpostAuth0Function.AppSyncFunction"
+   }
+  },
+  "QueryGetGigDataResolverFnQueryGetGigDataResolverFnAppSyncFunctionD8D5242B": {
+   "Type": "AWS::AppSync::FunctionConfiguration",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132dataamplifyDataGraphQLAPI1643E516ApiId"
+    },
+    "DataSourceName": {
+     "Fn::GetAtt": [
+      "GigDataSource",
+      "Name"
+     ]
+    },
+    "FunctionVersion": "2018-05-29",
+    "Name": "QueryGetGigDataResolverFn",
+    "RequestMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/08f4d557693d96c1a4efba0f9dc91330e4b19772fd5477c156468843e3d9cb5e.vtl"
+    },
+    "ResponseMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/4c6a2d29f01c6091bd1d9afe16e5849d456c96f17c3b215938c8067399532719.vtl"
+    }
+   },
+   "DependsOn": [
+    "GigDataSource"
+   ],
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-aceplatform-dannywilson-sandbox-62ec12a132/data/amplifyData/Gig/QueryGetGigDataResolverFn/QueryGetGigDataResolverFn.AppSyncFunction"
+   }
+  },
+  "GetGigResolver": {
+   "Type": "AWS::AppSync::Resolver",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132dataamplifyDataGraphQLAPI1643E516ApiId"
+    },
+    "FieldName": "getGig",
+    "Kind": "PIPELINE",
+    "PipelineConfig": {
+     "Functions": [
+      {
+       "Fn::GetAtt": [
+        "QuerygetGigauth0FunctionQuerygetGigauth0FunctionAppSyncFunctionCB9DEEE5",
+        "FunctionId"
+       ]
+      },
+      {
+       "Fn::GetAtt": [
+        "QuerygetGigpostAuth0FunctionQuerygetGigpostAuth0FunctionAppSyncFunction8FA04D6C",
+        "FunctionId"
+       ]
+      },
+      {
+       "Fn::GetAtt": [
+        "QueryGetGigDataResolverFnQueryGetGigDataResolverFnAppSyncFunctionD8D5242B",
+        "FunctionId"
+       ]
+      }
+     ]
+    },
+    "RequestMappingTemplate": {
+     "Fn::Join": [
+      "",
+      [
+       "$util.qr($ctx.stash.put(\"typeName\", \"Query\"))\n$util.qr($ctx.stash.put(\"fieldName\", \"getGig\"))\n$util.qr($ctx.stash.put(\"conditions\", []))\n$util.qr($ctx.stash.put(\"metadata\", {}))\n$util.qr($ctx.stash.metadata.put(\"dataSourceType\", \"AMAZON_DYNAMODB\"))\n$util.qr($ctx.stash.metadata.put(\"apiId\", \"",
+       {
+        "Ref": "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132dataamplifyDataGraphQLAPI1643E516ApiId"
+       },
+       "\"))\n$util.qr($ctx.stash.put(\"connectionAttributes\", {}))\n$util.qr($ctx.stash.put(\"tableName\", \"",
+       {
+        "Fn::Select": [
+         1,
+         {
+          "Fn::Split": [
+           "/",
+           {
+            "Fn::Select": [
+             5,
+             {
+              "Fn::Split": [
+               ":",
+               {
+                "Fn::GetAtt": [
+                 "GigTable",
+                 "TableArn"
+                ]
+               }
+              ]
+             }
+            ]
+           }
+          ]
+         }
+        ]
+       },
+       "\"))\n$util.qr($ctx.stash.put(\"authRole\", \"arn:",
+       {
+        "Ref": "AWS::Partition"
+       },
+       ":sts::",
+       {
+        "Ref": "AWS::AccountId"
+       },
+       ":assumed-role/",
+       {
+        "Ref": "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132authNestedStackauthNestedStackResource699DB456Outputsamplifyaceplatformdannywilsonsandbox62ec12a132authamplifyAuthauthenticatedUserRole8F54B8ECRef"
+       },
+       "/CognitoIdentityCredentials\"))\n$util.qr($ctx.stash.put(\"unauthRole\", \"arn:",
+       {
+        "Ref": "AWS::Partition"
+       },
+       ":sts::",
+       {
+        "Ref": "AWS::AccountId"
+       },
+       ":assumed-role/",
+       {
+        "Ref": "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132authNestedStackauthNestedStackResource699DB456Outputsamplifyaceplatformdannywilsonsandbox62ec12a132authamplifyAuthunauthenticatedUserRoleEAFB7608Ref"
+       },
+       "/CognitoIdentityCredentials\"))\n$util.qr($ctx.stash.put(\"identityPoolId\", \"",
+       {
+        "Ref": "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132authNestedStackauthNestedStackResource699DB456Outputsamplifyaceplatformdannywilsonsandbox62ec12a132authamplifyAuthIdentityPool856F4105Ref"
+       },
+       "\"))\n$util.qr($ctx.stash.put(\"adminRoles\", []))\n$util.toJson({})"
+      ]
+     ]
+    },
+    "ResponseMappingTemplate": "$util.toJson($ctx.prev.result)",
+    "TypeName": "Query"
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-aceplatform-dannywilson-sandbox-62ec12a132/data/amplifyData/Gig/queryGetGigResolver"
+   }
+  },
+  "QuerylistGigsauth0FunctionQuerylistGigsauth0FunctionAppSyncFunction3679026D": {
+   "Type": "AWS::AppSync::FunctionConfiguration",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132dataamplifyDataGraphQLAPI1643E516ApiId"
+    },
+    "DataSourceName": {
+     "Ref": "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132dataamplifyDataGraphQLAPINONEDS8ED56022Name"
+    },
+    "FunctionVersion": "2018-05-29",
+    "Name": "QuerylistGigsauth0Function",
+    "RequestMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/740bd36b4e3b85af0d63c1768ce6a0ce253e0f635b255c0201cef0123f8993be.vtl"
+    },
+    "ResponseMappingTemplate": "$util.toJson({})"
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-aceplatform-dannywilson-sandbox-62ec12a132/data/amplifyData/Gig/QuerylistGigsauth0Function/QuerylistGigsauth0Function.AppSyncFunction"
+   }
+  },
+  "QuerylistGigspostAuth0FunctionQuerylistGigspostAuth0FunctionAppSyncFunction10F223CD": {
+   "Type": "AWS::AppSync::FunctionConfiguration",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132dataamplifyDataGraphQLAPI1643E516ApiId"
+    },
+    "DataSourceName": {
+     "Ref": "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132dataamplifyDataGraphQLAPINONEDS8ED56022Name"
+    },
+    "FunctionVersion": "2018-05-29",
+    "Name": "QuerylistGigspostAuth0Function",
+    "RequestMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/c1721bcd774e27c514d3454b5be4f9bdd094c0161b57ddf053d618e3b0086a77.vtl"
+    },
+    "ResponseMappingTemplate": "$util.toJson({})"
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-aceplatform-dannywilson-sandbox-62ec12a132/data/amplifyData/Gig/QuerylistGigspostAuth0Function/QuerylistGigspostAuth0Function.AppSyncFunction"
+   }
+  },
+  "QueryListGigsDataResolverFnQueryListGigsDataResolverFnAppSyncFunction86410CB8": {
+   "Type": "AWS::AppSync::FunctionConfiguration",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132dataamplifyDataGraphQLAPI1643E516ApiId"
+    },
+    "DataSourceName": {
+     "Fn::GetAtt": [
+      "GigDataSource",
+      "Name"
+     ]
+    },
+    "FunctionVersion": "2018-05-29",
+    "Name": "QueryListGigsDataResolverFn",
+    "RequestMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/9fcbe070ecd3023c5bf5b966fa9584757db9762eef123bad0820bd87591b2174.vtl"
+    },
+    "ResponseMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/cc01911d0269d4080ea57505dc445dfc315ef7ad85d3d9d4ea1357858bff451d.vtl"
+    }
+   },
+   "DependsOn": [
+    "GigDataSource"
+   ],
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-aceplatform-dannywilson-sandbox-62ec12a132/data/amplifyData/Gig/QueryListGigsDataResolverFn/QueryListGigsDataResolverFn.AppSyncFunction"
+   }
+  },
+  "ListGigResolver": {
+   "Type": "AWS::AppSync::Resolver",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132dataamplifyDataGraphQLAPI1643E516ApiId"
+    },
+    "FieldName": "listGigs",
+    "Kind": "PIPELINE",
+    "PipelineConfig": {
+     "Functions": [
+      {
+       "Fn::GetAtt": [
+        "QuerylistGigsauth0FunctionQuerylistGigsauth0FunctionAppSyncFunction3679026D",
+        "FunctionId"
+       ]
+      },
+      {
+       "Fn::GetAtt": [
+        "QuerylistGigspostAuth0FunctionQuerylistGigspostAuth0FunctionAppSyncFunction10F223CD",
+        "FunctionId"
+       ]
+      },
+      {
+       "Fn::GetAtt": [
+        "QueryListGigsDataResolverFnQueryListGigsDataResolverFnAppSyncFunction86410CB8",
+        "FunctionId"
+       ]
+      }
+     ]
+    },
+    "RequestMappingTemplate": {
+     "Fn::Join": [
+      "",
+      [
+       "$util.qr($ctx.stash.put(\"typeName\", \"Query\"))\n$util.qr($ctx.stash.put(\"fieldName\", \"listGigs\"))\n$util.qr($ctx.stash.put(\"conditions\", []))\n$util.qr($ctx.stash.put(\"metadata\", {}))\n$util.qr($ctx.stash.metadata.put(\"dataSourceType\", \"AMAZON_DYNAMODB\"))\n$util.qr($ctx.stash.metadata.put(\"apiId\", \"",
+       {
+        "Ref": "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132dataamplifyDataGraphQLAPI1643E516ApiId"
+       },
+       "\"))\n$util.qr($ctx.stash.put(\"connectionAttributes\", {}))\n$util.qr($ctx.stash.put(\"tableName\", \"",
+       {
+        "Fn::Select": [
+         1,
+         {
+          "Fn::Split": [
+           "/",
+           {
+            "Fn::Select": [
+             5,
+             {
+              "Fn::Split": [
+               ":",
+               {
+                "Fn::GetAtt": [
+                 "GigTable",
+                 "TableArn"
+                ]
+               }
+              ]
+             }
+            ]
+           }
+          ]
+         }
+        ]
+       },
+       "\"))\n$util.qr($ctx.stash.put(\"authRole\", \"arn:",
+       {
+        "Ref": "AWS::Partition"
+       },
+       ":sts::",
+       {
+        "Ref": "AWS::AccountId"
+       },
+       ":assumed-role/",
+       {
+        "Ref": "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132authNestedStackauthNestedStackResource699DB456Outputsamplifyaceplatformdannywilsonsandbox62ec12a132authamplifyAuthauthenticatedUserRole8F54B8ECRef"
+       },
+       "/CognitoIdentityCredentials\"))\n$util.qr($ctx.stash.put(\"unauthRole\", \"arn:",
+       {
+        "Ref": "AWS::Partition"
+       },
+       ":sts::",
+       {
+        "Ref": "AWS::AccountId"
+       },
+       ":assumed-role/",
+       {
+        "Ref": "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132authNestedStackauthNestedStackResource699DB456Outputsamplifyaceplatformdannywilsonsandbox62ec12a132authamplifyAuthunauthenticatedUserRoleEAFB7608Ref"
+       },
+       "/CognitoIdentityCredentials\"))\n$util.qr($ctx.stash.put(\"identityPoolId\", \"",
+       {
+        "Ref": "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132authNestedStackauthNestedStackResource699DB456Outputsamplifyaceplatformdannywilsonsandbox62ec12a132authamplifyAuthIdentityPool856F4105Ref"
+       },
+       "\"))\n$util.qr($ctx.stash.put(\"adminRoles\", []))\n$util.toJson({})"
+      ]
+     ]
+    },
+    "ResponseMappingTemplate": "$util.toJson($ctx.prev.result)",
+    "TypeName": "Query"
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-aceplatform-dannywilson-sandbox-62ec12a132/data/amplifyData/Gig/queryListGigsResolver"
+   }
+  },
+  "MutationcreateGiginit0FunctionMutationcreateGiginit0FunctionAppSyncFunction612EF32B": {
+   "Type": "AWS::AppSync::FunctionConfiguration",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132dataamplifyDataGraphQLAPI1643E516ApiId"
+    },
+    "DataSourceName": {
+     "Ref": "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132dataamplifyDataGraphQLAPINONEDS8ED56022Name"
+    },
+    "FunctionVersion": "2018-05-29",
+    "Name": "MutationcreateGiginit0Function",
+    "RequestMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/a183ddccbd956316c38ef97177b8f088ef0826f62023323f5ae6053d348ccffc.vtl"
+    },
+    "ResponseMappingTemplate": "$util.toJson({})"
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-aceplatform-dannywilson-sandbox-62ec12a132/data/amplifyData/Gig/MutationcreateGiginit0Function/MutationcreateGiginit0Function.AppSyncFunction"
+   }
+  },
+  "MutationcreateGigauth0FunctionMutationcreateGigauth0FunctionAppSyncFunction7D544394": {
+   "Type": "AWS::AppSync::FunctionConfiguration",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132dataamplifyDataGraphQLAPI1643E516ApiId"
+    },
+    "DataSourceName": {
+     "Ref": "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132dataamplifyDataGraphQLAPINONEDS8ED56022Name"
+    },
+    "FunctionVersion": "2018-05-29",
+    "Name": "MutationcreateGigauth0Function",
+    "RequestMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/50b64a661429e1ca14f8cd5cf57112d3be929d60844526e91c45d8b242b91eac.vtl"
+    },
+    "ResponseMappingTemplate": "$util.toJson({})"
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-aceplatform-dannywilson-sandbox-62ec12a132/data/amplifyData/Gig/MutationcreateGigauth0Function/MutationcreateGigauth0Function.AppSyncFunction"
+   }
+  },
+  "MutationcreateGigpostAuth0FunctionMutationcreateGigpostAuth0FunctionAppSyncFunction278E68A8": {
+   "Type": "AWS::AppSync::FunctionConfiguration",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132dataamplifyDataGraphQLAPI1643E516ApiId"
+    },
+    "DataSourceName": {
+     "Ref": "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132dataamplifyDataGraphQLAPINONEDS8ED56022Name"
+    },
+    "FunctionVersion": "2018-05-29",
+    "Name": "MutationcreateGigpostAuth0Function",
+    "RequestMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/c1721bcd774e27c514d3454b5be4f9bdd094c0161b57ddf053d618e3b0086a77.vtl"
+    },
+    "ResponseMappingTemplate": "$util.toJson({})"
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-aceplatform-dannywilson-sandbox-62ec12a132/data/amplifyData/Gig/MutationcreateGigpostAuth0Function/MutationcreateGigpostAuth0Function.AppSyncFunction"
+   }
+  },
+  "MutationCreateGigDataResolverFnMutationCreateGigDataResolverFnAppSyncFunctionC03BCCF2": {
+   "Type": "AWS::AppSync::FunctionConfiguration",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132dataamplifyDataGraphQLAPI1643E516ApiId"
+    },
+    "DataSourceName": {
+     "Fn::GetAtt": [
+      "GigDataSource",
+      "Name"
+     ]
+    },
+    "FunctionVersion": "2018-05-29",
+    "Name": "MutationCreateGigDataResolverFn",
+    "RequestMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/3b55921d5d858d6778413684abb53b720a436bb43c670007569f6a667d343df6.vtl"
+    },
+    "ResponseMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/f4a52b72209a9dfa197b5e7367a5c378c5bb86de6e29ddd9e48b49a3fe54b249.vtl"
+    }
+   },
+   "DependsOn": [
+    "GigDataSource"
+   ],
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-aceplatform-dannywilson-sandbox-62ec12a132/data/amplifyData/Gig/MutationCreateGigDataResolverFn/MutationCreateGigDataResolverFn.AppSyncFunction"
+   }
+  },
+  "CreateGigResolver": {
+   "Type": "AWS::AppSync::Resolver",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132dataamplifyDataGraphQLAPI1643E516ApiId"
+    },
+    "FieldName": "createGig",
+    "Kind": "PIPELINE",
+    "PipelineConfig": {
+     "Functions": [
+      {
+       "Fn::GetAtt": [
+        "MutationcreateGiginit0FunctionMutationcreateGiginit0FunctionAppSyncFunction612EF32B",
+        "FunctionId"
+       ]
+      },
+      {
+       "Fn::GetAtt": [
+        "MutationcreateGigauth0FunctionMutationcreateGigauth0FunctionAppSyncFunction7D544394",
+        "FunctionId"
+       ]
+      },
+      {
+       "Fn::GetAtt": [
+        "MutationcreateGigpostAuth0FunctionMutationcreateGigpostAuth0FunctionAppSyncFunction278E68A8",
+        "FunctionId"
+       ]
+      },
+      {
+       "Fn::GetAtt": [
+        "MutationCreateGigDataResolverFnMutationCreateGigDataResolverFnAppSyncFunctionC03BCCF2",
+        "FunctionId"
+       ]
+      }
+     ]
+    },
+    "RequestMappingTemplate": {
+     "Fn::Join": [
+      "",
+      [
+       "$util.qr($ctx.stash.put(\"typeName\", \"Mutation\"))\n$util.qr($ctx.stash.put(\"fieldName\", \"createGig\"))\n$util.qr($ctx.stash.put(\"conditions\", []))\n$util.qr($ctx.stash.put(\"metadata\", {}))\n$util.qr($ctx.stash.metadata.put(\"dataSourceType\", \"AMAZON_DYNAMODB\"))\n$util.qr($ctx.stash.metadata.put(\"apiId\", \"",
+       {
+        "Ref": "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132dataamplifyDataGraphQLAPI1643E516ApiId"
+       },
+       "\"))\n$util.qr($ctx.stash.put(\"connectionAttributes\", {}))\n$util.qr($ctx.stash.put(\"tableName\", \"",
+       {
+        "Fn::Select": [
+         1,
+         {
+          "Fn::Split": [
+           "/",
+           {
+            "Fn::Select": [
+             5,
+             {
+              "Fn::Split": [
+               ":",
+               {
+                "Fn::GetAtt": [
+                 "GigTable",
+                 "TableArn"
+                ]
+               }
+              ]
+             }
+            ]
+           }
+          ]
+         }
+        ]
+       },
+       "\"))\n$util.qr($ctx.stash.put(\"authRole\", \"arn:",
+       {
+        "Ref": "AWS::Partition"
+       },
+       ":sts::",
+       {
+        "Ref": "AWS::AccountId"
+       },
+       ":assumed-role/",
+       {
+        "Ref": "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132authNestedStackauthNestedStackResource699DB456Outputsamplifyaceplatformdannywilsonsandbox62ec12a132authamplifyAuthauthenticatedUserRole8F54B8ECRef"
+       },
+       "/CognitoIdentityCredentials\"))\n$util.qr($ctx.stash.put(\"unauthRole\", \"arn:",
+       {
+        "Ref": "AWS::Partition"
+       },
+       ":sts::",
+       {
+        "Ref": "AWS::AccountId"
+       },
+       ":assumed-role/",
+       {
+        "Ref": "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132authNestedStackauthNestedStackResource699DB456Outputsamplifyaceplatformdannywilsonsandbox62ec12a132authamplifyAuthunauthenticatedUserRoleEAFB7608Ref"
+       },
+       "/CognitoIdentityCredentials\"))\n$util.qr($ctx.stash.put(\"identityPoolId\", \"",
+       {
+        "Ref": "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132authNestedStackauthNestedStackResource699DB456Outputsamplifyaceplatformdannywilsonsandbox62ec12a132authamplifyAuthIdentityPool856F4105Ref"
+       },
+       "\"))\n$util.qr($ctx.stash.put(\"adminRoles\", []))\n$util.toJson({})"
+      ]
+     ]
+    },
+    "ResponseMappingTemplate": "$util.toJson($ctx.prev.result)",
+    "TypeName": "Mutation"
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-aceplatform-dannywilson-sandbox-62ec12a132/data/amplifyData/Gig/mutationCreateGigResolver"
+   }
+  },
+  "MutationupdateGiginit0FunctionMutationupdateGiginit0FunctionAppSyncFunctionFDFF0201": {
+   "Type": "AWS::AppSync::FunctionConfiguration",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132dataamplifyDataGraphQLAPI1643E516ApiId"
+    },
+    "DataSourceName": {
+     "Ref": "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132dataamplifyDataGraphQLAPINONEDS8ED56022Name"
+    },
+    "FunctionVersion": "2018-05-29",
+    "Name": "MutationupdateGiginit0Function",
+    "RequestMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/06db846fd14e6fc371f22b12b5545ba8e2dbfeda85d8c8d586c71c282166657b.vtl"
+    },
+    "ResponseMappingTemplate": "$util.toJson({})"
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-aceplatform-dannywilson-sandbox-62ec12a132/data/amplifyData/Gig/MutationupdateGiginit0Function/MutationupdateGiginit0Function.AppSyncFunction"
+   }
+  },
+  "MutationupdateGigauth0FunctionMutationupdateGigauth0FunctionAppSyncFunction71CB7E26": {
+   "Type": "AWS::AppSync::FunctionConfiguration",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132dataamplifyDataGraphQLAPI1643E516ApiId"
+    },
+    "DataSourceName": {
+     "Fn::GetAtt": [
+      "GigDataSource",
+      "Name"
+     ]
+    },
+    "FunctionVersion": "2018-05-29",
+    "Name": "MutationupdateGigauth0Function",
+    "RequestMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/1f5fed297da9c32ae3af922bf3a38ccf23b956078887d16891ec06c20c64722c.vtl"
+    },
+    "ResponseMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/3fec85966958c40cde80957ec3cb85aaa215f73cd8c96b98a187ddcfa4497ad2.vtl"
+    }
+   },
+   "DependsOn": [
+    "GigDataSource"
+   ],
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-aceplatform-dannywilson-sandbox-62ec12a132/data/amplifyData/Gig/MutationupdateGigauth0Function/MutationupdateGigauth0Function.AppSyncFunction"
+   }
+  },
+  "MutationupdateGigpostAuth0FunctionMutationupdateGigpostAuth0FunctionAppSyncFunctionA063F0D8": {
+   "Type": "AWS::AppSync::FunctionConfiguration",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132dataamplifyDataGraphQLAPI1643E516ApiId"
+    },
+    "DataSourceName": {
+     "Ref": "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132dataamplifyDataGraphQLAPINONEDS8ED56022Name"
+    },
+    "FunctionVersion": "2018-05-29",
+    "Name": "MutationupdateGigpostAuth0Function",
+    "RequestMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/c1721bcd774e27c514d3454b5be4f9bdd094c0161b57ddf053d618e3b0086a77.vtl"
+    },
+    "ResponseMappingTemplate": "$util.toJson({})"
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-aceplatform-dannywilson-sandbox-62ec12a132/data/amplifyData/Gig/MutationupdateGigpostAuth0Function/MutationupdateGigpostAuth0Function.AppSyncFunction"
+   }
+  },
+  "MutationUpdateGigDataResolverFnMutationUpdateGigDataResolverFnAppSyncFunction75F36C83": {
+   "Type": "AWS::AppSync::FunctionConfiguration",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132dataamplifyDataGraphQLAPI1643E516ApiId"
+    },
+    "DataSourceName": {
+     "Fn::GetAtt": [
+      "GigDataSource",
+      "Name"
+     ]
+    },
+    "FunctionVersion": "2018-05-29",
+    "Name": "MutationUpdateGigDataResolverFn",
+    "RequestMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/474bf0776ec2164a13191d1a0a9e057154931e4918fea5086f49850d02a5371b.vtl"
+    },
+    "ResponseMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/f4a52b72209a9dfa197b5e7367a5c378c5bb86de6e29ddd9e48b49a3fe54b249.vtl"
+    }
+   },
+   "DependsOn": [
+    "GigDataSource"
+   ],
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-aceplatform-dannywilson-sandbox-62ec12a132/data/amplifyData/Gig/MutationUpdateGigDataResolverFn/MutationUpdateGigDataResolverFn.AppSyncFunction"
+   }
+  },
+  "UpdateGigResolver": {
+   "Type": "AWS::AppSync::Resolver",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132dataamplifyDataGraphQLAPI1643E516ApiId"
+    },
+    "FieldName": "updateGig",
+    "Kind": "PIPELINE",
+    "PipelineConfig": {
+     "Functions": [
+      {
+       "Fn::GetAtt": [
+        "MutationupdateGiginit0FunctionMutationupdateGiginit0FunctionAppSyncFunctionFDFF0201",
+        "FunctionId"
+       ]
+      },
+      {
+       "Fn::GetAtt": [
+        "MutationupdateGigauth0FunctionMutationupdateGigauth0FunctionAppSyncFunction71CB7E26",
+        "FunctionId"
+       ]
+      },
+      {
+       "Fn::GetAtt": [
+        "MutationupdateGigpostAuth0FunctionMutationupdateGigpostAuth0FunctionAppSyncFunctionA063F0D8",
+        "FunctionId"
+       ]
+      },
+      {
+       "Fn::GetAtt": [
+        "MutationUpdateGigDataResolverFnMutationUpdateGigDataResolverFnAppSyncFunction75F36C83",
+        "FunctionId"
+       ]
+      }
+     ]
+    },
+    "RequestMappingTemplate": {
+     "Fn::Join": [
+      "",
+      [
+       "$util.qr($ctx.stash.put(\"typeName\", \"Mutation\"))\n$util.qr($ctx.stash.put(\"fieldName\", \"updateGig\"))\n$util.qr($ctx.stash.put(\"conditions\", []))\n$util.qr($ctx.stash.put(\"metadata\", {}))\n$util.qr($ctx.stash.metadata.put(\"dataSourceType\", \"AMAZON_DYNAMODB\"))\n$util.qr($ctx.stash.metadata.put(\"apiId\", \"",
+       {
+        "Ref": "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132dataamplifyDataGraphQLAPI1643E516ApiId"
+       },
+       "\"))\n$util.qr($ctx.stash.put(\"connectionAttributes\", {}))\n$util.qr($ctx.stash.put(\"tableName\", \"",
+       {
+        "Fn::Select": [
+         1,
+         {
+          "Fn::Split": [
+           "/",
+           {
+            "Fn::Select": [
+             5,
+             {
+              "Fn::Split": [
+               ":",
+               {
+                "Fn::GetAtt": [
+                 "GigTable",
+                 "TableArn"
+                ]
+               }
+              ]
+             }
+            ]
+           }
+          ]
+         }
+        ]
+       },
+       "\"))\n$util.qr($ctx.stash.put(\"authRole\", \"arn:",
+       {
+        "Ref": "AWS::Partition"
+       },
+       ":sts::",
+       {
+        "Ref": "AWS::AccountId"
+       },
+       ":assumed-role/",
+       {
+        "Ref": "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132authNestedStackauthNestedStackResource699DB456Outputsamplifyaceplatformdannywilsonsandbox62ec12a132authamplifyAuthauthenticatedUserRole8F54B8ECRef"
+       },
+       "/CognitoIdentityCredentials\"))\n$util.qr($ctx.stash.put(\"unauthRole\", \"arn:",
+       {
+        "Ref": "AWS::Partition"
+       },
+       ":sts::",
+       {
+        "Ref": "AWS::AccountId"
+       },
+       ":assumed-role/",
+       {
+        "Ref": "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132authNestedStackauthNestedStackResource699DB456Outputsamplifyaceplatformdannywilsonsandbox62ec12a132authamplifyAuthunauthenticatedUserRoleEAFB7608Ref"
+       },
+       "/CognitoIdentityCredentials\"))\n$util.qr($ctx.stash.put(\"identityPoolId\", \"",
+       {
+        "Ref": "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132authNestedStackauthNestedStackResource699DB456Outputsamplifyaceplatformdannywilsonsandbox62ec12a132authamplifyAuthIdentityPool856F4105Ref"
+       },
+       "\"))\n$util.qr($ctx.stash.put(\"adminRoles\", []))\n$util.toJson({})"
+      ]
+     ]
+    },
+    "ResponseMappingTemplate": "$util.toJson($ctx.prev.result)",
+    "TypeName": "Mutation"
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-aceplatform-dannywilson-sandbox-62ec12a132/data/amplifyData/Gig/mutationUpdateGigResolver"
+   }
+  },
+  "MutationdeleteGigauth0FunctionMutationdeleteGigauth0FunctionAppSyncFunction2E837DA1": {
+   "Type": "AWS::AppSync::FunctionConfiguration",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132dataamplifyDataGraphQLAPI1643E516ApiId"
+    },
+    "DataSourceName": {
+     "Fn::GetAtt": [
+      "GigDataSource",
+      "Name"
+     ]
+    },
+    "FunctionVersion": "2018-05-29",
+    "Name": "MutationdeleteGigauth0Function",
+    "RequestMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/1f5fed297da9c32ae3af922bf3a38ccf23b956078887d16891ec06c20c64722c.vtl"
+    },
+    "ResponseMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/04f6bed7af439a23b1a11557e8d7822047bf1aef84879aa4d069b593e381fcfb.vtl"
+    }
+   },
+   "DependsOn": [
+    "GigDataSource"
+   ],
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-aceplatform-dannywilson-sandbox-62ec12a132/data/amplifyData/Gig/MutationdeleteGigauth0Function/MutationdeleteGigauth0Function.AppSyncFunction"
+   }
+  },
+  "MutationdeleteGigpostAuth0FunctionMutationdeleteGigpostAuth0FunctionAppSyncFunction1C4B34EE": {
+   "Type": "AWS::AppSync::FunctionConfiguration",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132dataamplifyDataGraphQLAPI1643E516ApiId"
+    },
+    "DataSourceName": {
+     "Ref": "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132dataamplifyDataGraphQLAPINONEDS8ED56022Name"
+    },
+    "FunctionVersion": "2018-05-29",
+    "Name": "MutationdeleteGigpostAuth0Function",
+    "RequestMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/c1721bcd774e27c514d3454b5be4f9bdd094c0161b57ddf053d618e3b0086a77.vtl"
+    },
+    "ResponseMappingTemplate": "$util.toJson({})"
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-aceplatform-dannywilson-sandbox-62ec12a132/data/amplifyData/Gig/MutationdeleteGigpostAuth0Function/MutationdeleteGigpostAuth0Function.AppSyncFunction"
+   }
+  },
+  "MutationDeleteGigDataResolverFnMutationDeleteGigDataResolverFnAppSyncFunction1B88DAB8": {
+   "Type": "AWS::AppSync::FunctionConfiguration",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132dataamplifyDataGraphQLAPI1643E516ApiId"
+    },
+    "DataSourceName": {
+     "Fn::GetAtt": [
+      "GigDataSource",
+      "Name"
+     ]
+    },
+    "FunctionVersion": "2018-05-29",
+    "Name": "MutationDeleteGigDataResolverFn",
+    "RequestMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/4f7907d1209a2c9953a0c053df402c634e359546d70c7cc5c2e8e21ea734880f.vtl"
+    },
+    "ResponseMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/f4a52b72209a9dfa197b5e7367a5c378c5bb86de6e29ddd9e48b49a3fe54b249.vtl"
+    }
+   },
+   "DependsOn": [
+    "GigDataSource"
+   ],
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-aceplatform-dannywilson-sandbox-62ec12a132/data/amplifyData/Gig/MutationDeleteGigDataResolverFn/MutationDeleteGigDataResolverFn.AppSyncFunction"
+   }
+  },
+  "DeleteGigResolver": {
+   "Type": "AWS::AppSync::Resolver",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132dataamplifyDataGraphQLAPI1643E516ApiId"
+    },
+    "FieldName": "deleteGig",
+    "Kind": "PIPELINE",
+    "PipelineConfig": {
+     "Functions": [
+      {
+       "Fn::GetAtt": [
+        "MutationdeleteGigauth0FunctionMutationdeleteGigauth0FunctionAppSyncFunction2E837DA1",
+        "FunctionId"
+       ]
+      },
+      {
+       "Fn::GetAtt": [
+        "MutationdeleteGigpostAuth0FunctionMutationdeleteGigpostAuth0FunctionAppSyncFunction1C4B34EE",
+        "FunctionId"
+       ]
+      },
+      {
+       "Fn::GetAtt": [
+        "MutationDeleteGigDataResolverFnMutationDeleteGigDataResolverFnAppSyncFunction1B88DAB8",
+        "FunctionId"
+       ]
+      }
+     ]
+    },
+    "RequestMappingTemplate": {
+     "Fn::Join": [
+      "",
+      [
+       "$util.qr($ctx.stash.put(\"typeName\", \"Mutation\"))\n$util.qr($ctx.stash.put(\"fieldName\", \"deleteGig\"))\n$util.qr($ctx.stash.put(\"conditions\", []))\n$util.qr($ctx.stash.put(\"metadata\", {}))\n$util.qr($ctx.stash.metadata.put(\"dataSourceType\", \"AMAZON_DYNAMODB\"))\n$util.qr($ctx.stash.metadata.put(\"apiId\", \"",
+       {
+        "Ref": "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132dataamplifyDataGraphQLAPI1643E516ApiId"
+       },
+       "\"))\n$util.qr($ctx.stash.put(\"connectionAttributes\", {}))\n$util.qr($ctx.stash.put(\"tableName\", \"",
+       {
+        "Fn::Select": [
+         1,
+         {
+          "Fn::Split": [
+           "/",
+           {
+            "Fn::Select": [
+             5,
+             {
+              "Fn::Split": [
+               ":",
+               {
+                "Fn::GetAtt": [
+                 "GigTable",
+                 "TableArn"
+                ]
+               }
+              ]
+             }
+            ]
+           }
+          ]
+         }
+        ]
+       },
+       "\"))\n$util.qr($ctx.stash.put(\"authRole\", \"arn:",
+       {
+        "Ref": "AWS::Partition"
+       },
+       ":sts::",
+       {
+        "Ref": "AWS::AccountId"
+       },
+       ":assumed-role/",
+       {
+        "Ref": "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132authNestedStackauthNestedStackResource699DB456Outputsamplifyaceplatformdannywilsonsandbox62ec12a132authamplifyAuthauthenticatedUserRole8F54B8ECRef"
+       },
+       "/CognitoIdentityCredentials\"))\n$util.qr($ctx.stash.put(\"unauthRole\", \"arn:",
+       {
+        "Ref": "AWS::Partition"
+       },
+       ":sts::",
+       {
+        "Ref": "AWS::AccountId"
+       },
+       ":assumed-role/",
+       {
+        "Ref": "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132authNestedStackauthNestedStackResource699DB456Outputsamplifyaceplatformdannywilsonsandbox62ec12a132authamplifyAuthunauthenticatedUserRoleEAFB7608Ref"
+       },
+       "/CognitoIdentityCredentials\"))\n$util.qr($ctx.stash.put(\"identityPoolId\", \"",
+       {
+        "Ref": "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132authNestedStackauthNestedStackResource699DB456Outputsamplifyaceplatformdannywilsonsandbox62ec12a132authamplifyAuthIdentityPool856F4105Ref"
+       },
+       "\"))\n$util.qr($ctx.stash.put(\"adminRoles\", []))\n$util.toJson({})"
+      ]
+     ]
+    },
+    "ResponseMappingTemplate": "$util.toJson($ctx.prev.result)",
+    "TypeName": "Mutation"
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-aceplatform-dannywilson-sandbox-62ec12a132/data/amplifyData/Gig/mutationDeleteGigResolver"
+   }
+  },
+  "SubscriptiononCreateGigauth0FunctionSubscriptiononCreateGigauth0FunctionAppSyncFunction0C556967": {
+   "Type": "AWS::AppSync::FunctionConfiguration",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132dataamplifyDataGraphQLAPI1643E516ApiId"
+    },
+    "DataSourceName": {
+     "Ref": "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132dataamplifyDataGraphQLAPINONEDS8ED56022Name"
+    },
+    "FunctionVersion": "2018-05-29",
+    "Name": "SubscriptiononCreateGigauth0Function",
+    "RequestMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/0ed3bb8f4d57265ad793a73a25320598e3244e0f99e53fe89976de6af4a27869.vtl"
+    },
+    "ResponseMappingTemplate": "$util.toJson({})"
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-aceplatform-dannywilson-sandbox-62ec12a132/data/amplifyData/Gig/SubscriptiononCreateGigauth0Function/SubscriptiononCreateGigauth0Function.AppSyncFunction"
+   }
+  },
+  "SubscriptiononCreateGigpostAuth0FunctionSubscriptiononCreateGigpostAuth0FunctionAppSyncFunction81548657": {
+   "Type": "AWS::AppSync::FunctionConfiguration",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132dataamplifyDataGraphQLAPI1643E516ApiId"
+    },
+    "DataSourceName": {
+     "Ref": "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132dataamplifyDataGraphQLAPINONEDS8ED56022Name"
+    },
+    "FunctionVersion": "2018-05-29",
+    "Name": "SubscriptiononCreateGigpostAuth0Function",
+    "RequestMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/c1721bcd774e27c514d3454b5be4f9bdd094c0161b57ddf053d618e3b0086a77.vtl"
+    },
+    "ResponseMappingTemplate": "$util.toJson({})"
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-aceplatform-dannywilson-sandbox-62ec12a132/data/amplifyData/Gig/SubscriptiononCreateGigpostAuth0Function/SubscriptiononCreateGigpostAuth0Function.AppSyncFunction"
+   }
+  },
+  "SubscriptionOnCreateGigDataResolverFnSubscriptionOnCreateGigDataResolverFnAppSyncFunction0E78294F": {
+   "Type": "AWS::AppSync::FunctionConfiguration",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132dataamplifyDataGraphQLAPI1643E516ApiId"
+    },
+    "DataSourceName": {
+     "Ref": "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132dataamplifyDataGraphQLAPINONEDS8ED56022Name"
+    },
+    "FunctionVersion": "2018-05-29",
+    "Name": "SubscriptionOnCreateGigDataResolverFn",
+    "RequestMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/fe3c43ada4b9d681a5e2312663ef7a73386424d73b73e51f8e2e9d4b50f7c502.vtl"
+    },
+    "ResponseMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/e0cff47fb007f0bbf2a4e43ca256d6aa7ec109821769fd79fa7c5e83f0e7f9fc.vtl"
+    }
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-aceplatform-dannywilson-sandbox-62ec12a132/data/amplifyData/Gig/SubscriptionOnCreateGigDataResolverFn/SubscriptionOnCreateGigDataResolverFn.AppSyncFunction"
+   }
+  },
+  "SubscriptiononCreateGigResolver": {
+   "Type": "AWS::AppSync::Resolver",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132dataamplifyDataGraphQLAPI1643E516ApiId"
+    },
+    "FieldName": "onCreateGig",
+    "Kind": "PIPELINE",
+    "PipelineConfig": {
+     "Functions": [
+      {
+       "Fn::GetAtt": [
+        "SubscriptiononCreateGigauth0FunctionSubscriptiononCreateGigauth0FunctionAppSyncFunction0C556967",
+        "FunctionId"
+       ]
+      },
+      {
+       "Fn::GetAtt": [
+        "SubscriptiononCreateGigpostAuth0FunctionSubscriptiononCreateGigpostAuth0FunctionAppSyncFunction81548657",
+        "FunctionId"
+       ]
+      },
+      {
+       "Fn::GetAtt": [
+        "SubscriptionOnCreateGigDataResolverFnSubscriptionOnCreateGigDataResolverFnAppSyncFunction0E78294F",
+        "FunctionId"
+       ]
+      }
+     ]
+    },
+    "RequestMappingTemplate": {
+     "Fn::Join": [
+      "",
+      [
+       "$util.qr($ctx.stash.put(\"typeName\", \"Subscription\"))\n$util.qr($ctx.stash.put(\"fieldName\", \"onCreateGig\"))\n$util.qr($ctx.stash.put(\"conditions\", []))\n$util.qr($ctx.stash.put(\"metadata\", {}))\n$util.qr($ctx.stash.metadata.put(\"dataSourceType\", \"NONE\"))\n$util.qr($ctx.stash.metadata.put(\"apiId\", \"",
+       {
+        "Ref": "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132dataamplifyDataGraphQLAPI1643E516ApiId"
+       },
+       "\"))\n$util.qr($ctx.stash.put(\"connectionAttributes\", {}))\n\n$util.qr($ctx.stash.put(\"authRole\", \"arn:",
+       {
+        "Ref": "AWS::Partition"
+       },
+       ":sts::",
+       {
+        "Ref": "AWS::AccountId"
+       },
+       ":assumed-role/",
+       {
+        "Ref": "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132authNestedStackauthNestedStackResource699DB456Outputsamplifyaceplatformdannywilsonsandbox62ec12a132authamplifyAuthauthenticatedUserRole8F54B8ECRef"
+       },
+       "/CognitoIdentityCredentials\"))\n$util.qr($ctx.stash.put(\"unauthRole\", \"arn:",
+       {
+        "Ref": "AWS::Partition"
+       },
+       ":sts::",
+       {
+        "Ref": "AWS::AccountId"
+       },
+       ":assumed-role/",
+       {
+        "Ref": "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132authNestedStackauthNestedStackResource699DB456Outputsamplifyaceplatformdannywilsonsandbox62ec12a132authamplifyAuthunauthenticatedUserRoleEAFB7608Ref"
+       },
+       "/CognitoIdentityCredentials\"))\n$util.qr($ctx.stash.put(\"identityPoolId\", \"",
+       {
+        "Ref": "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132authNestedStackauthNestedStackResource699DB456Outputsamplifyaceplatformdannywilsonsandbox62ec12a132authamplifyAuthIdentityPool856F4105Ref"
+       },
+       "\"))\n$util.qr($ctx.stash.put(\"adminRoles\", []))\n$util.toJson({})"
+      ]
+     ]
+    },
+    "ResponseMappingTemplate": "$util.toJson($ctx.prev.result)",
+    "TypeName": "Subscription"
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-aceplatform-dannywilson-sandbox-62ec12a132/data/amplifyData/Gig/subscriptionOnCreateGigResolver"
+   }
+  },
+  "SubscriptiononUpdateGigauth0FunctionSubscriptiononUpdateGigauth0FunctionAppSyncFunction6DE18C1C": {
+   "Type": "AWS::AppSync::FunctionConfiguration",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132dataamplifyDataGraphQLAPI1643E516ApiId"
+    },
+    "DataSourceName": {
+     "Ref": "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132dataamplifyDataGraphQLAPINONEDS8ED56022Name"
+    },
+    "FunctionVersion": "2018-05-29",
+    "Name": "SubscriptiononUpdateGigauth0Function",
+    "RequestMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/0ed3bb8f4d57265ad793a73a25320598e3244e0f99e53fe89976de6af4a27869.vtl"
+    },
+    "ResponseMappingTemplate": "$util.toJson({})"
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-aceplatform-dannywilson-sandbox-62ec12a132/data/amplifyData/Gig/SubscriptiononUpdateGigauth0Function/SubscriptiononUpdateGigauth0Function.AppSyncFunction"
+   }
+  },
+  "SubscriptiononUpdateGigpostAuth0FunctionSubscriptiononUpdateGigpostAuth0FunctionAppSyncFunctionBAB07D06": {
+   "Type": "AWS::AppSync::FunctionConfiguration",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132dataamplifyDataGraphQLAPI1643E516ApiId"
+    },
+    "DataSourceName": {
+     "Ref": "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132dataamplifyDataGraphQLAPINONEDS8ED56022Name"
+    },
+    "FunctionVersion": "2018-05-29",
+    "Name": "SubscriptiononUpdateGigpostAuth0Function",
+    "RequestMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/c1721bcd774e27c514d3454b5be4f9bdd094c0161b57ddf053d618e3b0086a77.vtl"
+    },
+    "ResponseMappingTemplate": "$util.toJson({})"
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-aceplatform-dannywilson-sandbox-62ec12a132/data/amplifyData/Gig/SubscriptiononUpdateGigpostAuth0Function/SubscriptiononUpdateGigpostAuth0Function.AppSyncFunction"
+   }
+  },
+  "SubscriptionOnUpdateGigDataResolverFnSubscriptionOnUpdateGigDataResolverFnAppSyncFunction8376151B": {
+   "Type": "AWS::AppSync::FunctionConfiguration",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132dataamplifyDataGraphQLAPI1643E516ApiId"
+    },
+    "DataSourceName": {
+     "Ref": "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132dataamplifyDataGraphQLAPINONEDS8ED56022Name"
+    },
+    "FunctionVersion": "2018-05-29",
+    "Name": "SubscriptionOnUpdateGigDataResolverFn",
+    "RequestMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/fe3c43ada4b9d681a5e2312663ef7a73386424d73b73e51f8e2e9d4b50f7c502.vtl"
+    },
+    "ResponseMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/e0cff47fb007f0bbf2a4e43ca256d6aa7ec109821769fd79fa7c5e83f0e7f9fc.vtl"
+    }
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-aceplatform-dannywilson-sandbox-62ec12a132/data/amplifyData/Gig/SubscriptionOnUpdateGigDataResolverFn/SubscriptionOnUpdateGigDataResolverFn.AppSyncFunction"
+   }
+  },
+  "SubscriptiononUpdateGigResolver": {
+   "Type": "AWS::AppSync::Resolver",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132dataamplifyDataGraphQLAPI1643E516ApiId"
+    },
+    "FieldName": "onUpdateGig",
+    "Kind": "PIPELINE",
+    "PipelineConfig": {
+     "Functions": [
+      {
+       "Fn::GetAtt": [
+        "SubscriptiononUpdateGigauth0FunctionSubscriptiononUpdateGigauth0FunctionAppSyncFunction6DE18C1C",
+        "FunctionId"
+       ]
+      },
+      {
+       "Fn::GetAtt": [
+        "SubscriptiononUpdateGigpostAuth0FunctionSubscriptiononUpdateGigpostAuth0FunctionAppSyncFunctionBAB07D06",
+        "FunctionId"
+       ]
+      },
+      {
+       "Fn::GetAtt": [
+        "SubscriptionOnUpdateGigDataResolverFnSubscriptionOnUpdateGigDataResolverFnAppSyncFunction8376151B",
+        "FunctionId"
+       ]
+      }
+     ]
+    },
+    "RequestMappingTemplate": {
+     "Fn::Join": [
+      "",
+      [
+       "$util.qr($ctx.stash.put(\"typeName\", \"Subscription\"))\n$util.qr($ctx.stash.put(\"fieldName\", \"onUpdateGig\"))\n$util.qr($ctx.stash.put(\"conditions\", []))\n$util.qr($ctx.stash.put(\"metadata\", {}))\n$util.qr($ctx.stash.metadata.put(\"dataSourceType\", \"NONE\"))\n$util.qr($ctx.stash.metadata.put(\"apiId\", \"",
+       {
+        "Ref": "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132dataamplifyDataGraphQLAPI1643E516ApiId"
+       },
+       "\"))\n$util.qr($ctx.stash.put(\"connectionAttributes\", {}))\n\n$util.qr($ctx.stash.put(\"authRole\", \"arn:",
+       {
+        "Ref": "AWS::Partition"
+       },
+       ":sts::",
+       {
+        "Ref": "AWS::AccountId"
+       },
+       ":assumed-role/",
+       {
+        "Ref": "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132authNestedStackauthNestedStackResource699DB456Outputsamplifyaceplatformdannywilsonsandbox62ec12a132authamplifyAuthauthenticatedUserRole8F54B8ECRef"
+       },
+       "/CognitoIdentityCredentials\"))\n$util.qr($ctx.stash.put(\"unauthRole\", \"arn:",
+       {
+        "Ref": "AWS::Partition"
+       },
+       ":sts::",
+       {
+        "Ref": "AWS::AccountId"
+       },
+       ":assumed-role/",
+       {
+        "Ref": "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132authNestedStackauthNestedStackResource699DB456Outputsamplifyaceplatformdannywilsonsandbox62ec12a132authamplifyAuthunauthenticatedUserRoleEAFB7608Ref"
+       },
+       "/CognitoIdentityCredentials\"))\n$util.qr($ctx.stash.put(\"identityPoolId\", \"",
+       {
+        "Ref": "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132authNestedStackauthNestedStackResource699DB456Outputsamplifyaceplatformdannywilsonsandbox62ec12a132authamplifyAuthIdentityPool856F4105Ref"
+       },
+       "\"))\n$util.qr($ctx.stash.put(\"adminRoles\", []))\n$util.toJson({})"
+      ]
+     ]
+    },
+    "ResponseMappingTemplate": "$util.toJson($ctx.prev.result)",
+    "TypeName": "Subscription"
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-aceplatform-dannywilson-sandbox-62ec12a132/data/amplifyData/Gig/subscriptionOnUpdateGigResolver"
+   }
+  },
+  "SubscriptiononDeleteGigauth0FunctionSubscriptiononDeleteGigauth0FunctionAppSyncFunction37E0C790": {
+   "Type": "AWS::AppSync::FunctionConfiguration",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132dataamplifyDataGraphQLAPI1643E516ApiId"
+    },
+    "DataSourceName": {
+     "Ref": "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132dataamplifyDataGraphQLAPINONEDS8ED56022Name"
+    },
+    "FunctionVersion": "2018-05-29",
+    "Name": "SubscriptiononDeleteGigauth0Function",
+    "RequestMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/0ed3bb8f4d57265ad793a73a25320598e3244e0f99e53fe89976de6af4a27869.vtl"
+    },
+    "ResponseMappingTemplate": "$util.toJson({})"
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-aceplatform-dannywilson-sandbox-62ec12a132/data/amplifyData/Gig/SubscriptiononDeleteGigauth0Function/SubscriptiononDeleteGigauth0Function.AppSyncFunction"
+   }
+  },
+  "SubscriptiononDeleteGigpostAuth0FunctionSubscriptiononDeleteGigpostAuth0FunctionAppSyncFunctionE39DDF15": {
+   "Type": "AWS::AppSync::FunctionConfiguration",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132dataamplifyDataGraphQLAPI1643E516ApiId"
+    },
+    "DataSourceName": {
+     "Ref": "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132dataamplifyDataGraphQLAPINONEDS8ED56022Name"
+    },
+    "FunctionVersion": "2018-05-29",
+    "Name": "SubscriptiononDeleteGigpostAuth0Function",
+    "RequestMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/c1721bcd774e27c514d3454b5be4f9bdd094c0161b57ddf053d618e3b0086a77.vtl"
+    },
+    "ResponseMappingTemplate": "$util.toJson({})"
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-aceplatform-dannywilson-sandbox-62ec12a132/data/amplifyData/Gig/SubscriptiononDeleteGigpostAuth0Function/SubscriptiononDeleteGigpostAuth0Function.AppSyncFunction"
+   }
+  },
+  "SubscriptionOnDeleteGigDataResolverFnSubscriptionOnDeleteGigDataResolverFnAppSyncFunction17A6734D": {
+   "Type": "AWS::AppSync::FunctionConfiguration",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132dataamplifyDataGraphQLAPI1643E516ApiId"
+    },
+    "DataSourceName": {
+     "Ref": "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132dataamplifyDataGraphQLAPINONEDS8ED56022Name"
+    },
+    "FunctionVersion": "2018-05-29",
+    "Name": "SubscriptionOnDeleteGigDataResolverFn",
+    "RequestMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/fe3c43ada4b9d681a5e2312663ef7a73386424d73b73e51f8e2e9d4b50f7c502.vtl"
+    },
+    "ResponseMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/e0cff47fb007f0bbf2a4e43ca256d6aa7ec109821769fd79fa7c5e83f0e7f9fc.vtl"
+    }
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-aceplatform-dannywilson-sandbox-62ec12a132/data/amplifyData/Gig/SubscriptionOnDeleteGigDataResolverFn/SubscriptionOnDeleteGigDataResolverFn.AppSyncFunction"
+   }
+  },
+  "SubscriptiononDeleteGigResolver": {
+   "Type": "AWS::AppSync::Resolver",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132dataamplifyDataGraphQLAPI1643E516ApiId"
+    },
+    "FieldName": "onDeleteGig",
+    "Kind": "PIPELINE",
+    "PipelineConfig": {
+     "Functions": [
+      {
+       "Fn::GetAtt": [
+        "SubscriptiononDeleteGigauth0FunctionSubscriptiononDeleteGigauth0FunctionAppSyncFunction37E0C790",
+        "FunctionId"
+       ]
+      },
+      {
+       "Fn::GetAtt": [
+        "SubscriptiononDeleteGigpostAuth0FunctionSubscriptiononDeleteGigpostAuth0FunctionAppSyncFunctionE39DDF15",
+        "FunctionId"
+       ]
+      },
+      {
+       "Fn::GetAtt": [
+        "SubscriptionOnDeleteGigDataResolverFnSubscriptionOnDeleteGigDataResolverFnAppSyncFunction17A6734D",
+        "FunctionId"
+       ]
+      }
+     ]
+    },
+    "RequestMappingTemplate": {
+     "Fn::Join": [
+      "",
+      [
+       "$util.qr($ctx.stash.put(\"typeName\", \"Subscription\"))\n$util.qr($ctx.stash.put(\"fieldName\", \"onDeleteGig\"))\n$util.qr($ctx.stash.put(\"conditions\", []))\n$util.qr($ctx.stash.put(\"metadata\", {}))\n$util.qr($ctx.stash.metadata.put(\"dataSourceType\", \"NONE\"))\n$util.qr($ctx.stash.metadata.put(\"apiId\", \"",
+       {
+        "Ref": "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132dataamplifyDataGraphQLAPI1643E516ApiId"
+       },
+       "\"))\n$util.qr($ctx.stash.put(\"connectionAttributes\", {}))\n\n$util.qr($ctx.stash.put(\"authRole\", \"arn:",
+       {
+        "Ref": "AWS::Partition"
+       },
+       ":sts::",
+       {
+        "Ref": "AWS::AccountId"
+       },
+       ":assumed-role/",
+       {
+        "Ref": "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132authNestedStackauthNestedStackResource699DB456Outputsamplifyaceplatformdannywilsonsandbox62ec12a132authamplifyAuthauthenticatedUserRole8F54B8ECRef"
+       },
+       "/CognitoIdentityCredentials\"))\n$util.qr($ctx.stash.put(\"unauthRole\", \"arn:",
+       {
+        "Ref": "AWS::Partition"
+       },
+       ":sts::",
+       {
+        "Ref": "AWS::AccountId"
+       },
+       ":assumed-role/",
+       {
+        "Ref": "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132authNestedStackauthNestedStackResource699DB456Outputsamplifyaceplatformdannywilsonsandbox62ec12a132authamplifyAuthunauthenticatedUserRoleEAFB7608Ref"
+       },
+       "/CognitoIdentityCredentials\"))\n$util.qr($ctx.stash.put(\"identityPoolId\", \"",
+       {
+        "Ref": "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132authNestedStackauthNestedStackResource699DB456Outputsamplifyaceplatformdannywilsonsandbox62ec12a132authamplifyAuthIdentityPool856F4105Ref"
+       },
+       "\"))\n$util.qr($ctx.stash.put(\"adminRoles\", []))\n$util.toJson({})"
+      ]
+     ]
+    },
+    "ResponseMappingTemplate": "$util.toJson($ctx.prev.result)",
+    "TypeName": "Subscription"
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-aceplatform-dannywilson-sandbox-62ec12a132/data/amplifyData/Gig/subscriptionOnDeleteGigResolver"
+   }
+  },
+  "CDKMetadata": {
+   "Type": "AWS::CDK::Metadata",
+   "Properties": {
+    "Analytics": "v2:deflate64:H4sIAAAAAAAA/1WOwW6DMAyGn6X31BNU2s4raMdugt0rkxiUAg6KnVYV4t0n6NRpp9+f/Mn+c8hfc8h2eJO9df1+8A3MJxIlVyva3hQtf2HEkZTiCkVg59UHNhVJSNGSKZJoGP+w5eeMNznP7s44BtfANzYDHVHIeBxhrsLwsMNAi8FpkjtbmMtNL5sSFevnyf/0kdiuJYrAre9SxK3R7+fhSnExcjijCKnA+xpGDnBMtiddCyyr+5l0Smq2da3Yee4Ww8ERXOTlmueQvUG2u4j3+5hY/UhQPfIH6NZVqjYBAAA="
+   },
+   "Metadata": {
+    "aws:cdk:path": "amplify-aceplatform-dannywilson-sandbox-62ec12a132/data/amplifyData/Gig/CDKMetadata/Default"
+   },
+   "Condition": "CDKMetadataAvailable"
+  }
+ },
+ "Outputs": {
+  "GetAttGigTableStreamArn": {
+   "Description": "Your DynamoDB table StreamArn.",
+   "Value": {
+    "Fn::GetAtt": [
+     "GigTable",
+     "TableStreamArn"
+    ]
+   },
+   "Export": {
+    "Name": {
+     "Fn::Join": [
+      ":",
+      [
+       {
+        "Ref": "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132dataamplifyDataGraphQLAPI1643E516ApiId"
+       },
+       "GetAtt:GigTable:StreamArn"
+      ]
+     ]
+    }
+   }
+  },
+  "GetAttGigTableName": {
+   "Description": "Your DynamoDB table name.",
+   "Value": {
+    "Fn::Join": [
+     "",
+     [
+      "Gig-",
+      {
+       "Ref": "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132dataamplifyDataGraphQLAPI1643E516ApiId"
+      },
+      "-NONE"
+     ]
+    ]
+   },
+   "Export": {
+    "Name": {
+     "Fn::Join": [
+      ":",
+      [
+       {
+        "Ref": "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132dataamplifyDataGraphQLAPI1643E516ApiId"
+       },
+       "GetAtt:GigTable:Name"
+      ]
+     ]
+    }
+   }
+  },
+  "amplifyaceplatformdannywilsonsandbox62ec12a132dataamplifyDataGigGigDataSource9052AC77Name": {
+   "Value": {
+    "Fn::GetAtt": [
+     "GigDataSource",
+     "Name"
+    ]
+   }
+  },
+  "amplifyaceplatformdannywilsonsandbox62ec12a132dataamplifyDataGigGigTable4E1CEBF0TableArn": {
+   "Value": {
+    "Fn::GetAtt": [
+     "GigTable",
+     "TableArn"
+    ]
+   }
+  }
+ }
+}

@@ -1,0 +1,278 @@
+type Quote @model @auth(rules: [{allow: groups, operations: [create, read, update, delete], groups: ["owner", "manager"]},
+  {allow: groups, operations: [read], groups: ["crew", "performer"]},
+  {allow: owner, operations: [read], ownerField: "owner"}])
+{
+  serviceType: QuoteServiceType
+  status: QuoteStatus
+  firstName: String!
+  lastName: String!
+  email: String!
+  phone: String!
+  organization: String
+  howHeard: String
+  eventType: String
+  eventDates: AWSJSON
+  sameServicesAllDates: Boolean
+  services: [String]
+  perDayDetails: AWSJSON
+  genre: String
+  speeches: String
+  budget: String
+  venueName: String
+  venueAddress: String
+  roomName: String
+  floorAccess: String
+  indoorOutdoor: String
+  roomSize: String
+  powerAvailability: String
+  loadInTime: String
+  micWireless: String
+  micWired: String
+  auxInputs: String
+  monitorSpeakers: String
+  additionalNotes: String
+  digitalServices: [String]
+  projectDescription: String
+  hasExisting: String
+  existingUrl: String
+  pageCount: String
+  timeline: String
+  features: [String]
+  designDirection: String
+  referenceSites: String
+  digitalBudget: String
+  ongoingSupport: String
+  digitalNotes: String
+  aiAnalysis: String
+  internalNotes: String
+  assignedTo: String
+  quotedAmount: Float
+  finalAmount: Float
+  source: String
+}
+
+type Gig @model @auth(rules: [{allow: groups, operations: [create, read, update, delete], groups: ["owner", "manager"]},
+  {allow: groups, operations: [read, update], groups: ["crew", "performer"]},
+  {allow: groups, operations: [read], groups: ["customer"]}])
+{
+  quoteId: String
+  clientId: String!
+  status: GigStatus
+  eventType: String!
+  eventDates: AWSJSON
+  services: [String]
+  perDayDetails: AWSJSON
+  venueName: String!
+  venueAddress: String!
+  roomName: String
+  floorAccess: String
+  indoorOutdoor: String
+  roomSize: String
+  assignedCrew: [String]
+  equipmentIds: [String]
+  checklist: AWSJSON
+  quotedAmount: Float
+  depositAmount: Float
+  depositPaid: Boolean
+  depositPaidAt: String
+  balanceAmount: Float
+  balancePaid: Boolean
+  balancePaidAt: String
+  invoiceId: String
+  internalNotes: String
+  clientNotes: String
+  client: Client @belongsTo(references: ["clientId"])
+  messages: [Message] @hasMany(references: ["gigId"])
+}
+
+type Client @model @auth(rules: [{allow: groups, operations: [create, read, update, delete], groups: ["owner", "manager"]},
+  {allow: groups, operations: [read], groups: ["crew"]}])
+{
+  firstName: String!
+  lastName: String!
+  email: String!
+  phone: String!
+  organization: String
+  totalGigs: Int @default(value: "0")
+  totalRevenue: Float @default(value: "0")
+  isRepeatClient: Boolean @default(value: "false")
+  notes: String
+  tags: [String]
+  cognitoUserId: String
+  gigs: [Gig] @hasMany(references: ["clientId"])
+  invoices: [Invoice] @hasMany(references: ["clientId"])
+}
+
+type Equipment @model @auth(rules: [{allow: groups, operations: [create, read, update, delete], groups: ["owner", "manager"]},
+  {allow: groups, operations: [read, update], groups: ["crew"]}])
+{
+  name: String!
+  category: EquipmentCategory
+  brand: String
+  model: String
+  serialNumber: String
+  status: EquipmentStatus
+  condition: EquipmentCondition
+  purchaseDate: String
+  purchasePrice: Float
+  notes: String
+  maintenanceLog: AWSJSON
+  currentGigId: String
+}
+
+type Invoice @model @auth(rules: [{allow: groups, operations: [create, read, update, delete], groups: ["owner", "manager"]},
+  {allow: groups, operations: [read], groups: ["customer"]}])
+{
+  gigId: String
+  clientId: String!
+  status: InvoiceStatus
+  sentAt: String
+  dueDate: String!
+  paidAt: String
+  lineItems: AWSJSON
+  subtotal: Float!
+  discount: Float
+  discountReason: String
+  tax: Float
+  total: Float!
+  depositRequired: Float
+  depositPaid: Float
+  balanceDue: Float
+  notes: String
+  paymentLink: String
+  client: Client @belongsTo(references: ["clientId"])
+}
+
+type CrewMember @model @auth(rules: [{allow: groups, operations: [create, read, update, delete], groups: ["owner", "manager"]},
+  {allow: groups, operations: [read, update], groups: ["crew", "performer"]}])
+{
+  userId: String!
+  name: String!
+  phone: String!
+  email: String!
+  role: CrewMemberRole
+  skills: [String]
+  availability: AWSJSON
+  hourlyRate: Float
+  totalGigs: Int @default(value: "0")
+}
+
+type Message @model @auth(rules: [{allow: groups, operations: [create, read, update], groups: ["owner", "manager"]},
+  {allow: groups, operations: [create, read], groups: ["customer"]}])
+{
+  gigId: String!
+  senderId: String!
+  senderRole: String!
+  senderName: String!
+  content: String!
+  readBy: [String]
+  gig: Gig @belongsTo(references: ["gigId"])
+}
+
+type Subscriber @model @auth(rules: [{allow: groups, operations: [create, read, update, delete], groups: ["owner", "manager"]}])
+{
+  email: String!
+  name: String
+  source: String
+  status: SubscriberStatus
+}
+
+type Notification @model @auth(rules: [{allow: owner, operations: [read, update], ownerField: "owner"},
+  {allow: groups, operations: [create, read, update, delete], groups: ["owner", "manager"]}])
+{
+  userId: String!
+  type: NotificationType
+  channel: NotificationChannel
+  title: String!
+  message: String!
+  read: Boolean @default(value: "false")
+  metadata: AWSJSON
+}
+
+enum QuoteServiceType {
+  event
+  digital
+}
+
+enum QuoteStatus {
+  new
+  reviewed
+  quoted
+  accepted
+  declined
+  expired
+}
+
+enum GigStatus {
+  upcoming
+  confirmed
+  loaded_in
+  live
+  complete
+  paid
+  cancelled
+}
+
+enum EquipmentCategory {
+  speakers
+  microphones
+  mixers
+  cables
+  stands
+  monitors
+  lighting
+  other
+}
+
+enum EquipmentStatus {
+  available
+  deployed
+  maintenance
+  retired
+}
+
+enum EquipmentCondition {
+  excellent
+  good
+  fair
+  poor
+}
+
+enum InvoiceStatus {
+  draft
+  sent
+  viewed
+  partial
+  paid
+  overdue
+  cancelled
+}
+
+enum CrewMemberRole {
+  dj
+  sound_tech
+  crew
+  mc
+  musician
+  coordinator
+}
+
+enum SubscriberStatus {
+  active
+  unsubscribed
+}
+
+enum NotificationType {
+  new_quote
+  quote_accepted
+  payment_received
+  gig_reminder
+  gig_update
+  message
+}
+
+enum NotificationChannel {
+  email
+  sms
+  in_app
+}

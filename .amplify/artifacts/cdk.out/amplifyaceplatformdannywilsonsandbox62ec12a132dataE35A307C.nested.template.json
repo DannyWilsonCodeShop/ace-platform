@@ -1,0 +1,2222 @@
+{
+ "Description": "{\"createdOn\":\"Mac\",\"createdBy\":\"AmplifySandbox\",\"createdWith\":\"1.22.2\",\"stackType\":\"api-AppSync\",\"metadata\":{\"dataSources\":\"dynamodb\",\"authorizationModes\":\"amazon_cognito_identity_pools,amazon_cognito_user_pools,aws_iam\",\"customOperations\":\"\"}}",
+ "Resources": {
+  "amplifyDataGraphQLAPI42A6FA33": {
+   "Type": "AWS::AppSync::GraphQLApi",
+   "Properties": {
+    "AdditionalAuthenticationProviders": [
+     {
+      "AuthenticationType": "AWS_IAM"
+     }
+    ],
+    "AuthenticationType": "AMAZON_COGNITO_USER_POOLS",
+    "Name": "amplifyData",
+    "Tags": [
+     {
+      "Key": "amplify:deployment-type",
+      "Value": "sandbox"
+     },
+     {
+      "Key": "amplify:friendly-name",
+      "Value": "amplifyData"
+     },
+     {
+      "Key": "created-by",
+      "Value": "amplify"
+     }
+    ],
+    "UserPoolConfig": {
+     "AwsRegion": {
+      "Ref": "AWS::Region"
+     },
+     "DefaultAction": "ALLOW",
+     "UserPoolId": {
+      "Ref": "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132authNestedStackauthNestedStackResource699DB456Outputsamplifyaceplatformdannywilsonsandbox62ec12a132authamplifyAuthUserPool8646A376Ref"
+     }
+    }
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-aceplatform-dannywilson-sandbox-62ec12a132/data/amplifyData/GraphQLAPI/Resource"
+   }
+  },
+  "amplifyDataGraphQLAPITransformerSchemaFF50A789": {
+   "Type": "AWS::AppSync::GraphQLSchema",
+   "Properties": {
+    "ApiId": {
+     "Fn::GetAtt": [
+      "amplifyDataGraphQLAPI42A6FA33",
+      "ApiId"
+     ]
+    },
+    "DefinitionS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/4669f71a95961f94a44a7a30d5bc770c402f3cfac959184d2d472ab4d0474ca0.graphql"
+    }
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-aceplatform-dannywilson-sandbox-62ec12a132/data/amplifyData/GraphQLAPI/TransformerSchema"
+   }
+  },
+  "amplifyDataGraphQLAPINONEDS684BF699": {
+   "Type": "AWS::AppSync::DataSource",
+   "Properties": {
+    "ApiId": {
+     "Fn::GetAtt": [
+      "amplifyDataGraphQLAPI42A6FA33",
+      "ApiId"
+     ]
+    },
+    "Description": "None Data Source for Pipeline functions",
+    "Name": "NONE_DS",
+    "Type": "NONE"
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-aceplatform-dannywilson-sandbox-62ec12a132/data/amplifyData/GraphQLAPI/NONE_DS/Resource"
+   }
+  },
+  "amplifyDataAmplifyTableManagerNestedStackAmplifyTableManagerNestedStackResource86290833": {
+   "Type": "AWS::CloudFormation::Stack",
+   "Properties": {
+    "Parameters": {
+     "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132dataamplifyDataGraphQLAPI1643E516ApiId": {
+      "Fn::GetAtt": [
+       "amplifyDataGraphQLAPI42A6FA33",
+       "ApiId"
+      ]
+     }
+    },
+    "Tags": [
+     {
+      "Key": "amplify:deployment-type",
+      "Value": "sandbox"
+     },
+     {
+      "Key": "amplify:friendly-name",
+      "Value": "amplifyData"
+     },
+     {
+      "Key": "created-by",
+      "Value": "amplify"
+     }
+    ],
+    "TemplateURL": {
+     "Fn::Join": [
+      "",
+      [
+       "https://s3.",
+       {
+        "Ref": "AWS::Region"
+       },
+       ".",
+       {
+        "Ref": "AWS::URLSuffix"
+       },
+       "/",
+       {
+        "Fn::Sub": "cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}"
+       },
+       "/6d13bb25ffdf384b13375cfd56664deaf8a685c34b43f44d8695b3755e39a2b7.json"
+      ]
+     ]
+    }
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-aceplatform-dannywilson-sandbox-62ec12a132/data/amplifyData/AmplifyTableManager.NestedStack/AmplifyTableManager.NestedStackResource",
+    "aws:asset:path": "amplifyaceplatformdannywilsonsandbox62ec12a132dataamplifyDataAmplifyTableManager545CD5B8.nested.template.json",
+    "aws:asset:property": "TemplateURL"
+   }
+  },
+  "amplifyDataQuoteNestedStackQuoteNestedStackResourceC18A5DAE": {
+   "Type": "AWS::CloudFormation::Stack",
+   "Properties": {
+    "Parameters": {
+     "DynamoDBModelTableReadIOPS": {
+      "Ref": "DynamoDBModelTableReadIOPS"
+     },
+     "DynamoDBModelTableWriteIOPS": {
+      "Ref": "DynamoDBModelTableWriteIOPS"
+     },
+     "DynamoDBBillingMode": {
+      "Ref": "DynamoDBBillingMode"
+     },
+     "DynamoDBEnablePointInTimeRecovery": {
+      "Ref": "DynamoDBEnablePointInTimeRecovery"
+     },
+     "DynamoDBEnableServerSideEncryption": {
+      "Ref": "DynamoDBEnableServerSideEncryption"
+     },
+     "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132dataamplifyDataAmplifyTableManagerNestedStackAmplifyTableManagerNestedStackResource8CF4AB38Outputsamplifyaceplatformdannywilsonsandbox62ec12a132dataamplifyDataAmplifyTableManagerTableC1D129B2": {
+      "Fn::GetAtt": [
+       "amplifyDataAmplifyTableManagerNestedStackAmplifyTableManagerNestedStackResource86290833",
+       "Outputs.amplifyaceplatformdannywilsonsandbox62ec12a132dataamplifyDataAmplifyTableManagerTableManagerCustomProviderframeworkonEvent9DE7A441Arn"
+      ]
+     },
+     "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132dataamplifyDataGraphQLAPI1643E516ApiId": {
+      "Fn::GetAtt": [
+       "amplifyDataGraphQLAPI42A6FA33",
+       "ApiId"
+      ]
+     },
+     "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132dataamplifyDataGraphQLAPINONEDS8ED56022Name": {
+      "Fn::GetAtt": [
+       "amplifyDataGraphQLAPINONEDS684BF699",
+       "Name"
+      ]
+     },
+     "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132authNestedStackauthNestedStackResource699DB456Outputsamplifyaceplatformdannywilsonsandbox62ec12a132authamplifyAuthauthenticatedUserRole8F54B8ECRef": {
+      "Ref": "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132authNestedStackauthNestedStackResource699DB456Outputsamplifyaceplatformdannywilsonsandbox62ec12a132authamplifyAuthauthenticatedUserRole8F54B8ECRef"
+     },
+     "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132authNestedStackauthNestedStackResource699DB456Outputsamplifyaceplatformdannywilsonsandbox62ec12a132authamplifyAuthunauthenticatedUserRoleEAFB7608Ref": {
+      "Ref": "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132authNestedStackauthNestedStackResource699DB456Outputsamplifyaceplatformdannywilsonsandbox62ec12a132authamplifyAuthunauthenticatedUserRoleEAFB7608Ref"
+     },
+     "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132authNestedStackauthNestedStackResource699DB456Outputsamplifyaceplatformdannywilsonsandbox62ec12a132authamplifyAuthIdentityPool856F4105Ref": {
+      "Ref": "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132authNestedStackauthNestedStackResource699DB456Outputsamplifyaceplatformdannywilsonsandbox62ec12a132authamplifyAuthIdentityPool856F4105Ref"
+     }
+    },
+    "Tags": [
+     {
+      "Key": "amplify:deployment-type",
+      "Value": "sandbox"
+     },
+     {
+      "Key": "amplify:friendly-name",
+      "Value": "amplifyData"
+     },
+     {
+      "Key": "created-by",
+      "Value": "amplify"
+     }
+    ],
+    "TemplateURL": {
+     "Fn::Join": [
+      "",
+      [
+       "https://s3.",
+       {
+        "Ref": "AWS::Region"
+       },
+       ".",
+       {
+        "Ref": "AWS::URLSuffix"
+       },
+       "/",
+       {
+        "Fn::Sub": "cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}"
+       },
+       "/d3fa104957539bc8def81a9f47bb658e289fe8eaa3efcc3c41596cd44864bfaa.json"
+      ]
+     ]
+    }
+   },
+   "DependsOn": [
+    "amplifyDataGraphQLAPITransformerSchemaFF50A789"
+   ],
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-aceplatform-dannywilson-sandbox-62ec12a132/data/amplifyData/Quote.NestedStack/Quote.NestedStackResource",
+    "aws:asset:path": "amplifyaceplatformdannywilsonsandbox62ec12a132dataamplifyDataQuote4C20F9E9.nested.template.json",
+    "aws:asset:property": "TemplateURL"
+   }
+  },
+  "amplifyDataGigNestedStackGigNestedStackResourceBF5916CC": {
+   "Type": "AWS::CloudFormation::Stack",
+   "Properties": {
+    "Parameters": {
+     "DynamoDBModelTableReadIOPS": {
+      "Ref": "DynamoDBModelTableReadIOPS"
+     },
+     "DynamoDBModelTableWriteIOPS": {
+      "Ref": "DynamoDBModelTableWriteIOPS"
+     },
+     "DynamoDBBillingMode": {
+      "Ref": "DynamoDBBillingMode"
+     },
+     "DynamoDBEnablePointInTimeRecovery": {
+      "Ref": "DynamoDBEnablePointInTimeRecovery"
+     },
+     "DynamoDBEnableServerSideEncryption": {
+      "Ref": "DynamoDBEnableServerSideEncryption"
+     },
+     "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132dataamplifyDataAmplifyTableManagerNestedStackAmplifyTableManagerNestedStackResource8CF4AB38Outputsamplifyaceplatformdannywilsonsandbox62ec12a132dataamplifyDataAmplifyTableManagerTableC1D129B2": {
+      "Fn::GetAtt": [
+       "amplifyDataAmplifyTableManagerNestedStackAmplifyTableManagerNestedStackResource86290833",
+       "Outputs.amplifyaceplatformdannywilsonsandbox62ec12a132dataamplifyDataAmplifyTableManagerTableManagerCustomProviderframeworkonEvent9DE7A441Arn"
+      ]
+     },
+     "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132dataamplifyDataGraphQLAPI1643E516ApiId": {
+      "Fn::GetAtt": [
+       "amplifyDataGraphQLAPI42A6FA33",
+       "ApiId"
+      ]
+     },
+     "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132dataamplifyDataGraphQLAPINONEDS8ED56022Name": {
+      "Fn::GetAtt": [
+       "amplifyDataGraphQLAPINONEDS684BF699",
+       "Name"
+      ]
+     },
+     "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132authNestedStackauthNestedStackResource699DB456Outputsamplifyaceplatformdannywilsonsandbox62ec12a132authamplifyAuthauthenticatedUserRole8F54B8ECRef": {
+      "Ref": "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132authNestedStackauthNestedStackResource699DB456Outputsamplifyaceplatformdannywilsonsandbox62ec12a132authamplifyAuthauthenticatedUserRole8F54B8ECRef"
+     },
+     "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132authNestedStackauthNestedStackResource699DB456Outputsamplifyaceplatformdannywilsonsandbox62ec12a132authamplifyAuthunauthenticatedUserRoleEAFB7608Ref": {
+      "Ref": "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132authNestedStackauthNestedStackResource699DB456Outputsamplifyaceplatformdannywilsonsandbox62ec12a132authamplifyAuthunauthenticatedUserRoleEAFB7608Ref"
+     },
+     "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132authNestedStackauthNestedStackResource699DB456Outputsamplifyaceplatformdannywilsonsandbox62ec12a132authamplifyAuthIdentityPool856F4105Ref": {
+      "Ref": "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132authNestedStackauthNestedStackResource699DB456Outputsamplifyaceplatformdannywilsonsandbox62ec12a132authamplifyAuthIdentityPool856F4105Ref"
+     }
+    },
+    "Tags": [
+     {
+      "Key": "amplify:deployment-type",
+      "Value": "sandbox"
+     },
+     {
+      "Key": "amplify:friendly-name",
+      "Value": "amplifyData"
+     },
+     {
+      "Key": "created-by",
+      "Value": "amplify"
+     }
+    ],
+    "TemplateURL": {
+     "Fn::Join": [
+      "",
+      [
+       "https://s3.",
+       {
+        "Ref": "AWS::Region"
+       },
+       ".",
+       {
+        "Ref": "AWS::URLSuffix"
+       },
+       "/",
+       {
+        "Fn::Sub": "cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}"
+       },
+       "/f10ceb611a6b9c0372cd1db3c4b6e0e9c3353fc31000baec0974159890cd19be.json"
+      ]
+     ]
+    }
+   },
+   "DependsOn": [
+    "amplifyDataGraphQLAPITransformerSchemaFF50A789"
+   ],
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-aceplatform-dannywilson-sandbox-62ec12a132/data/amplifyData/Gig.NestedStack/Gig.NestedStackResource",
+    "aws:asset:path": "amplifyaceplatformdannywilsonsandbox62ec12a132dataamplifyDataGig945ED358.nested.template.json",
+    "aws:asset:property": "TemplateURL"
+   }
+  },
+  "amplifyDataClientNestedStackClientNestedStackResource5C7F65E1": {
+   "Type": "AWS::CloudFormation::Stack",
+   "Properties": {
+    "Parameters": {
+     "DynamoDBModelTableReadIOPS": {
+      "Ref": "DynamoDBModelTableReadIOPS"
+     },
+     "DynamoDBModelTableWriteIOPS": {
+      "Ref": "DynamoDBModelTableWriteIOPS"
+     },
+     "DynamoDBBillingMode": {
+      "Ref": "DynamoDBBillingMode"
+     },
+     "DynamoDBEnablePointInTimeRecovery": {
+      "Ref": "DynamoDBEnablePointInTimeRecovery"
+     },
+     "DynamoDBEnableServerSideEncryption": {
+      "Ref": "DynamoDBEnableServerSideEncryption"
+     },
+     "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132dataamplifyDataAmplifyTableManagerNestedStackAmplifyTableManagerNestedStackResource8CF4AB38Outputsamplifyaceplatformdannywilsonsandbox62ec12a132dataamplifyDataAmplifyTableManagerTableC1D129B2": {
+      "Fn::GetAtt": [
+       "amplifyDataAmplifyTableManagerNestedStackAmplifyTableManagerNestedStackResource86290833",
+       "Outputs.amplifyaceplatformdannywilsonsandbox62ec12a132dataamplifyDataAmplifyTableManagerTableManagerCustomProviderframeworkonEvent9DE7A441Arn"
+      ]
+     },
+     "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132dataamplifyDataGraphQLAPI1643E516ApiId": {
+      "Fn::GetAtt": [
+       "amplifyDataGraphQLAPI42A6FA33",
+       "ApiId"
+      ]
+     },
+     "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132dataamplifyDataGraphQLAPINONEDS8ED56022Name": {
+      "Fn::GetAtt": [
+       "amplifyDataGraphQLAPINONEDS684BF699",
+       "Name"
+      ]
+     },
+     "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132authNestedStackauthNestedStackResource699DB456Outputsamplifyaceplatformdannywilsonsandbox62ec12a132authamplifyAuthauthenticatedUserRole8F54B8ECRef": {
+      "Ref": "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132authNestedStackauthNestedStackResource699DB456Outputsamplifyaceplatformdannywilsonsandbox62ec12a132authamplifyAuthauthenticatedUserRole8F54B8ECRef"
+     },
+     "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132authNestedStackauthNestedStackResource699DB456Outputsamplifyaceplatformdannywilsonsandbox62ec12a132authamplifyAuthunauthenticatedUserRoleEAFB7608Ref": {
+      "Ref": "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132authNestedStackauthNestedStackResource699DB456Outputsamplifyaceplatformdannywilsonsandbox62ec12a132authamplifyAuthunauthenticatedUserRoleEAFB7608Ref"
+     },
+     "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132authNestedStackauthNestedStackResource699DB456Outputsamplifyaceplatformdannywilsonsandbox62ec12a132authamplifyAuthIdentityPool856F4105Ref": {
+      "Ref": "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132authNestedStackauthNestedStackResource699DB456Outputsamplifyaceplatformdannywilsonsandbox62ec12a132authamplifyAuthIdentityPool856F4105Ref"
+     }
+    },
+    "Tags": [
+     {
+      "Key": "amplify:deployment-type",
+      "Value": "sandbox"
+     },
+     {
+      "Key": "amplify:friendly-name",
+      "Value": "amplifyData"
+     },
+     {
+      "Key": "created-by",
+      "Value": "amplify"
+     }
+    ],
+    "TemplateURL": {
+     "Fn::Join": [
+      "",
+      [
+       "https://s3.",
+       {
+        "Ref": "AWS::Region"
+       },
+       ".",
+       {
+        "Ref": "AWS::URLSuffix"
+       },
+       "/",
+       {
+        "Fn::Sub": "cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}"
+       },
+       "/16064b439c076b96c33225f68c0007064cfcf52942456a7bf45b9c53833dba59.json"
+      ]
+     ]
+    }
+   },
+   "DependsOn": [
+    "amplifyDataGraphQLAPITransformerSchemaFF50A789"
+   ],
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-aceplatform-dannywilson-sandbox-62ec12a132/data/amplifyData/Client.NestedStack/Client.NestedStackResource",
+    "aws:asset:path": "amplifyaceplatformdannywilsonsandbox62ec12a132dataamplifyDataClientF408F128.nested.template.json",
+    "aws:asset:property": "TemplateURL"
+   }
+  },
+  "amplifyDataEquipmentNestedStackEquipmentNestedStackResource5C0A9866": {
+   "Type": "AWS::CloudFormation::Stack",
+   "Properties": {
+    "Parameters": {
+     "DynamoDBModelTableReadIOPS": {
+      "Ref": "DynamoDBModelTableReadIOPS"
+     },
+     "DynamoDBModelTableWriteIOPS": {
+      "Ref": "DynamoDBModelTableWriteIOPS"
+     },
+     "DynamoDBBillingMode": {
+      "Ref": "DynamoDBBillingMode"
+     },
+     "DynamoDBEnablePointInTimeRecovery": {
+      "Ref": "DynamoDBEnablePointInTimeRecovery"
+     },
+     "DynamoDBEnableServerSideEncryption": {
+      "Ref": "DynamoDBEnableServerSideEncryption"
+     },
+     "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132dataamplifyDataAmplifyTableManagerNestedStackAmplifyTableManagerNestedStackResource8CF4AB38Outputsamplifyaceplatformdannywilsonsandbox62ec12a132dataamplifyDataAmplifyTableManagerTableC1D129B2": {
+      "Fn::GetAtt": [
+       "amplifyDataAmplifyTableManagerNestedStackAmplifyTableManagerNestedStackResource86290833",
+       "Outputs.amplifyaceplatformdannywilsonsandbox62ec12a132dataamplifyDataAmplifyTableManagerTableManagerCustomProviderframeworkonEvent9DE7A441Arn"
+      ]
+     },
+     "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132dataamplifyDataGraphQLAPI1643E516ApiId": {
+      "Fn::GetAtt": [
+       "amplifyDataGraphQLAPI42A6FA33",
+       "ApiId"
+      ]
+     },
+     "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132dataamplifyDataGraphQLAPINONEDS8ED56022Name": {
+      "Fn::GetAtt": [
+       "amplifyDataGraphQLAPINONEDS684BF699",
+       "Name"
+      ]
+     },
+     "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132authNestedStackauthNestedStackResource699DB456Outputsamplifyaceplatformdannywilsonsandbox62ec12a132authamplifyAuthauthenticatedUserRole8F54B8ECRef": {
+      "Ref": "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132authNestedStackauthNestedStackResource699DB456Outputsamplifyaceplatformdannywilsonsandbox62ec12a132authamplifyAuthauthenticatedUserRole8F54B8ECRef"
+     },
+     "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132authNestedStackauthNestedStackResource699DB456Outputsamplifyaceplatformdannywilsonsandbox62ec12a132authamplifyAuthunauthenticatedUserRoleEAFB7608Ref": {
+      "Ref": "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132authNestedStackauthNestedStackResource699DB456Outputsamplifyaceplatformdannywilsonsandbox62ec12a132authamplifyAuthunauthenticatedUserRoleEAFB7608Ref"
+     },
+     "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132authNestedStackauthNestedStackResource699DB456Outputsamplifyaceplatformdannywilsonsandbox62ec12a132authamplifyAuthIdentityPool856F4105Ref": {
+      "Ref": "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132authNestedStackauthNestedStackResource699DB456Outputsamplifyaceplatformdannywilsonsandbox62ec12a132authamplifyAuthIdentityPool856F4105Ref"
+     }
+    },
+    "Tags": [
+     {
+      "Key": "amplify:deployment-type",
+      "Value": "sandbox"
+     },
+     {
+      "Key": "amplify:friendly-name",
+      "Value": "amplifyData"
+     },
+     {
+      "Key": "created-by",
+      "Value": "amplify"
+     }
+    ],
+    "TemplateURL": {
+     "Fn::Join": [
+      "",
+      [
+       "https://s3.",
+       {
+        "Ref": "AWS::Region"
+       },
+       ".",
+       {
+        "Ref": "AWS::URLSuffix"
+       },
+       "/",
+       {
+        "Fn::Sub": "cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}"
+       },
+       "/86d0e895c266049276e8b422b194d19840d05cc144b1371cf11e05d5668ee365.json"
+      ]
+     ]
+    }
+   },
+   "DependsOn": [
+    "amplifyDataGraphQLAPITransformerSchemaFF50A789"
+   ],
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-aceplatform-dannywilson-sandbox-62ec12a132/data/amplifyData/Equipment.NestedStack/Equipment.NestedStackResource",
+    "aws:asset:path": "amplifyaceplatformdannywilsonsandbox62ec12a132dataamplifyDataEquipment1DCD6F52.nested.template.json",
+    "aws:asset:property": "TemplateURL"
+   }
+  },
+  "amplifyDataInvoiceNestedStackInvoiceNestedStackResourceD25A8A4B": {
+   "Type": "AWS::CloudFormation::Stack",
+   "Properties": {
+    "Parameters": {
+     "DynamoDBModelTableReadIOPS": {
+      "Ref": "DynamoDBModelTableReadIOPS"
+     },
+     "DynamoDBModelTableWriteIOPS": {
+      "Ref": "DynamoDBModelTableWriteIOPS"
+     },
+     "DynamoDBBillingMode": {
+      "Ref": "DynamoDBBillingMode"
+     },
+     "DynamoDBEnablePointInTimeRecovery": {
+      "Ref": "DynamoDBEnablePointInTimeRecovery"
+     },
+     "DynamoDBEnableServerSideEncryption": {
+      "Ref": "DynamoDBEnableServerSideEncryption"
+     },
+     "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132dataamplifyDataAmplifyTableManagerNestedStackAmplifyTableManagerNestedStackResource8CF4AB38Outputsamplifyaceplatformdannywilsonsandbox62ec12a132dataamplifyDataAmplifyTableManagerTableC1D129B2": {
+      "Fn::GetAtt": [
+       "amplifyDataAmplifyTableManagerNestedStackAmplifyTableManagerNestedStackResource86290833",
+       "Outputs.amplifyaceplatformdannywilsonsandbox62ec12a132dataamplifyDataAmplifyTableManagerTableManagerCustomProviderframeworkonEvent9DE7A441Arn"
+      ]
+     },
+     "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132dataamplifyDataGraphQLAPI1643E516ApiId": {
+      "Fn::GetAtt": [
+       "amplifyDataGraphQLAPI42A6FA33",
+       "ApiId"
+      ]
+     },
+     "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132dataamplifyDataGraphQLAPINONEDS8ED56022Name": {
+      "Fn::GetAtt": [
+       "amplifyDataGraphQLAPINONEDS684BF699",
+       "Name"
+      ]
+     },
+     "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132authNestedStackauthNestedStackResource699DB456Outputsamplifyaceplatformdannywilsonsandbox62ec12a132authamplifyAuthauthenticatedUserRole8F54B8ECRef": {
+      "Ref": "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132authNestedStackauthNestedStackResource699DB456Outputsamplifyaceplatformdannywilsonsandbox62ec12a132authamplifyAuthauthenticatedUserRole8F54B8ECRef"
+     },
+     "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132authNestedStackauthNestedStackResource699DB456Outputsamplifyaceplatformdannywilsonsandbox62ec12a132authamplifyAuthunauthenticatedUserRoleEAFB7608Ref": {
+      "Ref": "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132authNestedStackauthNestedStackResource699DB456Outputsamplifyaceplatformdannywilsonsandbox62ec12a132authamplifyAuthunauthenticatedUserRoleEAFB7608Ref"
+     },
+     "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132authNestedStackauthNestedStackResource699DB456Outputsamplifyaceplatformdannywilsonsandbox62ec12a132authamplifyAuthIdentityPool856F4105Ref": {
+      "Ref": "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132authNestedStackauthNestedStackResource699DB456Outputsamplifyaceplatformdannywilsonsandbox62ec12a132authamplifyAuthIdentityPool856F4105Ref"
+     }
+    },
+    "Tags": [
+     {
+      "Key": "amplify:deployment-type",
+      "Value": "sandbox"
+     },
+     {
+      "Key": "amplify:friendly-name",
+      "Value": "amplifyData"
+     },
+     {
+      "Key": "created-by",
+      "Value": "amplify"
+     }
+    ],
+    "TemplateURL": {
+     "Fn::Join": [
+      "",
+      [
+       "https://s3.",
+       {
+        "Ref": "AWS::Region"
+       },
+       ".",
+       {
+        "Ref": "AWS::URLSuffix"
+       },
+       "/",
+       {
+        "Fn::Sub": "cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}"
+       },
+       "/43878e195c04fb7a575f0daa0896dca2c4917ee9213e5ceda5a5c80823df70ec.json"
+      ]
+     ]
+    }
+   },
+   "DependsOn": [
+    "amplifyDataGraphQLAPITransformerSchemaFF50A789"
+   ],
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-aceplatform-dannywilson-sandbox-62ec12a132/data/amplifyData/Invoice.NestedStack/Invoice.NestedStackResource",
+    "aws:asset:path": "amplifyaceplatformdannywilsonsandbox62ec12a132dataamplifyDataInvoice77D0429D.nested.template.json",
+    "aws:asset:property": "TemplateURL"
+   }
+  },
+  "amplifyDataCrewMemberNestedStackCrewMemberNestedStackResource445D2614": {
+   "Type": "AWS::CloudFormation::Stack",
+   "Properties": {
+    "Parameters": {
+     "DynamoDBModelTableReadIOPS": {
+      "Ref": "DynamoDBModelTableReadIOPS"
+     },
+     "DynamoDBModelTableWriteIOPS": {
+      "Ref": "DynamoDBModelTableWriteIOPS"
+     },
+     "DynamoDBBillingMode": {
+      "Ref": "DynamoDBBillingMode"
+     },
+     "DynamoDBEnablePointInTimeRecovery": {
+      "Ref": "DynamoDBEnablePointInTimeRecovery"
+     },
+     "DynamoDBEnableServerSideEncryption": {
+      "Ref": "DynamoDBEnableServerSideEncryption"
+     },
+     "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132dataamplifyDataAmplifyTableManagerNestedStackAmplifyTableManagerNestedStackResource8CF4AB38Outputsamplifyaceplatformdannywilsonsandbox62ec12a132dataamplifyDataAmplifyTableManagerTableC1D129B2": {
+      "Fn::GetAtt": [
+       "amplifyDataAmplifyTableManagerNestedStackAmplifyTableManagerNestedStackResource86290833",
+       "Outputs.amplifyaceplatformdannywilsonsandbox62ec12a132dataamplifyDataAmplifyTableManagerTableManagerCustomProviderframeworkonEvent9DE7A441Arn"
+      ]
+     },
+     "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132dataamplifyDataGraphQLAPI1643E516ApiId": {
+      "Fn::GetAtt": [
+       "amplifyDataGraphQLAPI42A6FA33",
+       "ApiId"
+      ]
+     },
+     "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132dataamplifyDataGraphQLAPINONEDS8ED56022Name": {
+      "Fn::GetAtt": [
+       "amplifyDataGraphQLAPINONEDS684BF699",
+       "Name"
+      ]
+     },
+     "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132authNestedStackauthNestedStackResource699DB456Outputsamplifyaceplatformdannywilsonsandbox62ec12a132authamplifyAuthauthenticatedUserRole8F54B8ECRef": {
+      "Ref": "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132authNestedStackauthNestedStackResource699DB456Outputsamplifyaceplatformdannywilsonsandbox62ec12a132authamplifyAuthauthenticatedUserRole8F54B8ECRef"
+     },
+     "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132authNestedStackauthNestedStackResource699DB456Outputsamplifyaceplatformdannywilsonsandbox62ec12a132authamplifyAuthunauthenticatedUserRoleEAFB7608Ref": {
+      "Ref": "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132authNestedStackauthNestedStackResource699DB456Outputsamplifyaceplatformdannywilsonsandbox62ec12a132authamplifyAuthunauthenticatedUserRoleEAFB7608Ref"
+     },
+     "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132authNestedStackauthNestedStackResource699DB456Outputsamplifyaceplatformdannywilsonsandbox62ec12a132authamplifyAuthIdentityPool856F4105Ref": {
+      "Ref": "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132authNestedStackauthNestedStackResource699DB456Outputsamplifyaceplatformdannywilsonsandbox62ec12a132authamplifyAuthIdentityPool856F4105Ref"
+     }
+    },
+    "Tags": [
+     {
+      "Key": "amplify:deployment-type",
+      "Value": "sandbox"
+     },
+     {
+      "Key": "amplify:friendly-name",
+      "Value": "amplifyData"
+     },
+     {
+      "Key": "created-by",
+      "Value": "amplify"
+     }
+    ],
+    "TemplateURL": {
+     "Fn::Join": [
+      "",
+      [
+       "https://s3.",
+       {
+        "Ref": "AWS::Region"
+       },
+       ".",
+       {
+        "Ref": "AWS::URLSuffix"
+       },
+       "/",
+       {
+        "Fn::Sub": "cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}"
+       },
+       "/d6767b6aa5a7eb5af404d189b7976743fcc020b3721080da83e172fa812ab32f.json"
+      ]
+     ]
+    }
+   },
+   "DependsOn": [
+    "amplifyDataGraphQLAPITransformerSchemaFF50A789"
+   ],
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-aceplatform-dannywilson-sandbox-62ec12a132/data/amplifyData/CrewMember.NestedStack/CrewMember.NestedStackResource",
+    "aws:asset:path": "amplifyaceplatformdannywilsonsandbox62ec12a132dataamplifyDataCrewMember98211F7A.nested.template.json",
+    "aws:asset:property": "TemplateURL"
+   }
+  },
+  "amplifyDataMessageNestedStackMessageNestedStackResource9C4293E6": {
+   "Type": "AWS::CloudFormation::Stack",
+   "Properties": {
+    "Parameters": {
+     "DynamoDBModelTableReadIOPS": {
+      "Ref": "DynamoDBModelTableReadIOPS"
+     },
+     "DynamoDBModelTableWriteIOPS": {
+      "Ref": "DynamoDBModelTableWriteIOPS"
+     },
+     "DynamoDBBillingMode": {
+      "Ref": "DynamoDBBillingMode"
+     },
+     "DynamoDBEnablePointInTimeRecovery": {
+      "Ref": "DynamoDBEnablePointInTimeRecovery"
+     },
+     "DynamoDBEnableServerSideEncryption": {
+      "Ref": "DynamoDBEnableServerSideEncryption"
+     },
+     "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132dataamplifyDataAmplifyTableManagerNestedStackAmplifyTableManagerNestedStackResource8CF4AB38Outputsamplifyaceplatformdannywilsonsandbox62ec12a132dataamplifyDataAmplifyTableManagerTableC1D129B2": {
+      "Fn::GetAtt": [
+       "amplifyDataAmplifyTableManagerNestedStackAmplifyTableManagerNestedStackResource86290833",
+       "Outputs.amplifyaceplatformdannywilsonsandbox62ec12a132dataamplifyDataAmplifyTableManagerTableManagerCustomProviderframeworkonEvent9DE7A441Arn"
+      ]
+     },
+     "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132dataamplifyDataGraphQLAPI1643E516ApiId": {
+      "Fn::GetAtt": [
+       "amplifyDataGraphQLAPI42A6FA33",
+       "ApiId"
+      ]
+     },
+     "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132dataamplifyDataGraphQLAPINONEDS8ED56022Name": {
+      "Fn::GetAtt": [
+       "amplifyDataGraphQLAPINONEDS684BF699",
+       "Name"
+      ]
+     },
+     "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132authNestedStackauthNestedStackResource699DB456Outputsamplifyaceplatformdannywilsonsandbox62ec12a132authamplifyAuthauthenticatedUserRole8F54B8ECRef": {
+      "Ref": "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132authNestedStackauthNestedStackResource699DB456Outputsamplifyaceplatformdannywilsonsandbox62ec12a132authamplifyAuthauthenticatedUserRole8F54B8ECRef"
+     },
+     "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132authNestedStackauthNestedStackResource699DB456Outputsamplifyaceplatformdannywilsonsandbox62ec12a132authamplifyAuthunauthenticatedUserRoleEAFB7608Ref": {
+      "Ref": "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132authNestedStackauthNestedStackResource699DB456Outputsamplifyaceplatformdannywilsonsandbox62ec12a132authamplifyAuthunauthenticatedUserRoleEAFB7608Ref"
+     },
+     "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132authNestedStackauthNestedStackResource699DB456Outputsamplifyaceplatformdannywilsonsandbox62ec12a132authamplifyAuthIdentityPool856F4105Ref": {
+      "Ref": "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132authNestedStackauthNestedStackResource699DB456Outputsamplifyaceplatformdannywilsonsandbox62ec12a132authamplifyAuthIdentityPool856F4105Ref"
+     }
+    },
+    "Tags": [
+     {
+      "Key": "amplify:deployment-type",
+      "Value": "sandbox"
+     },
+     {
+      "Key": "amplify:friendly-name",
+      "Value": "amplifyData"
+     },
+     {
+      "Key": "created-by",
+      "Value": "amplify"
+     }
+    ],
+    "TemplateURL": {
+     "Fn::Join": [
+      "",
+      [
+       "https://s3.",
+       {
+        "Ref": "AWS::Region"
+       },
+       ".",
+       {
+        "Ref": "AWS::URLSuffix"
+       },
+       "/",
+       {
+        "Fn::Sub": "cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}"
+       },
+       "/85c8617dc421e2b09839d4912b5cd201d54e9bc993232e8a5d73c48de764d580.json"
+      ]
+     ]
+    }
+   },
+   "DependsOn": [
+    "amplifyDataGraphQLAPITransformerSchemaFF50A789"
+   ],
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-aceplatform-dannywilson-sandbox-62ec12a132/data/amplifyData/Message.NestedStack/Message.NestedStackResource",
+    "aws:asset:path": "amplifyaceplatformdannywilsonsandbox62ec12a132dataamplifyDataMessage568DA41E.nested.template.json",
+    "aws:asset:property": "TemplateURL"
+   }
+  },
+  "amplifyDataSubscriberNestedStackSubscriberNestedStackResource3EA7543A": {
+   "Type": "AWS::CloudFormation::Stack",
+   "Properties": {
+    "Parameters": {
+     "DynamoDBModelTableReadIOPS": {
+      "Ref": "DynamoDBModelTableReadIOPS"
+     },
+     "DynamoDBModelTableWriteIOPS": {
+      "Ref": "DynamoDBModelTableWriteIOPS"
+     },
+     "DynamoDBBillingMode": {
+      "Ref": "DynamoDBBillingMode"
+     },
+     "DynamoDBEnablePointInTimeRecovery": {
+      "Ref": "DynamoDBEnablePointInTimeRecovery"
+     },
+     "DynamoDBEnableServerSideEncryption": {
+      "Ref": "DynamoDBEnableServerSideEncryption"
+     },
+     "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132dataamplifyDataAmplifyTableManagerNestedStackAmplifyTableManagerNestedStackResource8CF4AB38Outputsamplifyaceplatformdannywilsonsandbox62ec12a132dataamplifyDataAmplifyTableManagerTableC1D129B2": {
+      "Fn::GetAtt": [
+       "amplifyDataAmplifyTableManagerNestedStackAmplifyTableManagerNestedStackResource86290833",
+       "Outputs.amplifyaceplatformdannywilsonsandbox62ec12a132dataamplifyDataAmplifyTableManagerTableManagerCustomProviderframeworkonEvent9DE7A441Arn"
+      ]
+     },
+     "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132dataamplifyDataGraphQLAPI1643E516ApiId": {
+      "Fn::GetAtt": [
+       "amplifyDataGraphQLAPI42A6FA33",
+       "ApiId"
+      ]
+     },
+     "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132dataamplifyDataGraphQLAPINONEDS8ED56022Name": {
+      "Fn::GetAtt": [
+       "amplifyDataGraphQLAPINONEDS684BF699",
+       "Name"
+      ]
+     },
+     "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132authNestedStackauthNestedStackResource699DB456Outputsamplifyaceplatformdannywilsonsandbox62ec12a132authamplifyAuthauthenticatedUserRole8F54B8ECRef": {
+      "Ref": "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132authNestedStackauthNestedStackResource699DB456Outputsamplifyaceplatformdannywilsonsandbox62ec12a132authamplifyAuthauthenticatedUserRole8F54B8ECRef"
+     },
+     "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132authNestedStackauthNestedStackResource699DB456Outputsamplifyaceplatformdannywilsonsandbox62ec12a132authamplifyAuthunauthenticatedUserRoleEAFB7608Ref": {
+      "Ref": "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132authNestedStackauthNestedStackResource699DB456Outputsamplifyaceplatformdannywilsonsandbox62ec12a132authamplifyAuthunauthenticatedUserRoleEAFB7608Ref"
+     },
+     "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132authNestedStackauthNestedStackResource699DB456Outputsamplifyaceplatformdannywilsonsandbox62ec12a132authamplifyAuthIdentityPool856F4105Ref": {
+      "Ref": "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132authNestedStackauthNestedStackResource699DB456Outputsamplifyaceplatformdannywilsonsandbox62ec12a132authamplifyAuthIdentityPool856F4105Ref"
+     }
+    },
+    "Tags": [
+     {
+      "Key": "amplify:deployment-type",
+      "Value": "sandbox"
+     },
+     {
+      "Key": "amplify:friendly-name",
+      "Value": "amplifyData"
+     },
+     {
+      "Key": "created-by",
+      "Value": "amplify"
+     }
+    ],
+    "TemplateURL": {
+     "Fn::Join": [
+      "",
+      [
+       "https://s3.",
+       {
+        "Ref": "AWS::Region"
+       },
+       ".",
+       {
+        "Ref": "AWS::URLSuffix"
+       },
+       "/",
+       {
+        "Fn::Sub": "cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}"
+       },
+       "/e9be79eb4feba0b19926ef266574f2dde5c0d61cb3b39876f9915986e90534e0.json"
+      ]
+     ]
+    }
+   },
+   "DependsOn": [
+    "amplifyDataGraphQLAPITransformerSchemaFF50A789"
+   ],
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-aceplatform-dannywilson-sandbox-62ec12a132/data/amplifyData/Subscriber.NestedStack/Subscriber.NestedStackResource",
+    "aws:asset:path": "amplifyaceplatformdannywilsonsandbox62ec12a132dataamplifyDataSubscriberBC926798.nested.template.json",
+    "aws:asset:property": "TemplateURL"
+   }
+  },
+  "amplifyDataNotificationNestedStackNotificationNestedStackResource648CCF39": {
+   "Type": "AWS::CloudFormation::Stack",
+   "Properties": {
+    "Parameters": {
+     "DynamoDBModelTableReadIOPS": {
+      "Ref": "DynamoDBModelTableReadIOPS"
+     },
+     "DynamoDBModelTableWriteIOPS": {
+      "Ref": "DynamoDBModelTableWriteIOPS"
+     },
+     "DynamoDBBillingMode": {
+      "Ref": "DynamoDBBillingMode"
+     },
+     "DynamoDBEnablePointInTimeRecovery": {
+      "Ref": "DynamoDBEnablePointInTimeRecovery"
+     },
+     "DynamoDBEnableServerSideEncryption": {
+      "Ref": "DynamoDBEnableServerSideEncryption"
+     },
+     "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132dataamplifyDataAmplifyTableManagerNestedStackAmplifyTableManagerNestedStackResource8CF4AB38Outputsamplifyaceplatformdannywilsonsandbox62ec12a132dataamplifyDataAmplifyTableManagerTableC1D129B2": {
+      "Fn::GetAtt": [
+       "amplifyDataAmplifyTableManagerNestedStackAmplifyTableManagerNestedStackResource86290833",
+       "Outputs.amplifyaceplatformdannywilsonsandbox62ec12a132dataamplifyDataAmplifyTableManagerTableManagerCustomProviderframeworkonEvent9DE7A441Arn"
+      ]
+     },
+     "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132dataamplifyDataGraphQLAPI1643E516ApiId": {
+      "Fn::GetAtt": [
+       "amplifyDataGraphQLAPI42A6FA33",
+       "ApiId"
+      ]
+     },
+     "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132dataamplifyDataGraphQLAPINONEDS8ED56022Name": {
+      "Fn::GetAtt": [
+       "amplifyDataGraphQLAPINONEDS684BF699",
+       "Name"
+      ]
+     },
+     "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132authNestedStackauthNestedStackResource699DB456Outputsamplifyaceplatformdannywilsonsandbox62ec12a132authamplifyAuthauthenticatedUserRole8F54B8ECRef": {
+      "Ref": "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132authNestedStackauthNestedStackResource699DB456Outputsamplifyaceplatformdannywilsonsandbox62ec12a132authamplifyAuthauthenticatedUserRole8F54B8ECRef"
+     },
+     "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132authNestedStackauthNestedStackResource699DB456Outputsamplifyaceplatformdannywilsonsandbox62ec12a132authamplifyAuthunauthenticatedUserRoleEAFB7608Ref": {
+      "Ref": "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132authNestedStackauthNestedStackResource699DB456Outputsamplifyaceplatformdannywilsonsandbox62ec12a132authamplifyAuthunauthenticatedUserRoleEAFB7608Ref"
+     },
+     "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132authNestedStackauthNestedStackResource699DB456Outputsamplifyaceplatformdannywilsonsandbox62ec12a132authamplifyAuthIdentityPool856F4105Ref": {
+      "Ref": "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132authNestedStackauthNestedStackResource699DB456Outputsamplifyaceplatformdannywilsonsandbox62ec12a132authamplifyAuthIdentityPool856F4105Ref"
+     }
+    },
+    "Tags": [
+     {
+      "Key": "amplify:deployment-type",
+      "Value": "sandbox"
+     },
+     {
+      "Key": "amplify:friendly-name",
+      "Value": "amplifyData"
+     },
+     {
+      "Key": "created-by",
+      "Value": "amplify"
+     }
+    ],
+    "TemplateURL": {
+     "Fn::Join": [
+      "",
+      [
+       "https://s3.",
+       {
+        "Ref": "AWS::Region"
+       },
+       ".",
+       {
+        "Ref": "AWS::URLSuffix"
+       },
+       "/",
+       {
+        "Fn::Sub": "cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}"
+       },
+       "/c330eb9631476f3fed742e4196e8a2042d17e04effb88339431817c3002ecadd.json"
+      ]
+     ]
+    }
+   },
+   "DependsOn": [
+    "amplifyDataGraphQLAPITransformerSchemaFF50A789"
+   ],
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-aceplatform-dannywilson-sandbox-62ec12a132/data/amplifyData/Notification.NestedStack/Notification.NestedStackResource",
+    "aws:asset:path": "amplifyaceplatformdannywilsonsandbox62ec12a132dataamplifyDataNotification17DC8D64.nested.template.json",
+    "aws:asset:property": "TemplateURL"
+   }
+  },
+  "amplifyDataConnectionStackNestedStackConnectionStackNestedStackResourceAB0F312B": {
+   "Type": "AWS::CloudFormation::Stack",
+   "Properties": {
+    "Parameters": {
+     "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132dataamplifyDataGraphQLAPI1643E516ApiId": {
+      "Fn::GetAtt": [
+       "amplifyDataGraphQLAPI42A6FA33",
+       "ApiId"
+      ]
+     },
+     "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132dataamplifyDataGraphQLAPINONEDS8ED56022Name": {
+      "Fn::GetAtt": [
+       "amplifyDataGraphQLAPINONEDS684BF699",
+       "Name"
+      ]
+     },
+     "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132dataamplifyDataMessageNestedStackMessageNestedStackResource905A83DEOutputsamplifyaceplatformdannywilsonsandbox62ec12a132dataamplifyDataMessageMessageDataSource5685BA19Name": {
+      "Fn::GetAtt": [
+       "amplifyDataMessageNestedStackMessageNestedStackResource9C4293E6",
+       "Outputs.amplifyaceplatformdannywilsonsandbox62ec12a132dataamplifyDataMessageMessageDataSource5685BA19Name"
+      ]
+     },
+     "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132dataamplifyDataMessageNestedStackMessageNestedStackResource905A83DEOutputsamplifyaceplatformdannywilsonsandbox62ec12a132dataamplifyDataMessageMessageTableB567E13ETableArn": {
+      "Fn::GetAtt": [
+       "amplifyDataMessageNestedStackMessageNestedStackResource9C4293E6",
+       "Outputs.amplifyaceplatformdannywilsonsandbox62ec12a132dataamplifyDataMessageMessageTableB567E13ETableArn"
+      ]
+     },
+     "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132authNestedStackauthNestedStackResource699DB456Outputsamplifyaceplatformdannywilsonsandbox62ec12a132authamplifyAuthauthenticatedUserRole8F54B8ECRef": {
+      "Ref": "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132authNestedStackauthNestedStackResource699DB456Outputsamplifyaceplatformdannywilsonsandbox62ec12a132authamplifyAuthauthenticatedUserRole8F54B8ECRef"
+     },
+     "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132authNestedStackauthNestedStackResource699DB456Outputsamplifyaceplatformdannywilsonsandbox62ec12a132authamplifyAuthunauthenticatedUserRoleEAFB7608Ref": {
+      "Ref": "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132authNestedStackauthNestedStackResource699DB456Outputsamplifyaceplatformdannywilsonsandbox62ec12a132authamplifyAuthunauthenticatedUserRoleEAFB7608Ref"
+     },
+     "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132authNestedStackauthNestedStackResource699DB456Outputsamplifyaceplatformdannywilsonsandbox62ec12a132authamplifyAuthIdentityPool856F4105Ref": {
+      "Ref": "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132authNestedStackauthNestedStackResource699DB456Outputsamplifyaceplatformdannywilsonsandbox62ec12a132authamplifyAuthIdentityPool856F4105Ref"
+     },
+     "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132dataamplifyDataGigNestedStackGigNestedStackResource9773DF1BOutputsamplifyaceplatformdannywilsonsandbox62ec12a132dataamplifyDataGigGigDataSource9052AC77Name": {
+      "Fn::GetAtt": [
+       "amplifyDataGigNestedStackGigNestedStackResourceBF5916CC",
+       "Outputs.amplifyaceplatformdannywilsonsandbox62ec12a132dataamplifyDataGigGigDataSource9052AC77Name"
+      ]
+     },
+     "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132dataamplifyDataGigNestedStackGigNestedStackResource9773DF1BOutputsamplifyaceplatformdannywilsonsandbox62ec12a132dataamplifyDataGigGigTable4E1CEBF0TableArn": {
+      "Fn::GetAtt": [
+       "amplifyDataGigNestedStackGigNestedStackResourceBF5916CC",
+       "Outputs.amplifyaceplatformdannywilsonsandbox62ec12a132dataamplifyDataGigGigTable4E1CEBF0TableArn"
+      ]
+     },
+     "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132dataamplifyDataInvoiceNestedStackInvoiceNestedStackResourceDF5534A7Outputsamplifyaceplatformdannywilsonsandbox62ec12a132dataamplifyDataInvoiceInvoiceDataSourceABC8FC22Name": {
+      "Fn::GetAtt": [
+       "amplifyDataInvoiceNestedStackInvoiceNestedStackResourceD25A8A4B",
+       "Outputs.amplifyaceplatformdannywilsonsandbox62ec12a132dataamplifyDataInvoiceInvoiceDataSourceABC8FC22Name"
+      ]
+     },
+     "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132dataamplifyDataInvoiceNestedStackInvoiceNestedStackResourceDF5534A7Outputsamplifyaceplatformdannywilsonsandbox62ec12a132dataamplifyDataInvoiceInvoiceTableC7FA6A30TableArn": {
+      "Fn::GetAtt": [
+       "amplifyDataInvoiceNestedStackInvoiceNestedStackResourceD25A8A4B",
+       "Outputs.amplifyaceplatformdannywilsonsandbox62ec12a132dataamplifyDataInvoiceInvoiceTableC7FA6A30TableArn"
+      ]
+     },
+     "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132dataamplifyDataClientNestedStackClientNestedStackResource80ADF285Outputsamplifyaceplatformdannywilsonsandbox62ec12a132dataamplifyDataClientClientDataSourceE799FA04Name": {
+      "Fn::GetAtt": [
+       "amplifyDataClientNestedStackClientNestedStackResource5C7F65E1",
+       "Outputs.amplifyaceplatformdannywilsonsandbox62ec12a132dataamplifyDataClientClientDataSourceE799FA04Name"
+      ]
+     },
+     "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132dataamplifyDataClientNestedStackClientNestedStackResource80ADF285Outputsamplifyaceplatformdannywilsonsandbox62ec12a132dataamplifyDataClientClientTable709255C0TableArn": {
+      "Fn::GetAtt": [
+       "amplifyDataClientNestedStackClientNestedStackResource5C7F65E1",
+       "Outputs.amplifyaceplatformdannywilsonsandbox62ec12a132dataamplifyDataClientClientTable709255C0TableArn"
+      ]
+     }
+    },
+    "Tags": [
+     {
+      "Key": "amplify:deployment-type",
+      "Value": "sandbox"
+     },
+     {
+      "Key": "amplify:friendly-name",
+      "Value": "amplifyData"
+     },
+     {
+      "Key": "created-by",
+      "Value": "amplify"
+     }
+    ],
+    "TemplateURL": {
+     "Fn::Join": [
+      "",
+      [
+       "https://s3.",
+       {
+        "Ref": "AWS::Region"
+       },
+       ".",
+       {
+        "Ref": "AWS::URLSuffix"
+       },
+       "/",
+       {
+        "Fn::Sub": "cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}"
+       },
+       "/6fa51995638053d2f4805f0d7a5b51d97fd646e37eaded8c8613ce98486db462.json"
+      ]
+     ]
+    }
+   },
+   "DependsOn": [
+    "amplifyDataClientNestedStackClientNestedStackResource5C7F65E1",
+    "amplifyDataGigNestedStackGigNestedStackResourceBF5916CC",
+    "amplifyDataGraphQLAPITransformerSchemaFF50A789",
+    "amplifyDataInvoiceNestedStackInvoiceNestedStackResourceD25A8A4B",
+    "amplifyDataMessageNestedStackMessageNestedStackResource9C4293E6"
+   ],
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-aceplatform-dannywilson-sandbox-62ec12a132/data/amplifyData/ConnectionStack.NestedStack/ConnectionStack.NestedStackResource",
+    "aws:asset:path": "amplifyaceplatformdannywilsonsandbox62ec12a132dataamplifyDataConnectionStack8A99D278.nested.template.json",
+    "aws:asset:property": "TemplateURL"
+   }
+  },
+  "amplifyDataAmplifyCodegenAssetsAmplifyCodegenAssetsBucket9CCB4ACA": {
+   "Type": "AWS::S3::Bucket",
+   "Properties": {
+    "CorsConfiguration": {
+     "CorsRules": [
+      {
+       "AllowedHeaders": [
+        "*"
+       ],
+       "AllowedMethods": [
+        "GET",
+        "HEAD"
+       ],
+       "AllowedOrigins": [
+        {
+         "Fn::Join": [
+          "",
+          [
+           "https://",
+           {
+            "Ref": "AWS::Region"
+           },
+           ".console.aws.amazon.com/amplify"
+          ]
+         ]
+        }
+       ]
+      }
+     ]
+    },
+    "Tags": [
+     {
+      "Key": "amplify:deployment-type",
+      "Value": "sandbox"
+     },
+     {
+      "Key": "amplify:friendly-name",
+      "Value": "amplifyData"
+     },
+     {
+      "Key": "aws-cdk:auto-delete-objects",
+      "Value": "true"
+     },
+     {
+      "Key": "aws-cdk:cr-owned:b2457717",
+      "Value": "true"
+     },
+     {
+      "Key": "created-by",
+      "Value": "amplify"
+     }
+    ]
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-aceplatform-dannywilson-sandbox-62ec12a132/data/amplifyData/AmplifyCodegenAssets/AmplifyCodegenAssetsBucket/Resource"
+   }
+  },
+  "amplifyDataAmplifyCodegenAssetsAmplifyCodegenAssetsBucketPolicyF1C1C548": {
+   "Type": "AWS::S3::BucketPolicy",
+   "Properties": {
+    "Bucket": {
+     "Ref": "amplifyDataAmplifyCodegenAssetsAmplifyCodegenAssetsBucket9CCB4ACA"
+    },
+    "PolicyDocument": {
+     "Statement": [
+      {
+       "Action": [
+        "s3:PutBucketPolicy",
+        "s3:GetBucket*",
+        "s3:List*",
+        "s3:DeleteObject*"
+       ],
+       "Effect": "Allow",
+       "Principal": {
+        "AWS": {
+         "Fn::GetAtt": [
+          "CustomS3AutoDeleteObjectsCustomResourceProviderRole3B1BD092",
+          "Arn"
+         ]
+        }
+       },
+       "Resource": [
+        {
+         "Fn::GetAtt": [
+          "amplifyDataAmplifyCodegenAssetsAmplifyCodegenAssetsBucket9CCB4ACA",
+          "Arn"
+         ]
+        },
+        {
+         "Fn::Join": [
+          "",
+          [
+           {
+            "Fn::GetAtt": [
+             "amplifyDataAmplifyCodegenAssetsAmplifyCodegenAssetsBucket9CCB4ACA",
+             "Arn"
+            ]
+           },
+           "/*"
+          ]
+         ]
+        }
+       ]
+      }
+     ],
+     "Version": "2012-10-17"
+    }
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-aceplatform-dannywilson-sandbox-62ec12a132/data/amplifyData/AmplifyCodegenAssets/AmplifyCodegenAssetsBucket/Policy/Resource"
+   }
+  },
+  "amplifyDataAmplifyCodegenAssetsAmplifyCodegenAssetsBucketAutoDeleteObjectsCustomResource437F26F5": {
+   "Type": "Custom::S3AutoDeleteObjects",
+   "Properties": {
+    "ServiceToken": {
+     "Fn::GetAtt": [
+      "CustomS3AutoDeleteObjectsCustomResourceProviderHandler9D90184F",
+      "Arn"
+     ]
+    },
+    "BucketName": {
+     "Ref": "amplifyDataAmplifyCodegenAssetsAmplifyCodegenAssetsBucket9CCB4ACA"
+    }
+   },
+   "DependsOn": [
+    "amplifyDataAmplifyCodegenAssetsAmplifyCodegenAssetsBucketPolicyF1C1C548"
+   ],
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-aceplatform-dannywilson-sandbox-62ec12a132/data/amplifyData/AmplifyCodegenAssets/AmplifyCodegenAssetsBucket/AutoDeleteObjectsCustomResource/Default"
+   }
+  },
+  "amplifyDataAmplifyCodegenAssetsAmplifyCodegenAssetsDeploymentAwsCliLayerE322F905": {
+   "Type": "AWS::Lambda::LayerVersion",
+   "Properties": {
+    "Content": {
+     "S3Bucket": {
+      "Fn::Sub": "cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}"
+     },
+     "S3Key": "a72522445441e9b66c2f16956c54d4786af8c61c156b80c48a6e7c32fcc49023.zip"
+    },
+    "Description": "/opt/awscli/aws"
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-aceplatform-dannywilson-sandbox-62ec12a132/data/amplifyData/AmplifyCodegenAssets/AmplifyCodegenAssetsDeployment/AwsCliLayer/Resource",
+    "aws:asset:path": "asset.a72522445441e9b66c2f16956c54d4786af8c61c156b80c48a6e7c32fcc49023.zip",
+    "aws:asset:is-bundled": false,
+    "aws:asset:property": "Content"
+   }
+  },
+  "amplifyDataAmplifyCodegenAssetsAmplifyCodegenAssetsDeploymentCustomResource1536MiB21775929": {
+   "Type": "Custom::CDKBucketDeployment",
+   "Properties": {
+    "ServiceToken": {
+     "Fn::GetAtt": [
+      "CustomCDKBucketDeployment8693BB64968944B69AAFB0CC9EB8756C1536MiBC5D8AB21",
+      "Arn"
+     ]
+    },
+    "SourceBucketNames": [
+     {
+      "Fn::Sub": "cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}"
+     }
+    ],
+    "SourceObjectKeys": [
+     "c63e613a166580e5a25fcda6970ceec2500c4c3f3f88537be69c848e9a2fdc0f.zip"
+    ],
+    "SourceMarkers": [
+     {}
+    ],
+    "DestinationBucketName": {
+     "Ref": "amplifyDataAmplifyCodegenAssetsAmplifyCodegenAssetsBucket9CCB4ACA"
+    },
+    "WaitForDistributionInvalidation": true,
+    "Prune": true,
+    "OutputObjectKeys": true,
+    "DestinationBucketArn": {
+     "Fn::GetAtt": [
+      "amplifyDataAmplifyCodegenAssetsAmplifyCodegenAssetsBucket9CCB4ACA",
+      "Arn"
+     ]
+    }
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-aceplatform-dannywilson-sandbox-62ec12a132/data/amplifyData/AmplifyCodegenAssets/AmplifyCodegenAssetsDeployment/CustomResource-1536MiB/Default"
+   }
+  },
+  "CustomS3AutoDeleteObjectsCustomResourceProviderRole3B1BD092": {
+   "Type": "AWS::IAM::Role",
+   "Properties": {
+    "AssumeRolePolicyDocument": {
+     "Version": "2012-10-17",
+     "Statement": [
+      {
+       "Action": "sts:AssumeRole",
+       "Effect": "Allow",
+       "Principal": {
+        "Service": "lambda.amazonaws.com"
+       }
+      }
+     ]
+    },
+    "ManagedPolicyArns": [
+     {
+      "Fn::Sub": "arn:${AWS::Partition}:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
+     }
+    ]
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-aceplatform-dannywilson-sandbox-62ec12a132/data/Custom::S3AutoDeleteObjectsCustomResourceProvider/Role"
+   }
+  },
+  "CustomS3AutoDeleteObjectsCustomResourceProviderHandler9D90184F": {
+   "Type": "AWS::Lambda::Function",
+   "Properties": {
+    "Code": {
+     "S3Bucket": {
+      "Fn::Sub": "cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}"
+     },
+     "S3Key": "faa95a81ae7d7373f3e1f242268f904eb748d8d0fdd306e8a6fe515a1905a7d6.zip"
+    },
+    "Timeout": 900,
+    "MemorySize": 128,
+    "Handler": "index.handler",
+    "Role": {
+     "Fn::GetAtt": [
+      "CustomS3AutoDeleteObjectsCustomResourceProviderRole3B1BD092",
+      "Arn"
+     ]
+    },
+    "Runtime": "nodejs24.x",
+    "Description": {
+     "Fn::Join": [
+      "",
+      [
+       "Lambda function for auto-deleting objects in ",
+       {
+        "Ref": "amplifyDataAmplifyCodegenAssetsAmplifyCodegenAssetsBucket9CCB4ACA"
+       },
+       " S3 bucket."
+      ]
+     ]
+    }
+   },
+   "DependsOn": [
+    "CustomS3AutoDeleteObjectsCustomResourceProviderRole3B1BD092"
+   ],
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-aceplatform-dannywilson-sandbox-62ec12a132/data/Custom::S3AutoDeleteObjectsCustomResourceProvider/Handler",
+    "aws:asset:path": "asset.faa95a81ae7d7373f3e1f242268f904eb748d8d0fdd306e8a6fe515a1905a7d6",
+    "aws:asset:property": "Code"
+   }
+  },
+  "CustomCDKBucketDeployment8693BB64968944B69AAFB0CC9EB8756C1536MiBServiceRoleA41FC8C2": {
+   "Type": "AWS::IAM::Role",
+   "Properties": {
+    "AssumeRolePolicyDocument": {
+     "Statement": [
+      {
+       "Action": "sts:AssumeRole",
+       "Effect": "Allow",
+       "Principal": {
+        "Service": "lambda.amazonaws.com"
+       }
+      }
+     ],
+     "Version": "2012-10-17"
+    },
+    "ManagedPolicyArns": [
+     {
+      "Fn::Join": [
+       "",
+       [
+        "arn:",
+        {
+         "Ref": "AWS::Partition"
+        },
+        ":iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
+       ]
+      ]
+     }
+    ],
+    "Tags": [
+     {
+      "Key": "amplify:deployment-type",
+      "Value": "sandbox"
+     },
+     {
+      "Key": "created-by",
+      "Value": "amplify"
+     }
+    ]
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-aceplatform-dannywilson-sandbox-62ec12a132/data/Custom::CDKBucketDeployment8693BB64968944B69AAFB0CC9EB8756C1536MiB/ServiceRole/Resource"
+   }
+  },
+  "CustomCDKBucketDeployment8693BB64968944B69AAFB0CC9EB8756C1536MiBServiceRoleDefaultPolicyFF1C635B": {
+   "Type": "AWS::IAM::Policy",
+   "Properties": {
+    "PolicyDocument": {
+     "Statement": [
+      {
+       "Action": [
+        "s3:GetObject*",
+        "s3:GetBucket*",
+        "s3:List*"
+       ],
+       "Effect": "Allow",
+       "Resource": [
+        {
+         "Fn::Join": [
+          "",
+          [
+           "arn:",
+           {
+            "Ref": "AWS::Partition"
+           },
+           ":s3:::",
+           {
+            "Fn::Sub": "cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}"
+           }
+          ]
+         ]
+        },
+        {
+         "Fn::Join": [
+          "",
+          [
+           "arn:",
+           {
+            "Ref": "AWS::Partition"
+           },
+           ":s3:::",
+           {
+            "Fn::Sub": "cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}"
+           },
+           "/*"
+          ]
+         ]
+        }
+       ]
+      },
+      {
+       "Action": [
+        "s3:GetObject*",
+        "s3:GetBucket*",
+        "s3:List*",
+        "s3:DeleteObject*",
+        "s3:PutObject",
+        "s3:PutObjectLegalHold",
+        "s3:PutObjectRetention",
+        "s3:PutObjectTagging",
+        "s3:PutObjectVersionTagging",
+        "s3:Abort*"
+       ],
+       "Effect": "Allow",
+       "Resource": [
+        {
+         "Fn::GetAtt": [
+          "amplifyDataAmplifyCodegenAssetsAmplifyCodegenAssetsBucket9CCB4ACA",
+          "Arn"
+         ]
+        },
+        {
+         "Fn::Join": [
+          "",
+          [
+           {
+            "Fn::GetAtt": [
+             "amplifyDataAmplifyCodegenAssetsAmplifyCodegenAssetsBucket9CCB4ACA",
+             "Arn"
+            ]
+           },
+           "/*"
+          ]
+         ]
+        }
+       ]
+      },
+      {
+       "Action": [
+        "s3:GetObject*",
+        "s3:GetBucket*",
+        "s3:List*",
+        "s3:DeleteObject*",
+        "s3:PutObject",
+        "s3:PutObjectLegalHold",
+        "s3:PutObjectRetention",
+        "s3:PutObjectTagging",
+        "s3:PutObjectVersionTagging",
+        "s3:Abort*"
+       ],
+       "Effect": "Allow",
+       "Resource": [
+        {
+         "Fn::GetAtt": [
+          "modelIntrospectionSchemaBucketF566B665",
+          "Arn"
+         ]
+        },
+        {
+         "Fn::Join": [
+          "",
+          [
+           {
+            "Fn::GetAtt": [
+             "modelIntrospectionSchemaBucketF566B665",
+             "Arn"
+            ]
+           },
+           "/*"
+          ]
+         ]
+        }
+       ]
+      }
+     ],
+     "Version": "2012-10-17"
+    },
+    "PolicyName": "CustomCDKBucketDeployment8693BB64968944B69AAFB0CC9EB8756C1536MiBServiceRoleDefaultPolicyFF1C635B",
+    "Roles": [
+     {
+      "Ref": "CustomCDKBucketDeployment8693BB64968944B69AAFB0CC9EB8756C1536MiBServiceRoleA41FC8C2"
+     }
+    ]
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-aceplatform-dannywilson-sandbox-62ec12a132/data/Custom::CDKBucketDeployment8693BB64968944B69AAFB0CC9EB8756C1536MiB/ServiceRole/DefaultPolicy/Resource"
+   }
+  },
+  "CustomCDKBucketDeployment8693BB64968944B69AAFB0CC9EB8756C1536MiBC5D8AB21": {
+   "Type": "AWS::Lambda::Function",
+   "Properties": {
+    "Code": {
+     "S3Bucket": {
+      "Fn::Sub": "cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}"
+     },
+     "S3Key": "97e9ebf0b174a5c8f7faa505739022b7f509edddffcab9211dcd08b759944c4f.zip"
+    },
+    "Environment": {
+     "Variables": {
+      "AWS_CA_BUNDLE": "/etc/pki/ca-trust/extracted/pem/tls-ca-bundle.pem"
+     }
+    },
+    "Handler": "index.handler",
+    "Layers": [
+     {
+      "Ref": "amplifyDataAmplifyCodegenAssetsAmplifyCodegenAssetsDeploymentAwsCliLayerE322F905"
+     }
+    ],
+    "MemorySize": 1536,
+    "Role": {
+     "Fn::GetAtt": [
+      "CustomCDKBucketDeployment8693BB64968944B69AAFB0CC9EB8756C1536MiBServiceRoleA41FC8C2",
+      "Arn"
+     ]
+    },
+    "Runtime": "python3.13",
+    "Tags": [
+     {
+      "Key": "amplify:deployment-type",
+      "Value": "sandbox"
+     },
+     {
+      "Key": "created-by",
+      "Value": "amplify"
+     }
+    ],
+    "Timeout": 900
+   },
+   "DependsOn": [
+    "CustomCDKBucketDeployment8693BB64968944B69AAFB0CC9EB8756C1536MiBServiceRoleDefaultPolicyFF1C635B",
+    "CustomCDKBucketDeployment8693BB64968944B69AAFB0CC9EB8756C1536MiBServiceRoleA41FC8C2"
+   ],
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-aceplatform-dannywilson-sandbox-62ec12a132/data/Custom::CDKBucketDeployment8693BB64968944B69AAFB0CC9EB8756C1536MiB/Resource",
+    "aws:asset:path": "asset.97e9ebf0b174a5c8f7faa505739022b7f509edddffcab9211dcd08b759944c4f",
+    "aws:asset:is-bundled": false,
+    "aws:asset:property": "Code"
+   }
+  },
+  "modelIntrospectionSchemaBucketF566B665": {
+   "Type": "AWS::S3::Bucket",
+   "Properties": {
+    "Tags": [
+     {
+      "Key": "amplify:deployment-type",
+      "Value": "sandbox"
+     },
+     {
+      "Key": "aws-cdk:auto-delete-objects",
+      "Value": "true"
+     },
+     {
+      "Key": "aws-cdk:cr-owned:3d9121d2",
+      "Value": "true"
+     },
+     {
+      "Key": "created-by",
+      "Value": "amplify"
+     }
+    ]
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-aceplatform-dannywilson-sandbox-62ec12a132/data/modelIntrospectionSchemaBucket/Resource"
+   }
+  },
+  "modelIntrospectionSchemaBucketPolicy4DAB0D15": {
+   "Type": "AWS::S3::BucketPolicy",
+   "Properties": {
+    "Bucket": {
+     "Ref": "modelIntrospectionSchemaBucketF566B665"
+    },
+    "PolicyDocument": {
+     "Statement": [
+      {
+       "Action": "s3:*",
+       "Condition": {
+        "Bool": {
+         "aws:SecureTransport": "false"
+        }
+       },
+       "Effect": "Deny",
+       "Principal": {
+        "AWS": "*"
+       },
+       "Resource": [
+        {
+         "Fn::GetAtt": [
+          "modelIntrospectionSchemaBucketF566B665",
+          "Arn"
+         ]
+        },
+        {
+         "Fn::Join": [
+          "",
+          [
+           {
+            "Fn::GetAtt": [
+             "modelIntrospectionSchemaBucketF566B665",
+             "Arn"
+            ]
+           },
+           "/*"
+          ]
+         ]
+        }
+       ]
+      },
+      {
+       "Action": [
+        "s3:PutBucketPolicy",
+        "s3:GetBucket*",
+        "s3:List*",
+        "s3:DeleteObject*"
+       ],
+       "Effect": "Allow",
+       "Principal": {
+        "AWS": {
+         "Fn::GetAtt": [
+          "CustomS3AutoDeleteObjectsCustomResourceProviderRole3B1BD092",
+          "Arn"
+         ]
+        }
+       },
+       "Resource": [
+        {
+         "Fn::GetAtt": [
+          "modelIntrospectionSchemaBucketF566B665",
+          "Arn"
+         ]
+        },
+        {
+         "Fn::Join": [
+          "",
+          [
+           {
+            "Fn::GetAtt": [
+             "modelIntrospectionSchemaBucketF566B665",
+             "Arn"
+            ]
+           },
+           "/*"
+          ]
+         ]
+        }
+       ]
+      }
+     ],
+     "Version": "2012-10-17"
+    }
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-aceplatform-dannywilson-sandbox-62ec12a132/data/modelIntrospectionSchemaBucket/Policy/Resource"
+   }
+  },
+  "modelIntrospectionSchemaBucketAutoDeleteObjectsCustomResourceFE57309F": {
+   "Type": "Custom::S3AutoDeleteObjects",
+   "Properties": {
+    "ServiceToken": {
+     "Fn::GetAtt": [
+      "CustomS3AutoDeleteObjectsCustomResourceProviderHandler9D90184F",
+      "Arn"
+     ]
+    },
+    "BucketName": {
+     "Ref": "modelIntrospectionSchemaBucketF566B665"
+    }
+   },
+   "DependsOn": [
+    "modelIntrospectionSchemaBucketPolicy4DAB0D15"
+   ],
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-aceplatform-dannywilson-sandbox-62ec12a132/data/modelIntrospectionSchemaBucket/AutoDeleteObjectsCustomResource/Default"
+   }
+  },
+  "modelIntrospectionSchemaBucketDeploymentAwsCliLayer13C432F7": {
+   "Type": "AWS::Lambda::LayerVersion",
+   "Properties": {
+    "Content": {
+     "S3Bucket": {
+      "Fn::Sub": "cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}"
+     },
+     "S3Key": "a72522445441e9b66c2f16956c54d4786af8c61c156b80c48a6e7c32fcc49023.zip"
+    },
+    "Description": "/opt/awscli/aws"
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-aceplatform-dannywilson-sandbox-62ec12a132/data/modelIntrospectionSchemaBucketDeployment/AwsCliLayer/Resource",
+    "aws:asset:path": "asset.a72522445441e9b66c2f16956c54d4786af8c61c156b80c48a6e7c32fcc49023.zip",
+    "aws:asset:is-bundled": false,
+    "aws:asset:property": "Content"
+   }
+  },
+  "modelIntrospectionSchemaBucketDeploymentCustomResource1536MiB104B97EC": {
+   "Type": "Custom::CDKBucketDeployment",
+   "Properties": {
+    "ServiceToken": {
+     "Fn::GetAtt": [
+      "CustomCDKBucketDeployment8693BB64968944B69AAFB0CC9EB8756C1536MiBC5D8AB21",
+      "Arn"
+     ]
+    },
+    "SourceBucketNames": [
+     {
+      "Fn::Sub": "cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}"
+     }
+    ],
+    "SourceObjectKeys": [
+     "50dcdcca00197b0309fa6b2bfb3755302c7803dfb8a34f141e59931a41c34bbd.zip"
+    ],
+    "SourceMarkers": [
+     {}
+    ],
+    "DestinationBucketName": {
+     "Ref": "modelIntrospectionSchemaBucketF566B665"
+    },
+    "WaitForDistributionInvalidation": true,
+    "Prune": true,
+    "OutputObjectKeys": true
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-aceplatform-dannywilson-sandbox-62ec12a132/data/modelIntrospectionSchemaBucketDeployment/CustomResource-1536MiB/Default"
+   }
+  },
+  "AMPLIFYDATAGRAPHQLENDPOINTParameter1C2CBB16": {
+   "Type": "AWS::SSM::Parameter",
+   "Properties": {
+    "Name": "/amplify/resource_reference/aceplatform/dannywilson-sandbox-62ec12a132/AMPLIFY_DATA_GRAPHQL_ENDPOINT",
+    "Tags": {
+     "amplify:deployment-type": "sandbox",
+     "created-by": "amplify"
+    },
+    "Type": "String",
+    "Value": {
+     "Fn::GetAtt": [
+      "amplifyDataGraphQLAPI42A6FA33",
+      "GraphQLUrl"
+     ]
+    }
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-aceplatform-dannywilson-sandbox-62ec12a132/data/AMPLIFY_DATA_GRAPHQL_ENDPOINTParameter/Resource"
+   }
+  },
+  "AMPLIFYDATAMODELINTROSPECTIONSCHEMABUCKETNAMEParameter47BF4F44": {
+   "Type": "AWS::SSM::Parameter",
+   "Properties": {
+    "Name": "/amplify/resource_reference/aceplatform/dannywilson-sandbox-62ec12a132/AMPLIFY_DATA_MODEL_INTROSPECTION_SCHEMA_BUCKET_NAME",
+    "Tags": {
+     "amplify:deployment-type": "sandbox",
+     "created-by": "amplify"
+    },
+    "Type": "String",
+    "Value": {
+     "Ref": "modelIntrospectionSchemaBucketF566B665"
+    }
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-aceplatform-dannywilson-sandbox-62ec12a132/data/AMPLIFY_DATA_MODEL_INTROSPECTION_SCHEMA_BUCKET_NAMEParameter/Resource"
+   }
+  },
+  "AMPLIFYDATAMODELINTROSPECTIONSCHEMAKEYParameterB6AEAE8A": {
+   "Type": "AWS::SSM::Parameter",
+   "Properties": {
+    "Name": "/amplify/resource_reference/aceplatform/dannywilson-sandbox-62ec12a132/AMPLIFY_DATA_MODEL_INTROSPECTION_SCHEMA_KEY",
+    "Tags": {
+     "amplify:deployment-type": "sandbox",
+     "created-by": "amplify"
+    },
+    "Type": "String",
+    "Value": "modelIntrospectionSchema.json"
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-aceplatform-dannywilson-sandbox-62ec12a132/data/AMPLIFY_DATA_MODEL_INTROSPECTION_SCHEMA_KEYParameter/Resource"
+   }
+  },
+  "AMPLIFYDATADEFAULTNAMEParameterE7C23CC4": {
+   "Type": "AWS::SSM::Parameter",
+   "Properties": {
+    "Name": "/amplify/resource_reference/aceplatform/dannywilson-sandbox-62ec12a132/AMPLIFY_DATA_DEFAULT_NAME",
+    "Tags": {
+     "amplify:deployment-type": "sandbox",
+     "created-by": "amplify"
+    },
+    "Type": "String",
+    "Value": "amplifyData"
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-aceplatform-dannywilson-sandbox-62ec12a132/data/AMPLIFY_DATA_DEFAULT_NAMEParameter/Resource"
+   }
+  },
+  "CDKMetadata": {
+   "Type": "AWS::CDK::Metadata",
+   "Properties": {
+    "Analytics": "v2:deflate64:H4sIAAAAAAAA/6WSy04rMQyGn4Wu0xx1kEBiN0wFGwSlI53NEarcjFvc5jLEGUoVzbsfZUJbLivEyv79x9YXJ4UsLgo5OYMdj1WzHWtayniPHLCpA6itmCO7zisUsONFhLblvVUy3npon1902dI1MIpqZYfK413Z0gdVq2c0IO6dxSkEqPOoamVPqhd8LuN1p7YYkpOzf3Fk6I3s6Gr0ES1B8LkcLJb5aNkFN0WNAR+WG1SBR734VfeTyNbMaVL7E1PWPyDLDXWAgAbtD8G+Nx+40sbT1haxwVa7fbLfm6bHggBmDCzLFHqhwSwbkLFa2TvYo/+LnslZUZNdawzO3nRWhVQ5JtXqWOwFgZFx7vTweEM8bSdnvWA2MtbBk13PwIPBgH7wD6Lvk8z/quo4OHP8XWnqIc+sC504F7BjpUmWO640DehiuFIdYE12/Wn+l6Ez716pQZ/3ZV2DcsN/XotCTi7l5GzDRGPf2UAG5TzH/zgZEZcPAwAA"
+   },
+   "Metadata": {
+    "aws:cdk:path": "amplify-aceplatform-dannywilson-sandbox-62ec12a132/data/CDKMetadata/Default"
+   },
+   "Condition": "CDKMetadataAvailable"
+  }
+ },
+ "Parameters": {
+  "DynamoDBModelTableReadIOPS": {
+   "Type": "Number",
+   "Default": 5,
+   "Description": "The number of read IOPS the table should support."
+  },
+  "DynamoDBModelTableWriteIOPS": {
+   "Type": "Number",
+   "Default": 5,
+   "Description": "The number of write IOPS the table should support."
+  },
+  "DynamoDBBillingMode": {
+   "Type": "String",
+   "Default": "PAY_PER_REQUEST",
+   "AllowedValues": [
+    "PAY_PER_REQUEST",
+    "PROVISIONED"
+   ],
+   "Description": "Configure @model types to create DynamoDB tables with PAY_PER_REQUEST or PROVISIONED billing modes."
+  },
+  "DynamoDBEnablePointInTimeRecovery": {
+   "Type": "String",
+   "Default": "false",
+   "AllowedValues": [
+    "true",
+    "false"
+   ],
+   "Description": "Whether to enable Point in Time Recovery on the table."
+  },
+  "DynamoDBEnableServerSideEncryption": {
+   "Type": "String",
+   "Default": "true",
+   "AllowedValues": [
+    "true",
+    "false"
+   ],
+   "Description": "Enable server side encryption powered by KMS."
+  },
+  "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132authNestedStackauthNestedStackResource699DB456Outputsamplifyaceplatformdannywilsonsandbox62ec12a132authamplifyAuthUserPool8646A376Ref": {
+   "Type": "String"
+  },
+  "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132authNestedStackauthNestedStackResource699DB456Outputsamplifyaceplatformdannywilsonsandbox62ec12a132authamplifyAuthauthenticatedUserRole8F54B8ECRef": {
+   "Type": "String"
+  },
+  "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132authNestedStackauthNestedStackResource699DB456Outputsamplifyaceplatformdannywilsonsandbox62ec12a132authamplifyAuthunauthenticatedUserRoleEAFB7608Ref": {
+   "Type": "String"
+  },
+  "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132authNestedStackauthNestedStackResource699DB456Outputsamplifyaceplatformdannywilsonsandbox62ec12a132authamplifyAuthIdentityPool856F4105Ref": {
+   "Type": "String"
+  }
+ },
+ "Conditions": {
+  "CDKMetadataAvailable": {
+   "Fn::Or": [
+    {
+     "Fn::Or": [
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "af-south-1"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "ap-east-1"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "ap-northeast-1"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "ap-northeast-2"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "ap-northeast-3"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "ap-south-1"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "ap-south-2"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "ap-southeast-1"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "ap-southeast-2"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "ap-southeast-3"
+       ]
+      }
+     ]
+    },
+    {
+     "Fn::Or": [
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "ap-southeast-4"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "ca-central-1"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "ca-west-1"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "cn-north-1"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "cn-northwest-1"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "eu-central-1"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "eu-central-2"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "eu-north-1"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "eu-south-1"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "eu-south-2"
+       ]
+      }
+     ]
+    },
+    {
+     "Fn::Or": [
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "eu-west-1"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "eu-west-2"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "eu-west-3"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "il-central-1"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "me-central-1"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "me-south-1"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "sa-east-1"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "us-east-1"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "us-east-2"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "us-west-1"
+       ]
+      }
+     ]
+    },
+    {
+     "Fn::Equals": [
+      {
+       "Ref": "AWS::Region"
+      },
+      "us-west-2"
+     ]
+    }
+   ]
+  }
+ },
+ "Outputs": {
+  "amplifyaceplatformdannywilsonsandbox62ec12a132dataamplifyDataGraphQLAPI1643E516ApiId": {
+   "Value": {
+    "Fn::GetAtt": [
+     "amplifyDataGraphQLAPI42A6FA33",
+     "ApiId"
+    ]
+   }
+  },
+  "amplifyaceplatformdannywilsonsandbox62ec12a132dataamplifyDataGraphQLAPI1643E516GraphQLUrl": {
+   "Value": {
+    "Fn::GetAtt": [
+     "amplifyDataGraphQLAPI42A6FA33",
+     "GraphQLUrl"
+    ]
+   }
+  },
+  "amplifyaceplatformdannywilsonsandbox62ec12a132dataamplifyDataAmplifyCodegenAssetsAmplifyCodegenAssetsDeploymentCustomResource1536MiBB740137BDestinationBucketArn": {
+   "Value": {
+    "Fn::GetAtt": [
+     "amplifyDataAmplifyCodegenAssetsAmplifyCodegenAssetsDeploymentCustomResource1536MiB21775929",
+     "DestinationBucketArn"
+    ]
+   }
+  }
+ }
+}

@@ -1,0 +1,2108 @@
+{
+ "Parameters": {
+  "DynamoDBModelTableReadIOPS": {
+   "Type": "Number",
+   "Default": 5,
+   "Description": "The number of read IOPS the table should support."
+  },
+  "DynamoDBModelTableWriteIOPS": {
+   "Type": "Number",
+   "Default": 5,
+   "Description": "The number of write IOPS the table should support."
+  },
+  "DynamoDBBillingMode": {
+   "Type": "String",
+   "Default": "PAY_PER_REQUEST",
+   "AllowedValues": [
+    "PAY_PER_REQUEST",
+    "PROVISIONED"
+   ],
+   "Description": "Configure @model types to create DynamoDB tables with PAY_PER_REQUEST or PROVISIONED billing modes."
+  },
+  "DynamoDBEnablePointInTimeRecovery": {
+   "Type": "String",
+   "Default": "false",
+   "AllowedValues": [
+    "true",
+    "false"
+   ],
+   "Description": "Whether to enable Point in Time Recovery on the table."
+  },
+  "DynamoDBEnableServerSideEncryption": {
+   "Type": "String",
+   "Default": "true",
+   "AllowedValues": [
+    "true",
+    "false"
+   ],
+   "Description": "Enable server side encryption powered by KMS."
+  },
+  "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132dataamplifyDataAmplifyTableManagerNestedStackAmplifyTableManagerNestedStackResource8CF4AB38Outputsamplifyaceplatformdannywilsonsandbox62ec12a132dataamplifyDataAmplifyTableManagerTableC1D129B2": {
+   "Type": "String"
+  },
+  "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132dataamplifyDataGraphQLAPI1643E516ApiId": {
+   "Type": "String"
+  },
+  "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132dataamplifyDataGraphQLAPINONEDS8ED56022Name": {
+   "Type": "String"
+  },
+  "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132authNestedStackauthNestedStackResource699DB456Outputsamplifyaceplatformdannywilsonsandbox62ec12a132authamplifyAuthauthenticatedUserRole8F54B8ECRef": {
+   "Type": "String"
+  },
+  "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132authNestedStackauthNestedStackResource699DB456Outputsamplifyaceplatformdannywilsonsandbox62ec12a132authamplifyAuthunauthenticatedUserRoleEAFB7608Ref": {
+   "Type": "String"
+  },
+  "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132authNestedStackauthNestedStackResource699DB456Outputsamplifyaceplatformdannywilsonsandbox62ec12a132authamplifyAuthIdentityPool856F4105Ref": {
+   "Type": "String"
+  }
+ },
+ "Conditions": {
+  "HasEnvironmentParameter": {
+   "Fn::Not": [
+    {
+     "Fn::Equals": [
+      "NONE",
+      "NONE"
+     ]
+    }
+   ]
+  },
+  "ShouldUsePayPerRequestBilling": {
+   "Fn::Equals": [
+    {
+     "Ref": "DynamoDBBillingMode"
+    },
+    "PAY_PER_REQUEST"
+   ]
+  },
+  "ShouldUsePointInTimeRecovery": {
+   "Fn::Equals": [
+    {
+     "Ref": "DynamoDBEnablePointInTimeRecovery"
+    },
+    "true"
+   ]
+  },
+  "CDKMetadataAvailable": {
+   "Fn::Or": [
+    {
+     "Fn::Or": [
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "af-south-1"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "ap-east-1"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "ap-northeast-1"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "ap-northeast-2"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "ap-northeast-3"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "ap-south-1"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "ap-south-2"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "ap-southeast-1"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "ap-southeast-2"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "ap-southeast-3"
+       ]
+      }
+     ]
+    },
+    {
+     "Fn::Or": [
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "ap-southeast-4"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "ca-central-1"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "ca-west-1"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "cn-north-1"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "cn-northwest-1"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "eu-central-1"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "eu-central-2"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "eu-north-1"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "eu-south-1"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "eu-south-2"
+       ]
+      }
+     ]
+    },
+    {
+     "Fn::Or": [
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "eu-west-1"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "eu-west-2"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "eu-west-3"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "il-central-1"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "me-central-1"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "me-south-1"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "sa-east-1"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "us-east-1"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "us-east-2"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "us-west-1"
+       ]
+      }
+     ]
+    },
+    {
+     "Fn::Equals": [
+      {
+       "Ref": "AWS::Region"
+      },
+      "us-west-2"
+     ]
+    }
+   ]
+  }
+ },
+ "Resources": {
+  "CrewMemberTable": {
+   "Type": "Custom::AmplifyDynamoDBTable",
+   "Properties": {
+    "ServiceToken": {
+     "Ref": "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132dataamplifyDataAmplifyTableManagerNestedStackAmplifyTableManagerNestedStackResource8CF4AB38Outputsamplifyaceplatformdannywilsonsandbox62ec12a132dataamplifyDataAmplifyTableManagerTableC1D129B2"
+    },
+    "tableName": {
+     "Fn::Join": [
+      "",
+      [
+       "CrewMember-",
+       {
+        "Ref": "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132dataamplifyDataGraphQLAPI1643E516ApiId"
+       },
+       "-NONE"
+      ]
+     ]
+    },
+    "attributeDefinitions": [
+     {
+      "attributeName": "id",
+      "attributeType": "S"
+     }
+    ],
+    "keySchema": [
+     {
+      "attributeName": "id",
+      "keyType": "HASH"
+     }
+    ],
+    "provisionedThroughput": {
+     "Fn::If": [
+      "ShouldUsePayPerRequestBilling",
+      {
+       "Ref": "AWS::NoValue"
+      },
+      {
+       "ReadCapacityUnits": {
+        "Ref": "DynamoDBModelTableReadIOPS"
+       },
+       "WriteCapacityUnits": {
+        "Ref": "DynamoDBModelTableWriteIOPS"
+       }
+      }
+     ]
+    },
+    "sseSpecification": {
+     "sseEnabled": false
+    },
+    "streamSpecification": {
+     "streamViewType": "NEW_AND_OLD_IMAGES"
+    },
+    "deletionProtectionEnabled": false,
+    "allowDestructiveGraphqlSchemaUpdates": true,
+    "replaceTableUponGsiUpdate": true,
+    "pointInTimeRecoverySpecification": {
+     "Fn::If": [
+      "ShouldUsePointInTimeRecovery",
+      {
+       "PointInTimeRecoveryEnabled": true
+      },
+      {
+       "Ref": "AWS::NoValue"
+      }
+     ]
+    },
+    "billingMode": {
+     "Fn::If": [
+      "ShouldUsePayPerRequestBilling",
+      "PAY_PER_REQUEST",
+      {
+       "Ref": "AWS::NoValue"
+      }
+     ]
+    }
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-aceplatform-dannywilson-sandbox-62ec12a132/data/amplifyData/CrewMember/CrewMemberTable/Default/Default"
+   }
+  },
+  "CrewMemberIAMRoleF103F3E9": {
+   "Type": "AWS::IAM::Role",
+   "Properties": {
+    "AssumeRolePolicyDocument": {
+     "Statement": [
+      {
+       "Action": "sts:AssumeRole",
+       "Effect": "Allow",
+       "Principal": {
+        "Service": "appsync.amazonaws.com"
+       }
+      }
+     ],
+     "Version": "2012-10-17"
+    },
+    "Policies": [
+     {
+      "PolicyDocument": {
+       "Statement": [
+        {
+         "Action": [
+          "dynamodb:BatchGetItem",
+          "dynamodb:BatchWriteItem",
+          "dynamodb:PutItem",
+          "dynamodb:DeleteItem",
+          "dynamodb:GetItem",
+          "dynamodb:Scan",
+          "dynamodb:Query",
+          "dynamodb:UpdateItem",
+          "dynamodb:ConditionCheckItem",
+          "dynamodb:DescribeTable",
+          "dynamodb:GetRecords",
+          "dynamodb:GetShardIterator"
+         ],
+         "Effect": "Allow",
+         "Resource": [
+          {
+           "Fn::Sub": [
+            "arn:${AWS::Partition}:dynamodb:${AWS::Region}:${AWS::AccountId}:table/${tablename}",
+            {
+             "tablename": {
+              "Fn::Join": [
+               "",
+               [
+                "CrewMember-",
+                {
+                 "Ref": "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132dataamplifyDataGraphQLAPI1643E516ApiId"
+                },
+                "-NONE"
+               ]
+              ]
+             }
+            }
+           ]
+          },
+          {
+           "Fn::Sub": [
+            "arn:${AWS::Partition}:dynamodb:${AWS::Region}:${AWS::AccountId}:table/${tablename}/*",
+            {
+             "tablename": {
+              "Fn::Join": [
+               "",
+               [
+                "CrewMember-",
+                {
+                 "Ref": "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132dataamplifyDataGraphQLAPI1643E516ApiId"
+                },
+                "-NONE"
+               ]
+              ]
+             }
+            }
+           ]
+          }
+         ]
+        }
+       ],
+       "Version": "2012-10-17"
+      },
+      "PolicyName": "DynamoDBAccess"
+     }
+    ],
+    "RoleName": {
+     "Fn::Join": [
+      "",
+      [
+       "CrewMemberIAMRole9671b2-",
+       {
+        "Ref": "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132dataamplifyDataGraphQLAPI1643E516ApiId"
+       },
+       "-NONE"
+      ]
+     ]
+    },
+    "Tags": [
+     {
+      "Key": "amplify:deployment-type",
+      "Value": "sandbox"
+     },
+     {
+      "Key": "amplify:friendly-name",
+      "Value": "amplifyData"
+     },
+     {
+      "Key": "created-by",
+      "Value": "amplify"
+     }
+    ]
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-aceplatform-dannywilson-sandbox-62ec12a132/data/amplifyData/CrewMember/CrewMemberIAMRole/Resource"
+   }
+  },
+  "CrewMemberDataSource": {
+   "Type": "AWS::AppSync::DataSource",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132dataamplifyDataGraphQLAPI1643E516ApiId"
+    },
+    "DynamoDBConfig": {
+     "AwsRegion": {
+      "Ref": "AWS::Region"
+     },
+     "TableName": {
+      "Fn::Select": [
+       1,
+       {
+        "Fn::Split": [
+         "/",
+         {
+          "Fn::Select": [
+           5,
+           {
+            "Fn::Split": [
+             ":",
+             {
+              "Fn::GetAtt": [
+               "CrewMemberTable",
+               "TableArn"
+              ]
+             }
+            ]
+           }
+          ]
+         }
+        ]
+       }
+      ]
+     }
+    },
+    "Name": "CrewMemberTable",
+    "ServiceRoleArn": {
+     "Fn::GetAtt": [
+      "CrewMemberIAMRoleF103F3E9",
+      "Arn"
+     ]
+    },
+    "Type": "AMAZON_DYNAMODB"
+   },
+   "DependsOn": [
+    "CrewMemberIAMRoleF103F3E9"
+   ],
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-aceplatform-dannywilson-sandbox-62ec12a132/data/amplifyData/CrewMember/CrewMemberDataSource/Resource"
+   }
+  },
+  "QuerygetCrewMemberauth0FunctionQuerygetCrewMemberauth0FunctionAppSyncFunction83EA58EA": {
+   "Type": "AWS::AppSync::FunctionConfiguration",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132dataamplifyDataGraphQLAPI1643E516ApiId"
+    },
+    "DataSourceName": {
+     "Ref": "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132dataamplifyDataGraphQLAPINONEDS8ED56022Name"
+    },
+    "FunctionVersion": "2018-05-29",
+    "Name": "QuerygetCrewMemberauth0Function",
+    "RequestMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/12502c08f0e6320ad02b6f4a04385806cf1ed589bdcb9d60deccf94032e1e9b2.vtl"
+    },
+    "ResponseMappingTemplate": "$util.toJson({})"
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-aceplatform-dannywilson-sandbox-62ec12a132/data/amplifyData/CrewMember/QuerygetCrewMemberauth0Function/QuerygetCrewMemberauth0Function.AppSyncFunction"
+   }
+  },
+  "QuerygetCrewMemberpostAuth0FunctionQuerygetCrewMemberpostAuth0FunctionAppSyncFunction2E9D303B": {
+   "Type": "AWS::AppSync::FunctionConfiguration",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132dataamplifyDataGraphQLAPI1643E516ApiId"
+    },
+    "DataSourceName": {
+     "Ref": "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132dataamplifyDataGraphQLAPINONEDS8ED56022Name"
+    },
+    "FunctionVersion": "2018-05-29",
+    "Name": "QuerygetCrewMemberpostAuth0Function",
+    "RequestMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/c1721bcd774e27c514d3454b5be4f9bdd094c0161b57ddf053d618e3b0086a77.vtl"
+    },
+    "ResponseMappingTemplate": "$util.toJson({})"
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-aceplatform-dannywilson-sandbox-62ec12a132/data/amplifyData/CrewMember/QuerygetCrewMemberpostAuth0Function/QuerygetCrewMemberpostAuth0Function.AppSyncFunction"
+   }
+  },
+  "QueryGetCrewMemberDataResolverFnQueryGetCrewMemberDataResolverFnAppSyncFunctionF2F649EE": {
+   "Type": "AWS::AppSync::FunctionConfiguration",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132dataamplifyDataGraphQLAPI1643E516ApiId"
+    },
+    "DataSourceName": {
+     "Fn::GetAtt": [
+      "CrewMemberDataSource",
+      "Name"
+     ]
+    },
+    "FunctionVersion": "2018-05-29",
+    "Name": "QueryGetCrewMemberDataResolverFn",
+    "RequestMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/08f4d557693d96c1a4efba0f9dc91330e4b19772fd5477c156468843e3d9cb5e.vtl"
+    },
+    "ResponseMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/4c6a2d29f01c6091bd1d9afe16e5849d456c96f17c3b215938c8067399532719.vtl"
+    }
+   },
+   "DependsOn": [
+    "CrewMemberDataSource"
+   ],
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-aceplatform-dannywilson-sandbox-62ec12a132/data/amplifyData/CrewMember/QueryGetCrewMemberDataResolverFn/QueryGetCrewMemberDataResolverFn.AppSyncFunction"
+   }
+  },
+  "GetCrewMemberResolver": {
+   "Type": "AWS::AppSync::Resolver",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132dataamplifyDataGraphQLAPI1643E516ApiId"
+    },
+    "FieldName": "getCrewMember",
+    "Kind": "PIPELINE",
+    "PipelineConfig": {
+     "Functions": [
+      {
+       "Fn::GetAtt": [
+        "QuerygetCrewMemberauth0FunctionQuerygetCrewMemberauth0FunctionAppSyncFunction83EA58EA",
+        "FunctionId"
+       ]
+      },
+      {
+       "Fn::GetAtt": [
+        "QuerygetCrewMemberpostAuth0FunctionQuerygetCrewMemberpostAuth0FunctionAppSyncFunction2E9D303B",
+        "FunctionId"
+       ]
+      },
+      {
+       "Fn::GetAtt": [
+        "QueryGetCrewMemberDataResolverFnQueryGetCrewMemberDataResolverFnAppSyncFunctionF2F649EE",
+        "FunctionId"
+       ]
+      }
+     ]
+    },
+    "RequestMappingTemplate": {
+     "Fn::Join": [
+      "",
+      [
+       "$util.qr($ctx.stash.put(\"typeName\", \"Query\"))\n$util.qr($ctx.stash.put(\"fieldName\", \"getCrewMember\"))\n$util.qr($ctx.stash.put(\"conditions\", []))\n$util.qr($ctx.stash.put(\"metadata\", {}))\n$util.qr($ctx.stash.metadata.put(\"dataSourceType\", \"AMAZON_DYNAMODB\"))\n$util.qr($ctx.stash.metadata.put(\"apiId\", \"",
+       {
+        "Ref": "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132dataamplifyDataGraphQLAPI1643E516ApiId"
+       },
+       "\"))\n$util.qr($ctx.stash.put(\"connectionAttributes\", {}))\n$util.qr($ctx.stash.put(\"tableName\", \"",
+       {
+        "Fn::Select": [
+         1,
+         {
+          "Fn::Split": [
+           "/",
+           {
+            "Fn::Select": [
+             5,
+             {
+              "Fn::Split": [
+               ":",
+               {
+                "Fn::GetAtt": [
+                 "CrewMemberTable",
+                 "TableArn"
+                ]
+               }
+              ]
+             }
+            ]
+           }
+          ]
+         }
+        ]
+       },
+       "\"))\n$util.qr($ctx.stash.put(\"authRole\", \"arn:",
+       {
+        "Ref": "AWS::Partition"
+       },
+       ":sts::",
+       {
+        "Ref": "AWS::AccountId"
+       },
+       ":assumed-role/",
+       {
+        "Ref": "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132authNestedStackauthNestedStackResource699DB456Outputsamplifyaceplatformdannywilsonsandbox62ec12a132authamplifyAuthauthenticatedUserRole8F54B8ECRef"
+       },
+       "/CognitoIdentityCredentials\"))\n$util.qr($ctx.stash.put(\"unauthRole\", \"arn:",
+       {
+        "Ref": "AWS::Partition"
+       },
+       ":sts::",
+       {
+        "Ref": "AWS::AccountId"
+       },
+       ":assumed-role/",
+       {
+        "Ref": "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132authNestedStackauthNestedStackResource699DB456Outputsamplifyaceplatformdannywilsonsandbox62ec12a132authamplifyAuthunauthenticatedUserRoleEAFB7608Ref"
+       },
+       "/CognitoIdentityCredentials\"))\n$util.qr($ctx.stash.put(\"identityPoolId\", \"",
+       {
+        "Ref": "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132authNestedStackauthNestedStackResource699DB456Outputsamplifyaceplatformdannywilsonsandbox62ec12a132authamplifyAuthIdentityPool856F4105Ref"
+       },
+       "\"))\n$util.qr($ctx.stash.put(\"adminRoles\", []))\n$util.toJson({})"
+      ]
+     ]
+    },
+    "ResponseMappingTemplate": "$util.toJson($ctx.prev.result)",
+    "TypeName": "Query"
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-aceplatform-dannywilson-sandbox-62ec12a132/data/amplifyData/CrewMember/queryGetCrewMemberResolver"
+   }
+  },
+  "QuerylistCrewMembersauth0FunctionQuerylistCrewMembersauth0FunctionAppSyncFunction80802632": {
+   "Type": "AWS::AppSync::FunctionConfiguration",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132dataamplifyDataGraphQLAPI1643E516ApiId"
+    },
+    "DataSourceName": {
+     "Ref": "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132dataamplifyDataGraphQLAPINONEDS8ED56022Name"
+    },
+    "FunctionVersion": "2018-05-29",
+    "Name": "QuerylistCrewMembersauth0Function",
+    "RequestMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/12502c08f0e6320ad02b6f4a04385806cf1ed589bdcb9d60deccf94032e1e9b2.vtl"
+    },
+    "ResponseMappingTemplate": "$util.toJson({})"
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-aceplatform-dannywilson-sandbox-62ec12a132/data/amplifyData/CrewMember/QuerylistCrewMembersauth0Function/QuerylistCrewMembersauth0Function.AppSyncFunction"
+   }
+  },
+  "QuerylistCrewMemberspostAuth0FunctionQuerylistCrewMemberspostAuth0FunctionAppSyncFunction991AB7D9": {
+   "Type": "AWS::AppSync::FunctionConfiguration",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132dataamplifyDataGraphQLAPI1643E516ApiId"
+    },
+    "DataSourceName": {
+     "Ref": "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132dataamplifyDataGraphQLAPINONEDS8ED56022Name"
+    },
+    "FunctionVersion": "2018-05-29",
+    "Name": "QuerylistCrewMemberspostAuth0Function",
+    "RequestMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/c1721bcd774e27c514d3454b5be4f9bdd094c0161b57ddf053d618e3b0086a77.vtl"
+    },
+    "ResponseMappingTemplate": "$util.toJson({})"
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-aceplatform-dannywilson-sandbox-62ec12a132/data/amplifyData/CrewMember/QuerylistCrewMemberspostAuth0Function/QuerylistCrewMemberspostAuth0Function.AppSyncFunction"
+   }
+  },
+  "QueryListCrewMembersDataResolverFnQueryListCrewMembersDataResolverFnAppSyncFunction64CDAEC6": {
+   "Type": "AWS::AppSync::FunctionConfiguration",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132dataamplifyDataGraphQLAPI1643E516ApiId"
+    },
+    "DataSourceName": {
+     "Fn::GetAtt": [
+      "CrewMemberDataSource",
+      "Name"
+     ]
+    },
+    "FunctionVersion": "2018-05-29",
+    "Name": "QueryListCrewMembersDataResolverFn",
+    "RequestMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/9fcbe070ecd3023c5bf5b966fa9584757db9762eef123bad0820bd87591b2174.vtl"
+    },
+    "ResponseMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/cc01911d0269d4080ea57505dc445dfc315ef7ad85d3d9d4ea1357858bff451d.vtl"
+    }
+   },
+   "DependsOn": [
+    "CrewMemberDataSource"
+   ],
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-aceplatform-dannywilson-sandbox-62ec12a132/data/amplifyData/CrewMember/QueryListCrewMembersDataResolverFn/QueryListCrewMembersDataResolverFn.AppSyncFunction"
+   }
+  },
+  "ListCrewMemberResolver": {
+   "Type": "AWS::AppSync::Resolver",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132dataamplifyDataGraphQLAPI1643E516ApiId"
+    },
+    "FieldName": "listCrewMembers",
+    "Kind": "PIPELINE",
+    "PipelineConfig": {
+     "Functions": [
+      {
+       "Fn::GetAtt": [
+        "QuerylistCrewMembersauth0FunctionQuerylistCrewMembersauth0FunctionAppSyncFunction80802632",
+        "FunctionId"
+       ]
+      },
+      {
+       "Fn::GetAtt": [
+        "QuerylistCrewMemberspostAuth0FunctionQuerylistCrewMemberspostAuth0FunctionAppSyncFunction991AB7D9",
+        "FunctionId"
+       ]
+      },
+      {
+       "Fn::GetAtt": [
+        "QueryListCrewMembersDataResolverFnQueryListCrewMembersDataResolverFnAppSyncFunction64CDAEC6",
+        "FunctionId"
+       ]
+      }
+     ]
+    },
+    "RequestMappingTemplate": {
+     "Fn::Join": [
+      "",
+      [
+       "$util.qr($ctx.stash.put(\"typeName\", \"Query\"))\n$util.qr($ctx.stash.put(\"fieldName\", \"listCrewMembers\"))\n$util.qr($ctx.stash.put(\"conditions\", []))\n$util.qr($ctx.stash.put(\"metadata\", {}))\n$util.qr($ctx.stash.metadata.put(\"dataSourceType\", \"AMAZON_DYNAMODB\"))\n$util.qr($ctx.stash.metadata.put(\"apiId\", \"",
+       {
+        "Ref": "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132dataamplifyDataGraphQLAPI1643E516ApiId"
+       },
+       "\"))\n$util.qr($ctx.stash.put(\"connectionAttributes\", {}))\n$util.qr($ctx.stash.put(\"tableName\", \"",
+       {
+        "Fn::Select": [
+         1,
+         {
+          "Fn::Split": [
+           "/",
+           {
+            "Fn::Select": [
+             5,
+             {
+              "Fn::Split": [
+               ":",
+               {
+                "Fn::GetAtt": [
+                 "CrewMemberTable",
+                 "TableArn"
+                ]
+               }
+              ]
+             }
+            ]
+           }
+          ]
+         }
+        ]
+       },
+       "\"))\n$util.qr($ctx.stash.put(\"authRole\", \"arn:",
+       {
+        "Ref": "AWS::Partition"
+       },
+       ":sts::",
+       {
+        "Ref": "AWS::AccountId"
+       },
+       ":assumed-role/",
+       {
+        "Ref": "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132authNestedStackauthNestedStackResource699DB456Outputsamplifyaceplatformdannywilsonsandbox62ec12a132authamplifyAuthauthenticatedUserRole8F54B8ECRef"
+       },
+       "/CognitoIdentityCredentials\"))\n$util.qr($ctx.stash.put(\"unauthRole\", \"arn:",
+       {
+        "Ref": "AWS::Partition"
+       },
+       ":sts::",
+       {
+        "Ref": "AWS::AccountId"
+       },
+       ":assumed-role/",
+       {
+        "Ref": "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132authNestedStackauthNestedStackResource699DB456Outputsamplifyaceplatformdannywilsonsandbox62ec12a132authamplifyAuthunauthenticatedUserRoleEAFB7608Ref"
+       },
+       "/CognitoIdentityCredentials\"))\n$util.qr($ctx.stash.put(\"identityPoolId\", \"",
+       {
+        "Ref": "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132authNestedStackauthNestedStackResource699DB456Outputsamplifyaceplatformdannywilsonsandbox62ec12a132authamplifyAuthIdentityPool856F4105Ref"
+       },
+       "\"))\n$util.qr($ctx.stash.put(\"adminRoles\", []))\n$util.toJson({})"
+      ]
+     ]
+    },
+    "ResponseMappingTemplate": "$util.toJson($ctx.prev.result)",
+    "TypeName": "Query"
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-aceplatform-dannywilson-sandbox-62ec12a132/data/amplifyData/CrewMember/queryListCrewMembersResolver"
+   }
+  },
+  "MutationcreateCrewMemberinit0FunctionMutationcreateCrewMemberinit0FunctionAppSyncFunction3B8E18E7": {
+   "Type": "AWS::AppSync::FunctionConfiguration",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132dataamplifyDataGraphQLAPI1643E516ApiId"
+    },
+    "DataSourceName": {
+     "Ref": "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132dataamplifyDataGraphQLAPINONEDS8ED56022Name"
+    },
+    "FunctionVersion": "2018-05-29",
+    "Name": "MutationcreateCrewMemberinit0Function",
+    "RequestMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/a183ddccbd956316c38ef97177b8f088ef0826f62023323f5ae6053d348ccffc.vtl"
+    },
+    "ResponseMappingTemplate": "$util.toJson({})"
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-aceplatform-dannywilson-sandbox-62ec12a132/data/amplifyData/CrewMember/MutationcreateCrewMemberinit0Function/MutationcreateCrewMemberinit0Function.AppSyncFunction"
+   }
+  },
+  "MutationcreateCrewMemberinit1FunctionMutationcreateCrewMemberinit1FunctionAppSyncFunction4CCC044D": {
+   "Type": "AWS::AppSync::FunctionConfiguration",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132dataamplifyDataGraphQLAPI1643E516ApiId"
+    },
+    "DataSourceName": {
+     "Ref": "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132dataamplifyDataGraphQLAPINONEDS8ED56022Name"
+    },
+    "FunctionVersion": "2018-05-29",
+    "Name": "MutationcreateCrewMemberinit1Function",
+    "RequestMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/3b824e75ce6dc8325c4d468fdc538b7ca9f444619d3279bf608e611beb94caa7.vtl"
+    },
+    "ResponseMappingTemplate": "$util.toJson({})"
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-aceplatform-dannywilson-sandbox-62ec12a132/data/amplifyData/CrewMember/MutationcreateCrewMemberinit1Function/MutationcreateCrewMemberinit1Function.AppSyncFunction"
+   }
+  },
+  "MutationcreateCrewMemberauth0FunctionMutationcreateCrewMemberauth0FunctionAppSyncFunctionC44CE25C": {
+   "Type": "AWS::AppSync::FunctionConfiguration",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132dataamplifyDataGraphQLAPI1643E516ApiId"
+    },
+    "DataSourceName": {
+     "Ref": "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132dataamplifyDataGraphQLAPINONEDS8ED56022Name"
+    },
+    "FunctionVersion": "2018-05-29",
+    "Name": "MutationcreateCrewMemberauth0Function",
+    "RequestMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/6fc6a6fd1e46c6bc32ebf297ce54a365e95e9742e15e9db8ec6d6ef8cf7ace44.vtl"
+    },
+    "ResponseMappingTemplate": "$util.toJson({})"
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-aceplatform-dannywilson-sandbox-62ec12a132/data/amplifyData/CrewMember/MutationcreateCrewMemberauth0Function/MutationcreateCrewMemberauth0Function.AppSyncFunction"
+   }
+  },
+  "MutationcreateCrewMemberpostAuth0FunctionMutationcreateCrewMemberpostAuth0FunctionAppSyncFunction69308784": {
+   "Type": "AWS::AppSync::FunctionConfiguration",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132dataamplifyDataGraphQLAPI1643E516ApiId"
+    },
+    "DataSourceName": {
+     "Ref": "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132dataamplifyDataGraphQLAPINONEDS8ED56022Name"
+    },
+    "FunctionVersion": "2018-05-29",
+    "Name": "MutationcreateCrewMemberpostAuth0Function",
+    "RequestMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/c1721bcd774e27c514d3454b5be4f9bdd094c0161b57ddf053d618e3b0086a77.vtl"
+    },
+    "ResponseMappingTemplate": "$util.toJson({})"
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-aceplatform-dannywilson-sandbox-62ec12a132/data/amplifyData/CrewMember/MutationcreateCrewMemberpostAuth0Function/MutationcreateCrewMemberpostAuth0Function.AppSyncFunction"
+   }
+  },
+  "MutationCreateCrewMemberDataResolverFnMutationCreateCrewMemberDataResolverFnAppSyncFunction34670F00": {
+   "Type": "AWS::AppSync::FunctionConfiguration",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132dataamplifyDataGraphQLAPI1643E516ApiId"
+    },
+    "DataSourceName": {
+     "Fn::GetAtt": [
+      "CrewMemberDataSource",
+      "Name"
+     ]
+    },
+    "FunctionVersion": "2018-05-29",
+    "Name": "MutationCreateCrewMemberDataResolverFn",
+    "RequestMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/f60a6e63af540bfc2b1b5814fd50f2874abd9cab29887b819691c371eb486e08.vtl"
+    },
+    "ResponseMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/f4a52b72209a9dfa197b5e7367a5c378c5bb86de6e29ddd9e48b49a3fe54b249.vtl"
+    }
+   },
+   "DependsOn": [
+    "CrewMemberDataSource"
+   ],
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-aceplatform-dannywilson-sandbox-62ec12a132/data/amplifyData/CrewMember/MutationCreateCrewMemberDataResolverFn/MutationCreateCrewMemberDataResolverFn.AppSyncFunction"
+   }
+  },
+  "CreateCrewMemberResolver": {
+   "Type": "AWS::AppSync::Resolver",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132dataamplifyDataGraphQLAPI1643E516ApiId"
+    },
+    "FieldName": "createCrewMember",
+    "Kind": "PIPELINE",
+    "PipelineConfig": {
+     "Functions": [
+      {
+       "Fn::GetAtt": [
+        "MutationcreateCrewMemberinit0FunctionMutationcreateCrewMemberinit0FunctionAppSyncFunction3B8E18E7",
+        "FunctionId"
+       ]
+      },
+      {
+       "Fn::GetAtt": [
+        "MutationcreateCrewMemberinit1FunctionMutationcreateCrewMemberinit1FunctionAppSyncFunction4CCC044D",
+        "FunctionId"
+       ]
+      },
+      {
+       "Fn::GetAtt": [
+        "MutationcreateCrewMemberauth0FunctionMutationcreateCrewMemberauth0FunctionAppSyncFunctionC44CE25C",
+        "FunctionId"
+       ]
+      },
+      {
+       "Fn::GetAtt": [
+        "MutationcreateCrewMemberpostAuth0FunctionMutationcreateCrewMemberpostAuth0FunctionAppSyncFunction69308784",
+        "FunctionId"
+       ]
+      },
+      {
+       "Fn::GetAtt": [
+        "MutationCreateCrewMemberDataResolverFnMutationCreateCrewMemberDataResolverFnAppSyncFunction34670F00",
+        "FunctionId"
+       ]
+      }
+     ]
+    },
+    "RequestMappingTemplate": {
+     "Fn::Join": [
+      "",
+      [
+       "$util.qr($ctx.stash.put(\"typeName\", \"Mutation\"))\n$util.qr($ctx.stash.put(\"fieldName\", \"createCrewMember\"))\n$util.qr($ctx.stash.put(\"conditions\", []))\n$util.qr($ctx.stash.put(\"metadata\", {}))\n$util.qr($ctx.stash.metadata.put(\"dataSourceType\", \"AMAZON_DYNAMODB\"))\n$util.qr($ctx.stash.metadata.put(\"apiId\", \"",
+       {
+        "Ref": "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132dataamplifyDataGraphQLAPI1643E516ApiId"
+       },
+       "\"))\n$util.qr($ctx.stash.put(\"connectionAttributes\", {}))\n$util.qr($ctx.stash.put(\"tableName\", \"",
+       {
+        "Fn::Select": [
+         1,
+         {
+          "Fn::Split": [
+           "/",
+           {
+            "Fn::Select": [
+             5,
+             {
+              "Fn::Split": [
+               ":",
+               {
+                "Fn::GetAtt": [
+                 "CrewMemberTable",
+                 "TableArn"
+                ]
+               }
+              ]
+             }
+            ]
+           }
+          ]
+         }
+        ]
+       },
+       "\"))\n$util.qr($ctx.stash.put(\"authRole\", \"arn:",
+       {
+        "Ref": "AWS::Partition"
+       },
+       ":sts::",
+       {
+        "Ref": "AWS::AccountId"
+       },
+       ":assumed-role/",
+       {
+        "Ref": "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132authNestedStackauthNestedStackResource699DB456Outputsamplifyaceplatformdannywilsonsandbox62ec12a132authamplifyAuthauthenticatedUserRole8F54B8ECRef"
+       },
+       "/CognitoIdentityCredentials\"))\n$util.qr($ctx.stash.put(\"unauthRole\", \"arn:",
+       {
+        "Ref": "AWS::Partition"
+       },
+       ":sts::",
+       {
+        "Ref": "AWS::AccountId"
+       },
+       ":assumed-role/",
+       {
+        "Ref": "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132authNestedStackauthNestedStackResource699DB456Outputsamplifyaceplatformdannywilsonsandbox62ec12a132authamplifyAuthunauthenticatedUserRoleEAFB7608Ref"
+       },
+       "/CognitoIdentityCredentials\"))\n$util.qr($ctx.stash.put(\"identityPoolId\", \"",
+       {
+        "Ref": "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132authNestedStackauthNestedStackResource699DB456Outputsamplifyaceplatformdannywilsonsandbox62ec12a132authamplifyAuthIdentityPool856F4105Ref"
+       },
+       "\"))\n$util.qr($ctx.stash.put(\"adminRoles\", []))\n$util.toJson({})"
+      ]
+     ]
+    },
+    "ResponseMappingTemplate": "$util.toJson($ctx.prev.result)",
+    "TypeName": "Mutation"
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-aceplatform-dannywilson-sandbox-62ec12a132/data/amplifyData/CrewMember/mutationCreateCrewMemberResolver"
+   }
+  },
+  "MutationupdateCrewMemberinit0FunctionMutationupdateCrewMemberinit0FunctionAppSyncFunction5BF43E9C": {
+   "Type": "AWS::AppSync::FunctionConfiguration",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132dataamplifyDataGraphQLAPI1643E516ApiId"
+    },
+    "DataSourceName": {
+     "Ref": "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132dataamplifyDataGraphQLAPINONEDS8ED56022Name"
+    },
+    "FunctionVersion": "2018-05-29",
+    "Name": "MutationupdateCrewMemberinit0Function",
+    "RequestMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/06db846fd14e6fc371f22b12b5545ba8e2dbfeda85d8c8d586c71c282166657b.vtl"
+    },
+    "ResponseMappingTemplate": "$util.toJson({})"
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-aceplatform-dannywilson-sandbox-62ec12a132/data/amplifyData/CrewMember/MutationupdateCrewMemberinit0Function/MutationupdateCrewMemberinit0Function.AppSyncFunction"
+   }
+  },
+  "MutationupdateCrewMemberauth0FunctionMutationupdateCrewMemberauth0FunctionAppSyncFunction9657C940": {
+   "Type": "AWS::AppSync::FunctionConfiguration",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132dataamplifyDataGraphQLAPI1643E516ApiId"
+    },
+    "DataSourceName": {
+     "Fn::GetAtt": [
+      "CrewMemberDataSource",
+      "Name"
+     ]
+    },
+    "FunctionVersion": "2018-05-29",
+    "Name": "MutationupdateCrewMemberauth0Function",
+    "RequestMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/1f5fed297da9c32ae3af922bf3a38ccf23b956078887d16891ec06c20c64722c.vtl"
+    },
+    "ResponseMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/e181af78e2b1d41cb461c1d7540706fd37a14fa363c074407e082654a87f3493.vtl"
+    }
+   },
+   "DependsOn": [
+    "CrewMemberDataSource"
+   ],
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-aceplatform-dannywilson-sandbox-62ec12a132/data/amplifyData/CrewMember/MutationupdateCrewMemberauth0Function/MutationupdateCrewMemberauth0Function.AppSyncFunction"
+   }
+  },
+  "MutationupdateCrewMemberpostAuth0FunctionMutationupdateCrewMemberpostAuth0FunctionAppSyncFunction8882E9A8": {
+   "Type": "AWS::AppSync::FunctionConfiguration",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132dataamplifyDataGraphQLAPI1643E516ApiId"
+    },
+    "DataSourceName": {
+     "Ref": "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132dataamplifyDataGraphQLAPINONEDS8ED56022Name"
+    },
+    "FunctionVersion": "2018-05-29",
+    "Name": "MutationupdateCrewMemberpostAuth0Function",
+    "RequestMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/c1721bcd774e27c514d3454b5be4f9bdd094c0161b57ddf053d618e3b0086a77.vtl"
+    },
+    "ResponseMappingTemplate": "$util.toJson({})"
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-aceplatform-dannywilson-sandbox-62ec12a132/data/amplifyData/CrewMember/MutationupdateCrewMemberpostAuth0Function/MutationupdateCrewMemberpostAuth0Function.AppSyncFunction"
+   }
+  },
+  "MutationUpdateCrewMemberDataResolverFnMutationUpdateCrewMemberDataResolverFnAppSyncFunctionA9C9ED6C": {
+   "Type": "AWS::AppSync::FunctionConfiguration",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132dataamplifyDataGraphQLAPI1643E516ApiId"
+    },
+    "DataSourceName": {
+     "Fn::GetAtt": [
+      "CrewMemberDataSource",
+      "Name"
+     ]
+    },
+    "FunctionVersion": "2018-05-29",
+    "Name": "MutationUpdateCrewMemberDataResolverFn",
+    "RequestMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/474bf0776ec2164a13191d1a0a9e057154931e4918fea5086f49850d02a5371b.vtl"
+    },
+    "ResponseMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/f4a52b72209a9dfa197b5e7367a5c378c5bb86de6e29ddd9e48b49a3fe54b249.vtl"
+    }
+   },
+   "DependsOn": [
+    "CrewMemberDataSource"
+   ],
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-aceplatform-dannywilson-sandbox-62ec12a132/data/amplifyData/CrewMember/MutationUpdateCrewMemberDataResolverFn/MutationUpdateCrewMemberDataResolverFn.AppSyncFunction"
+   }
+  },
+  "UpdateCrewMemberResolver": {
+   "Type": "AWS::AppSync::Resolver",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132dataamplifyDataGraphQLAPI1643E516ApiId"
+    },
+    "FieldName": "updateCrewMember",
+    "Kind": "PIPELINE",
+    "PipelineConfig": {
+     "Functions": [
+      {
+       "Fn::GetAtt": [
+        "MutationupdateCrewMemberinit0FunctionMutationupdateCrewMemberinit0FunctionAppSyncFunction5BF43E9C",
+        "FunctionId"
+       ]
+      },
+      {
+       "Fn::GetAtt": [
+        "MutationupdateCrewMemberauth0FunctionMutationupdateCrewMemberauth0FunctionAppSyncFunction9657C940",
+        "FunctionId"
+       ]
+      },
+      {
+       "Fn::GetAtt": [
+        "MutationupdateCrewMemberpostAuth0FunctionMutationupdateCrewMemberpostAuth0FunctionAppSyncFunction8882E9A8",
+        "FunctionId"
+       ]
+      },
+      {
+       "Fn::GetAtt": [
+        "MutationUpdateCrewMemberDataResolverFnMutationUpdateCrewMemberDataResolverFnAppSyncFunctionA9C9ED6C",
+        "FunctionId"
+       ]
+      }
+     ]
+    },
+    "RequestMappingTemplate": {
+     "Fn::Join": [
+      "",
+      [
+       "$util.qr($ctx.stash.put(\"typeName\", \"Mutation\"))\n$util.qr($ctx.stash.put(\"fieldName\", \"updateCrewMember\"))\n$util.qr($ctx.stash.put(\"conditions\", []))\n$util.qr($ctx.stash.put(\"metadata\", {}))\n$util.qr($ctx.stash.metadata.put(\"dataSourceType\", \"AMAZON_DYNAMODB\"))\n$util.qr($ctx.stash.metadata.put(\"apiId\", \"",
+       {
+        "Ref": "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132dataamplifyDataGraphQLAPI1643E516ApiId"
+       },
+       "\"))\n$util.qr($ctx.stash.put(\"connectionAttributes\", {}))\n$util.qr($ctx.stash.put(\"tableName\", \"",
+       {
+        "Fn::Select": [
+         1,
+         {
+          "Fn::Split": [
+           "/",
+           {
+            "Fn::Select": [
+             5,
+             {
+              "Fn::Split": [
+               ":",
+               {
+                "Fn::GetAtt": [
+                 "CrewMemberTable",
+                 "TableArn"
+                ]
+               }
+              ]
+             }
+            ]
+           }
+          ]
+         }
+        ]
+       },
+       "\"))\n$util.qr($ctx.stash.put(\"authRole\", \"arn:",
+       {
+        "Ref": "AWS::Partition"
+       },
+       ":sts::",
+       {
+        "Ref": "AWS::AccountId"
+       },
+       ":assumed-role/",
+       {
+        "Ref": "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132authNestedStackauthNestedStackResource699DB456Outputsamplifyaceplatformdannywilsonsandbox62ec12a132authamplifyAuthauthenticatedUserRole8F54B8ECRef"
+       },
+       "/CognitoIdentityCredentials\"))\n$util.qr($ctx.stash.put(\"unauthRole\", \"arn:",
+       {
+        "Ref": "AWS::Partition"
+       },
+       ":sts::",
+       {
+        "Ref": "AWS::AccountId"
+       },
+       ":assumed-role/",
+       {
+        "Ref": "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132authNestedStackauthNestedStackResource699DB456Outputsamplifyaceplatformdannywilsonsandbox62ec12a132authamplifyAuthunauthenticatedUserRoleEAFB7608Ref"
+       },
+       "/CognitoIdentityCredentials\"))\n$util.qr($ctx.stash.put(\"identityPoolId\", \"",
+       {
+        "Ref": "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132authNestedStackauthNestedStackResource699DB456Outputsamplifyaceplatformdannywilsonsandbox62ec12a132authamplifyAuthIdentityPool856F4105Ref"
+       },
+       "\"))\n$util.qr($ctx.stash.put(\"adminRoles\", []))\n$util.toJson({})"
+      ]
+     ]
+    },
+    "ResponseMappingTemplate": "$util.toJson($ctx.prev.result)",
+    "TypeName": "Mutation"
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-aceplatform-dannywilson-sandbox-62ec12a132/data/amplifyData/CrewMember/mutationUpdateCrewMemberResolver"
+   }
+  },
+  "MutationdeleteCrewMemberauth0FunctionMutationdeleteCrewMemberauth0FunctionAppSyncFunction6D6CF7E8": {
+   "Type": "AWS::AppSync::FunctionConfiguration",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132dataamplifyDataGraphQLAPI1643E516ApiId"
+    },
+    "DataSourceName": {
+     "Fn::GetAtt": [
+      "CrewMemberDataSource",
+      "Name"
+     ]
+    },
+    "FunctionVersion": "2018-05-29",
+    "Name": "MutationdeleteCrewMemberauth0Function",
+    "RequestMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/1f5fed297da9c32ae3af922bf3a38ccf23b956078887d16891ec06c20c64722c.vtl"
+    },
+    "ResponseMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/04f6bed7af439a23b1a11557e8d7822047bf1aef84879aa4d069b593e381fcfb.vtl"
+    }
+   },
+   "DependsOn": [
+    "CrewMemberDataSource"
+   ],
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-aceplatform-dannywilson-sandbox-62ec12a132/data/amplifyData/CrewMember/MutationdeleteCrewMemberauth0Function/MutationdeleteCrewMemberauth0Function.AppSyncFunction"
+   }
+  },
+  "MutationdeleteCrewMemberpostAuth0FunctionMutationdeleteCrewMemberpostAuth0FunctionAppSyncFunction1A6135E0": {
+   "Type": "AWS::AppSync::FunctionConfiguration",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132dataamplifyDataGraphQLAPI1643E516ApiId"
+    },
+    "DataSourceName": {
+     "Ref": "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132dataamplifyDataGraphQLAPINONEDS8ED56022Name"
+    },
+    "FunctionVersion": "2018-05-29",
+    "Name": "MutationdeleteCrewMemberpostAuth0Function",
+    "RequestMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/c1721bcd774e27c514d3454b5be4f9bdd094c0161b57ddf053d618e3b0086a77.vtl"
+    },
+    "ResponseMappingTemplate": "$util.toJson({})"
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-aceplatform-dannywilson-sandbox-62ec12a132/data/amplifyData/CrewMember/MutationdeleteCrewMemberpostAuth0Function/MutationdeleteCrewMemberpostAuth0Function.AppSyncFunction"
+   }
+  },
+  "MutationDeleteCrewMemberDataResolverFnMutationDeleteCrewMemberDataResolverFnAppSyncFunction08FD84FC": {
+   "Type": "AWS::AppSync::FunctionConfiguration",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132dataamplifyDataGraphQLAPI1643E516ApiId"
+    },
+    "DataSourceName": {
+     "Fn::GetAtt": [
+      "CrewMemberDataSource",
+      "Name"
+     ]
+    },
+    "FunctionVersion": "2018-05-29",
+    "Name": "MutationDeleteCrewMemberDataResolverFn",
+    "RequestMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/4f7907d1209a2c9953a0c053df402c634e359546d70c7cc5c2e8e21ea734880f.vtl"
+    },
+    "ResponseMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/f4a52b72209a9dfa197b5e7367a5c378c5bb86de6e29ddd9e48b49a3fe54b249.vtl"
+    }
+   },
+   "DependsOn": [
+    "CrewMemberDataSource"
+   ],
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-aceplatform-dannywilson-sandbox-62ec12a132/data/amplifyData/CrewMember/MutationDeleteCrewMemberDataResolverFn/MutationDeleteCrewMemberDataResolverFn.AppSyncFunction"
+   }
+  },
+  "DeleteCrewMemberResolver": {
+   "Type": "AWS::AppSync::Resolver",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132dataamplifyDataGraphQLAPI1643E516ApiId"
+    },
+    "FieldName": "deleteCrewMember",
+    "Kind": "PIPELINE",
+    "PipelineConfig": {
+     "Functions": [
+      {
+       "Fn::GetAtt": [
+        "MutationdeleteCrewMemberauth0FunctionMutationdeleteCrewMemberauth0FunctionAppSyncFunction6D6CF7E8",
+        "FunctionId"
+       ]
+      },
+      {
+       "Fn::GetAtt": [
+        "MutationdeleteCrewMemberpostAuth0FunctionMutationdeleteCrewMemberpostAuth0FunctionAppSyncFunction1A6135E0",
+        "FunctionId"
+       ]
+      },
+      {
+       "Fn::GetAtt": [
+        "MutationDeleteCrewMemberDataResolverFnMutationDeleteCrewMemberDataResolverFnAppSyncFunction08FD84FC",
+        "FunctionId"
+       ]
+      }
+     ]
+    },
+    "RequestMappingTemplate": {
+     "Fn::Join": [
+      "",
+      [
+       "$util.qr($ctx.stash.put(\"typeName\", \"Mutation\"))\n$util.qr($ctx.stash.put(\"fieldName\", \"deleteCrewMember\"))\n$util.qr($ctx.stash.put(\"conditions\", []))\n$util.qr($ctx.stash.put(\"metadata\", {}))\n$util.qr($ctx.stash.metadata.put(\"dataSourceType\", \"AMAZON_DYNAMODB\"))\n$util.qr($ctx.stash.metadata.put(\"apiId\", \"",
+       {
+        "Ref": "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132dataamplifyDataGraphQLAPI1643E516ApiId"
+       },
+       "\"))\n$util.qr($ctx.stash.put(\"connectionAttributes\", {}))\n$util.qr($ctx.stash.put(\"tableName\", \"",
+       {
+        "Fn::Select": [
+         1,
+         {
+          "Fn::Split": [
+           "/",
+           {
+            "Fn::Select": [
+             5,
+             {
+              "Fn::Split": [
+               ":",
+               {
+                "Fn::GetAtt": [
+                 "CrewMemberTable",
+                 "TableArn"
+                ]
+               }
+              ]
+             }
+            ]
+           }
+          ]
+         }
+        ]
+       },
+       "\"))\n$util.qr($ctx.stash.put(\"authRole\", \"arn:",
+       {
+        "Ref": "AWS::Partition"
+       },
+       ":sts::",
+       {
+        "Ref": "AWS::AccountId"
+       },
+       ":assumed-role/",
+       {
+        "Ref": "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132authNestedStackauthNestedStackResource699DB456Outputsamplifyaceplatformdannywilsonsandbox62ec12a132authamplifyAuthauthenticatedUserRole8F54B8ECRef"
+       },
+       "/CognitoIdentityCredentials\"))\n$util.qr($ctx.stash.put(\"unauthRole\", \"arn:",
+       {
+        "Ref": "AWS::Partition"
+       },
+       ":sts::",
+       {
+        "Ref": "AWS::AccountId"
+       },
+       ":assumed-role/",
+       {
+        "Ref": "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132authNestedStackauthNestedStackResource699DB456Outputsamplifyaceplatformdannywilsonsandbox62ec12a132authamplifyAuthunauthenticatedUserRoleEAFB7608Ref"
+       },
+       "/CognitoIdentityCredentials\"))\n$util.qr($ctx.stash.put(\"identityPoolId\", \"",
+       {
+        "Ref": "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132authNestedStackauthNestedStackResource699DB456Outputsamplifyaceplatformdannywilsonsandbox62ec12a132authamplifyAuthIdentityPool856F4105Ref"
+       },
+       "\"))\n$util.qr($ctx.stash.put(\"adminRoles\", []))\n$util.toJson({})"
+      ]
+     ]
+    },
+    "ResponseMappingTemplate": "$util.toJson($ctx.prev.result)",
+    "TypeName": "Mutation"
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-aceplatform-dannywilson-sandbox-62ec12a132/data/amplifyData/CrewMember/mutationDeleteCrewMemberResolver"
+   }
+  },
+  "SubscriptiononCreateCrewMemberauth0FunctionSubscriptiononCreateCrewMemberauth0FunctionAppSyncFunctionFC07FCCC": {
+   "Type": "AWS::AppSync::FunctionConfiguration",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132dataamplifyDataGraphQLAPI1643E516ApiId"
+    },
+    "DataSourceName": {
+     "Ref": "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132dataamplifyDataGraphQLAPINONEDS8ED56022Name"
+    },
+    "FunctionVersion": "2018-05-29",
+    "Name": "SubscriptiononCreateCrewMemberauth0Function",
+    "RequestMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/4ba05bf311c907f0409cc0892fff5e2504e5cd51162669079b7bb8557db4c775.vtl"
+    },
+    "ResponseMappingTemplate": "$util.toJson({})"
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-aceplatform-dannywilson-sandbox-62ec12a132/data/amplifyData/CrewMember/SubscriptiononCreateCrewMemberauth0Function/SubscriptiononCreateCrewMemberauth0Function.AppSyncFunction"
+   }
+  },
+  "SubscriptiononCreateCrewMemberpostAuth0FunctionSubscriptiononCreateCrewMemberpostAuth0FunctionAppSyncFunction38A8BD28": {
+   "Type": "AWS::AppSync::FunctionConfiguration",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132dataamplifyDataGraphQLAPI1643E516ApiId"
+    },
+    "DataSourceName": {
+     "Ref": "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132dataamplifyDataGraphQLAPINONEDS8ED56022Name"
+    },
+    "FunctionVersion": "2018-05-29",
+    "Name": "SubscriptiononCreateCrewMemberpostAuth0Function",
+    "RequestMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/c1721bcd774e27c514d3454b5be4f9bdd094c0161b57ddf053d618e3b0086a77.vtl"
+    },
+    "ResponseMappingTemplate": "$util.toJson({})"
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-aceplatform-dannywilson-sandbox-62ec12a132/data/amplifyData/CrewMember/SubscriptiononCreateCrewMemberpostAuth0Function/SubscriptiononCreateCrewMemberpostAuth0Function.AppSyncFunction"
+   }
+  },
+  "SubscriptionOnCreateCrewMemberDataResolverFnSubscriptionOnCreateCrewMemberDataResolverFnAppSyncFunction5F538CF3": {
+   "Type": "AWS::AppSync::FunctionConfiguration",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132dataamplifyDataGraphQLAPI1643E516ApiId"
+    },
+    "DataSourceName": {
+     "Ref": "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132dataamplifyDataGraphQLAPINONEDS8ED56022Name"
+    },
+    "FunctionVersion": "2018-05-29",
+    "Name": "SubscriptionOnCreateCrewMemberDataResolverFn",
+    "RequestMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/fe3c43ada4b9d681a5e2312663ef7a73386424d73b73e51f8e2e9d4b50f7c502.vtl"
+    },
+    "ResponseMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/e0cff47fb007f0bbf2a4e43ca256d6aa7ec109821769fd79fa7c5e83f0e7f9fc.vtl"
+    }
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-aceplatform-dannywilson-sandbox-62ec12a132/data/amplifyData/CrewMember/SubscriptionOnCreateCrewMemberDataResolverFn/SubscriptionOnCreateCrewMemberDataResolverFn.AppSyncFunction"
+   }
+  },
+  "SubscriptiononCreateCrewMemberResolver": {
+   "Type": "AWS::AppSync::Resolver",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132dataamplifyDataGraphQLAPI1643E516ApiId"
+    },
+    "FieldName": "onCreateCrewMember",
+    "Kind": "PIPELINE",
+    "PipelineConfig": {
+     "Functions": [
+      {
+       "Fn::GetAtt": [
+        "SubscriptiononCreateCrewMemberauth0FunctionSubscriptiononCreateCrewMemberauth0FunctionAppSyncFunctionFC07FCCC",
+        "FunctionId"
+       ]
+      },
+      {
+       "Fn::GetAtt": [
+        "SubscriptiononCreateCrewMemberpostAuth0FunctionSubscriptiononCreateCrewMemberpostAuth0FunctionAppSyncFunction38A8BD28",
+        "FunctionId"
+       ]
+      },
+      {
+       "Fn::GetAtt": [
+        "SubscriptionOnCreateCrewMemberDataResolverFnSubscriptionOnCreateCrewMemberDataResolverFnAppSyncFunction5F538CF3",
+        "FunctionId"
+       ]
+      }
+     ]
+    },
+    "RequestMappingTemplate": {
+     "Fn::Join": [
+      "",
+      [
+       "$util.qr($ctx.stash.put(\"typeName\", \"Subscription\"))\n$util.qr($ctx.stash.put(\"fieldName\", \"onCreateCrewMember\"))\n$util.qr($ctx.stash.put(\"conditions\", []))\n$util.qr($ctx.stash.put(\"metadata\", {}))\n$util.qr($ctx.stash.metadata.put(\"dataSourceType\", \"NONE\"))\n$util.qr($ctx.stash.metadata.put(\"apiId\", \"",
+       {
+        "Ref": "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132dataamplifyDataGraphQLAPI1643E516ApiId"
+       },
+       "\"))\n$util.qr($ctx.stash.put(\"connectionAttributes\", {}))\n\n$util.qr($ctx.stash.put(\"authRole\", \"arn:",
+       {
+        "Ref": "AWS::Partition"
+       },
+       ":sts::",
+       {
+        "Ref": "AWS::AccountId"
+       },
+       ":assumed-role/",
+       {
+        "Ref": "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132authNestedStackauthNestedStackResource699DB456Outputsamplifyaceplatformdannywilsonsandbox62ec12a132authamplifyAuthauthenticatedUserRole8F54B8ECRef"
+       },
+       "/CognitoIdentityCredentials\"))\n$util.qr($ctx.stash.put(\"unauthRole\", \"arn:",
+       {
+        "Ref": "AWS::Partition"
+       },
+       ":sts::",
+       {
+        "Ref": "AWS::AccountId"
+       },
+       ":assumed-role/",
+       {
+        "Ref": "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132authNestedStackauthNestedStackResource699DB456Outputsamplifyaceplatformdannywilsonsandbox62ec12a132authamplifyAuthunauthenticatedUserRoleEAFB7608Ref"
+       },
+       "/CognitoIdentityCredentials\"))\n$util.qr($ctx.stash.put(\"identityPoolId\", \"",
+       {
+        "Ref": "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132authNestedStackauthNestedStackResource699DB456Outputsamplifyaceplatformdannywilsonsandbox62ec12a132authamplifyAuthIdentityPool856F4105Ref"
+       },
+       "\"))\n$util.qr($ctx.stash.put(\"adminRoles\", []))\n$util.toJson({})"
+      ]
+     ]
+    },
+    "ResponseMappingTemplate": "$util.toJson($ctx.prev.result)",
+    "TypeName": "Subscription"
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-aceplatform-dannywilson-sandbox-62ec12a132/data/amplifyData/CrewMember/subscriptionOnCreateCrewMemberResolver"
+   }
+  },
+  "SubscriptiononUpdateCrewMemberauth0FunctionSubscriptiononUpdateCrewMemberauth0FunctionAppSyncFunctionEB6A9E9E": {
+   "Type": "AWS::AppSync::FunctionConfiguration",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132dataamplifyDataGraphQLAPI1643E516ApiId"
+    },
+    "DataSourceName": {
+     "Ref": "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132dataamplifyDataGraphQLAPINONEDS8ED56022Name"
+    },
+    "FunctionVersion": "2018-05-29",
+    "Name": "SubscriptiononUpdateCrewMemberauth0Function",
+    "RequestMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/4ba05bf311c907f0409cc0892fff5e2504e5cd51162669079b7bb8557db4c775.vtl"
+    },
+    "ResponseMappingTemplate": "$util.toJson({})"
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-aceplatform-dannywilson-sandbox-62ec12a132/data/amplifyData/CrewMember/SubscriptiononUpdateCrewMemberauth0Function/SubscriptiononUpdateCrewMemberauth0Function.AppSyncFunction"
+   }
+  },
+  "SubscriptiononUpdateCrewMemberpostAuth0FunctionSubscriptiononUpdateCrewMemberpostAuth0FunctionAppSyncFunction95A7D710": {
+   "Type": "AWS::AppSync::FunctionConfiguration",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132dataamplifyDataGraphQLAPI1643E516ApiId"
+    },
+    "DataSourceName": {
+     "Ref": "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132dataamplifyDataGraphQLAPINONEDS8ED56022Name"
+    },
+    "FunctionVersion": "2018-05-29",
+    "Name": "SubscriptiononUpdateCrewMemberpostAuth0Function",
+    "RequestMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/c1721bcd774e27c514d3454b5be4f9bdd094c0161b57ddf053d618e3b0086a77.vtl"
+    },
+    "ResponseMappingTemplate": "$util.toJson({})"
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-aceplatform-dannywilson-sandbox-62ec12a132/data/amplifyData/CrewMember/SubscriptiononUpdateCrewMemberpostAuth0Function/SubscriptiononUpdateCrewMemberpostAuth0Function.AppSyncFunction"
+   }
+  },
+  "SubscriptionOnUpdateCrewMemberDataResolverFnSubscriptionOnUpdateCrewMemberDataResolverFnAppSyncFunctionF0A416ED": {
+   "Type": "AWS::AppSync::FunctionConfiguration",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132dataamplifyDataGraphQLAPI1643E516ApiId"
+    },
+    "DataSourceName": {
+     "Ref": "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132dataamplifyDataGraphQLAPINONEDS8ED56022Name"
+    },
+    "FunctionVersion": "2018-05-29",
+    "Name": "SubscriptionOnUpdateCrewMemberDataResolverFn",
+    "RequestMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/fe3c43ada4b9d681a5e2312663ef7a73386424d73b73e51f8e2e9d4b50f7c502.vtl"
+    },
+    "ResponseMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/e0cff47fb007f0bbf2a4e43ca256d6aa7ec109821769fd79fa7c5e83f0e7f9fc.vtl"
+    }
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-aceplatform-dannywilson-sandbox-62ec12a132/data/amplifyData/CrewMember/SubscriptionOnUpdateCrewMemberDataResolverFn/SubscriptionOnUpdateCrewMemberDataResolverFn.AppSyncFunction"
+   }
+  },
+  "SubscriptiononUpdateCrewMemberResolver": {
+   "Type": "AWS::AppSync::Resolver",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132dataamplifyDataGraphQLAPI1643E516ApiId"
+    },
+    "FieldName": "onUpdateCrewMember",
+    "Kind": "PIPELINE",
+    "PipelineConfig": {
+     "Functions": [
+      {
+       "Fn::GetAtt": [
+        "SubscriptiononUpdateCrewMemberauth0FunctionSubscriptiononUpdateCrewMemberauth0FunctionAppSyncFunctionEB6A9E9E",
+        "FunctionId"
+       ]
+      },
+      {
+       "Fn::GetAtt": [
+        "SubscriptiononUpdateCrewMemberpostAuth0FunctionSubscriptiononUpdateCrewMemberpostAuth0FunctionAppSyncFunction95A7D710",
+        "FunctionId"
+       ]
+      },
+      {
+       "Fn::GetAtt": [
+        "SubscriptionOnUpdateCrewMemberDataResolverFnSubscriptionOnUpdateCrewMemberDataResolverFnAppSyncFunctionF0A416ED",
+        "FunctionId"
+       ]
+      }
+     ]
+    },
+    "RequestMappingTemplate": {
+     "Fn::Join": [
+      "",
+      [
+       "$util.qr($ctx.stash.put(\"typeName\", \"Subscription\"))\n$util.qr($ctx.stash.put(\"fieldName\", \"onUpdateCrewMember\"))\n$util.qr($ctx.stash.put(\"conditions\", []))\n$util.qr($ctx.stash.put(\"metadata\", {}))\n$util.qr($ctx.stash.metadata.put(\"dataSourceType\", \"NONE\"))\n$util.qr($ctx.stash.metadata.put(\"apiId\", \"",
+       {
+        "Ref": "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132dataamplifyDataGraphQLAPI1643E516ApiId"
+       },
+       "\"))\n$util.qr($ctx.stash.put(\"connectionAttributes\", {}))\n\n$util.qr($ctx.stash.put(\"authRole\", \"arn:",
+       {
+        "Ref": "AWS::Partition"
+       },
+       ":sts::",
+       {
+        "Ref": "AWS::AccountId"
+       },
+       ":assumed-role/",
+       {
+        "Ref": "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132authNestedStackauthNestedStackResource699DB456Outputsamplifyaceplatformdannywilsonsandbox62ec12a132authamplifyAuthauthenticatedUserRole8F54B8ECRef"
+       },
+       "/CognitoIdentityCredentials\"))\n$util.qr($ctx.stash.put(\"unauthRole\", \"arn:",
+       {
+        "Ref": "AWS::Partition"
+       },
+       ":sts::",
+       {
+        "Ref": "AWS::AccountId"
+       },
+       ":assumed-role/",
+       {
+        "Ref": "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132authNestedStackauthNestedStackResource699DB456Outputsamplifyaceplatformdannywilsonsandbox62ec12a132authamplifyAuthunauthenticatedUserRoleEAFB7608Ref"
+       },
+       "/CognitoIdentityCredentials\"))\n$util.qr($ctx.stash.put(\"identityPoolId\", \"",
+       {
+        "Ref": "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132authNestedStackauthNestedStackResource699DB456Outputsamplifyaceplatformdannywilsonsandbox62ec12a132authamplifyAuthIdentityPool856F4105Ref"
+       },
+       "\"))\n$util.qr($ctx.stash.put(\"adminRoles\", []))\n$util.toJson({})"
+      ]
+     ]
+    },
+    "ResponseMappingTemplate": "$util.toJson($ctx.prev.result)",
+    "TypeName": "Subscription"
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-aceplatform-dannywilson-sandbox-62ec12a132/data/amplifyData/CrewMember/subscriptionOnUpdateCrewMemberResolver"
+   }
+  },
+  "SubscriptiononDeleteCrewMemberauth0FunctionSubscriptiononDeleteCrewMemberauth0FunctionAppSyncFunction1B77A048": {
+   "Type": "AWS::AppSync::FunctionConfiguration",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132dataamplifyDataGraphQLAPI1643E516ApiId"
+    },
+    "DataSourceName": {
+     "Ref": "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132dataamplifyDataGraphQLAPINONEDS8ED56022Name"
+    },
+    "FunctionVersion": "2018-05-29",
+    "Name": "SubscriptiononDeleteCrewMemberauth0Function",
+    "RequestMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/4ba05bf311c907f0409cc0892fff5e2504e5cd51162669079b7bb8557db4c775.vtl"
+    },
+    "ResponseMappingTemplate": "$util.toJson({})"
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-aceplatform-dannywilson-sandbox-62ec12a132/data/amplifyData/CrewMember/SubscriptiononDeleteCrewMemberauth0Function/SubscriptiononDeleteCrewMemberauth0Function.AppSyncFunction"
+   }
+  },
+  "SubscriptiononDeleteCrewMemberpostAuth0FunctionSubscriptiononDeleteCrewMemberpostAuth0FunctionAppSyncFunctionEA9244C1": {
+   "Type": "AWS::AppSync::FunctionConfiguration",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132dataamplifyDataGraphQLAPI1643E516ApiId"
+    },
+    "DataSourceName": {
+     "Ref": "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132dataamplifyDataGraphQLAPINONEDS8ED56022Name"
+    },
+    "FunctionVersion": "2018-05-29",
+    "Name": "SubscriptiononDeleteCrewMemberpostAuth0Function",
+    "RequestMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/c1721bcd774e27c514d3454b5be4f9bdd094c0161b57ddf053d618e3b0086a77.vtl"
+    },
+    "ResponseMappingTemplate": "$util.toJson({})"
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-aceplatform-dannywilson-sandbox-62ec12a132/data/amplifyData/CrewMember/SubscriptiononDeleteCrewMemberpostAuth0Function/SubscriptiononDeleteCrewMemberpostAuth0Function.AppSyncFunction"
+   }
+  },
+  "SubscriptionOnDeleteCrewMemberDataResolverFnSubscriptionOnDeleteCrewMemberDataResolverFnAppSyncFunctionA15F4873": {
+   "Type": "AWS::AppSync::FunctionConfiguration",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132dataamplifyDataGraphQLAPI1643E516ApiId"
+    },
+    "DataSourceName": {
+     "Ref": "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132dataamplifyDataGraphQLAPINONEDS8ED56022Name"
+    },
+    "FunctionVersion": "2018-05-29",
+    "Name": "SubscriptionOnDeleteCrewMemberDataResolverFn",
+    "RequestMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/fe3c43ada4b9d681a5e2312663ef7a73386424d73b73e51f8e2e9d4b50f7c502.vtl"
+    },
+    "ResponseMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/e0cff47fb007f0bbf2a4e43ca256d6aa7ec109821769fd79fa7c5e83f0e7f9fc.vtl"
+    }
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-aceplatform-dannywilson-sandbox-62ec12a132/data/amplifyData/CrewMember/SubscriptionOnDeleteCrewMemberDataResolverFn/SubscriptionOnDeleteCrewMemberDataResolverFn.AppSyncFunction"
+   }
+  },
+  "SubscriptiononDeleteCrewMemberResolver": {
+   "Type": "AWS::AppSync::Resolver",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132dataamplifyDataGraphQLAPI1643E516ApiId"
+    },
+    "FieldName": "onDeleteCrewMember",
+    "Kind": "PIPELINE",
+    "PipelineConfig": {
+     "Functions": [
+      {
+       "Fn::GetAtt": [
+        "SubscriptiononDeleteCrewMemberauth0FunctionSubscriptiononDeleteCrewMemberauth0FunctionAppSyncFunction1B77A048",
+        "FunctionId"
+       ]
+      },
+      {
+       "Fn::GetAtt": [
+        "SubscriptiononDeleteCrewMemberpostAuth0FunctionSubscriptiononDeleteCrewMemberpostAuth0FunctionAppSyncFunctionEA9244C1",
+        "FunctionId"
+       ]
+      },
+      {
+       "Fn::GetAtt": [
+        "SubscriptionOnDeleteCrewMemberDataResolverFnSubscriptionOnDeleteCrewMemberDataResolverFnAppSyncFunctionA15F4873",
+        "FunctionId"
+       ]
+      }
+     ]
+    },
+    "RequestMappingTemplate": {
+     "Fn::Join": [
+      "",
+      [
+       "$util.qr($ctx.stash.put(\"typeName\", \"Subscription\"))\n$util.qr($ctx.stash.put(\"fieldName\", \"onDeleteCrewMember\"))\n$util.qr($ctx.stash.put(\"conditions\", []))\n$util.qr($ctx.stash.put(\"metadata\", {}))\n$util.qr($ctx.stash.metadata.put(\"dataSourceType\", \"NONE\"))\n$util.qr($ctx.stash.metadata.put(\"apiId\", \"",
+       {
+        "Ref": "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132dataamplifyDataGraphQLAPI1643E516ApiId"
+       },
+       "\"))\n$util.qr($ctx.stash.put(\"connectionAttributes\", {}))\n\n$util.qr($ctx.stash.put(\"authRole\", \"arn:",
+       {
+        "Ref": "AWS::Partition"
+       },
+       ":sts::",
+       {
+        "Ref": "AWS::AccountId"
+       },
+       ":assumed-role/",
+       {
+        "Ref": "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132authNestedStackauthNestedStackResource699DB456Outputsamplifyaceplatformdannywilsonsandbox62ec12a132authamplifyAuthauthenticatedUserRole8F54B8ECRef"
+       },
+       "/CognitoIdentityCredentials\"))\n$util.qr($ctx.stash.put(\"unauthRole\", \"arn:",
+       {
+        "Ref": "AWS::Partition"
+       },
+       ":sts::",
+       {
+        "Ref": "AWS::AccountId"
+       },
+       ":assumed-role/",
+       {
+        "Ref": "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132authNestedStackauthNestedStackResource699DB456Outputsamplifyaceplatformdannywilsonsandbox62ec12a132authamplifyAuthunauthenticatedUserRoleEAFB7608Ref"
+       },
+       "/CognitoIdentityCredentials\"))\n$util.qr($ctx.stash.put(\"identityPoolId\", \"",
+       {
+        "Ref": "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132authNestedStackauthNestedStackResource699DB456Outputsamplifyaceplatformdannywilsonsandbox62ec12a132authamplifyAuthIdentityPool856F4105Ref"
+       },
+       "\"))\n$util.qr($ctx.stash.put(\"adminRoles\", []))\n$util.toJson({})"
+      ]
+     ]
+    },
+    "ResponseMappingTemplate": "$util.toJson($ctx.prev.result)",
+    "TypeName": "Subscription"
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-aceplatform-dannywilson-sandbox-62ec12a132/data/amplifyData/CrewMember/subscriptionOnDeleteCrewMemberResolver"
+   }
+  },
+  "CDKMetadata": {
+   "Type": "AWS::CDK::Metadata",
+   "Properties": {
+    "Analytics": "v2:deflate64:H4sIAAAAAAAA/1WOwW6DMAyGn6X31BNU2s4raMdugt0rkxiUAg6KnVYV4t0n6NRpp9+f/Mn+c8hfc8h2eJO9df1+8A3MJxIlVyva3hQtf2HEkZTiCkVg59UHNhVJSNGSKZJoGP+w5eeMNznP7s44BtfANzYDHVHIeBxhrsLwsMNAi8FpkjtbmMtNL5sSFevnyf/0kdiuJYrAre9SxK3R7+fhSnExcjijCKnA+xpGDnBMtiddCyyr+5l0Smq2da3Yee4Ww8ERXOTlmueQvUG2u4j3+5hY/UhQPfIH6NZVqjYBAAA="
+   },
+   "Metadata": {
+    "aws:cdk:path": "amplify-aceplatform-dannywilson-sandbox-62ec12a132/data/amplifyData/CrewMember/CDKMetadata/Default"
+   },
+   "Condition": "CDKMetadataAvailable"
+  }
+ },
+ "Outputs": {
+  "GetAttCrewMemberTableStreamArn": {
+   "Description": "Your DynamoDB table StreamArn.",
+   "Value": {
+    "Fn::GetAtt": [
+     "CrewMemberTable",
+     "TableStreamArn"
+    ]
+   },
+   "Export": {
+    "Name": {
+     "Fn::Join": [
+      ":",
+      [
+       {
+        "Ref": "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132dataamplifyDataGraphQLAPI1643E516ApiId"
+       },
+       "GetAtt:CrewMemberTable:StreamArn"
+      ]
+     ]
+    }
+   }
+  },
+  "GetAttCrewMemberTableName": {
+   "Description": "Your DynamoDB table name.",
+   "Value": {
+    "Fn::Join": [
+     "",
+     [
+      "CrewMember-",
+      {
+       "Ref": "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132dataamplifyDataGraphQLAPI1643E516ApiId"
+      },
+      "-NONE"
+     ]
+    ]
+   },
+   "Export": {
+    "Name": {
+     "Fn::Join": [
+      ":",
+      [
+       {
+        "Ref": "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132dataamplifyDataGraphQLAPI1643E516ApiId"
+       },
+       "GetAtt:CrewMemberTable:Name"
+      ]
+     ]
+    }
+   }
+  }
+ }
+}

@@ -1,0 +1,2171 @@
+{
+ "Parameters": {
+  "DynamoDBModelTableReadIOPS": {
+   "Type": "Number",
+   "Default": 5,
+   "Description": "The number of read IOPS the table should support."
+  },
+  "DynamoDBModelTableWriteIOPS": {
+   "Type": "Number",
+   "Default": 5,
+   "Description": "The number of write IOPS the table should support."
+  },
+  "DynamoDBBillingMode": {
+   "Type": "String",
+   "Default": "PAY_PER_REQUEST",
+   "AllowedValues": [
+    "PAY_PER_REQUEST",
+    "PROVISIONED"
+   ],
+   "Description": "Configure @model types to create DynamoDB tables with PAY_PER_REQUEST or PROVISIONED billing modes."
+  },
+  "DynamoDBEnablePointInTimeRecovery": {
+   "Type": "String",
+   "Default": "false",
+   "AllowedValues": [
+    "true",
+    "false"
+   ],
+   "Description": "Whether to enable Point in Time Recovery on the table."
+  },
+  "DynamoDBEnableServerSideEncryption": {
+   "Type": "String",
+   "Default": "true",
+   "AllowedValues": [
+    "true",
+    "false"
+   ],
+   "Description": "Enable server side encryption powered by KMS."
+  },
+  "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132dataamplifyDataAmplifyTableManagerNestedStackAmplifyTableManagerNestedStackResource8CF4AB38Outputsamplifyaceplatformdannywilsonsandbox62ec12a132dataamplifyDataAmplifyTableManagerTableC1D129B2": {
+   "Type": "String"
+  },
+  "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132dataamplifyDataGraphQLAPI1643E516ApiId": {
+   "Type": "String"
+  },
+  "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132dataamplifyDataGraphQLAPINONEDS8ED56022Name": {
+   "Type": "String"
+  },
+  "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132authNestedStackauthNestedStackResource699DB456Outputsamplifyaceplatformdannywilsonsandbox62ec12a132authamplifyAuthauthenticatedUserRole8F54B8ECRef": {
+   "Type": "String"
+  },
+  "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132authNestedStackauthNestedStackResource699DB456Outputsamplifyaceplatformdannywilsonsandbox62ec12a132authamplifyAuthunauthenticatedUserRoleEAFB7608Ref": {
+   "Type": "String"
+  },
+  "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132authNestedStackauthNestedStackResource699DB456Outputsamplifyaceplatformdannywilsonsandbox62ec12a132authamplifyAuthIdentityPool856F4105Ref": {
+   "Type": "String"
+  }
+ },
+ "Conditions": {
+  "HasEnvironmentParameter": {
+   "Fn::Not": [
+    {
+     "Fn::Equals": [
+      "NONE",
+      "NONE"
+     ]
+    }
+   ]
+  },
+  "ShouldUsePayPerRequestBilling": {
+   "Fn::Equals": [
+    {
+     "Ref": "DynamoDBBillingMode"
+    },
+    "PAY_PER_REQUEST"
+   ]
+  },
+  "ShouldUsePointInTimeRecovery": {
+   "Fn::Equals": [
+    {
+     "Ref": "DynamoDBEnablePointInTimeRecovery"
+    },
+    "true"
+   ]
+  },
+  "CDKMetadataAvailable": {
+   "Fn::Or": [
+    {
+     "Fn::Or": [
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "af-south-1"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "ap-east-1"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "ap-northeast-1"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "ap-northeast-2"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "ap-northeast-3"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "ap-south-1"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "ap-south-2"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "ap-southeast-1"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "ap-southeast-2"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "ap-southeast-3"
+       ]
+      }
+     ]
+    },
+    {
+     "Fn::Or": [
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "ap-southeast-4"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "ca-central-1"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "ca-west-1"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "cn-north-1"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "cn-northwest-1"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "eu-central-1"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "eu-central-2"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "eu-north-1"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "eu-south-1"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "eu-south-2"
+       ]
+      }
+     ]
+    },
+    {
+     "Fn::Or": [
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "eu-west-1"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "eu-west-2"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "eu-west-3"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "il-central-1"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "me-central-1"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "me-south-1"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "sa-east-1"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "us-east-1"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "us-east-2"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "us-west-1"
+       ]
+      }
+     ]
+    },
+    {
+     "Fn::Equals": [
+      {
+       "Ref": "AWS::Region"
+      },
+      "us-west-2"
+     ]
+    }
+   ]
+  }
+ },
+ "Resources": {
+  "QuoteTable": {
+   "Type": "Custom::AmplifyDynamoDBTable",
+   "Properties": {
+    "ServiceToken": {
+     "Ref": "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132dataamplifyDataAmplifyTableManagerNestedStackAmplifyTableManagerNestedStackResource8CF4AB38Outputsamplifyaceplatformdannywilsonsandbox62ec12a132dataamplifyDataAmplifyTableManagerTableC1D129B2"
+    },
+    "tableName": {
+     "Fn::Join": [
+      "",
+      [
+       "Quote-",
+       {
+        "Ref": "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132dataamplifyDataGraphQLAPI1643E516ApiId"
+       },
+       "-NONE"
+      ]
+     ]
+    },
+    "attributeDefinitions": [
+     {
+      "attributeName": "id",
+      "attributeType": "S"
+     }
+    ],
+    "keySchema": [
+     {
+      "attributeName": "id",
+      "keyType": "HASH"
+     }
+    ],
+    "provisionedThroughput": {
+     "Fn::If": [
+      "ShouldUsePayPerRequestBilling",
+      {
+       "Ref": "AWS::NoValue"
+      },
+      {
+       "ReadCapacityUnits": {
+        "Ref": "DynamoDBModelTableReadIOPS"
+       },
+       "WriteCapacityUnits": {
+        "Ref": "DynamoDBModelTableWriteIOPS"
+       }
+      }
+     ]
+    },
+    "sseSpecification": {
+     "sseEnabled": false
+    },
+    "streamSpecification": {
+     "streamViewType": "NEW_AND_OLD_IMAGES"
+    },
+    "deletionProtectionEnabled": false,
+    "allowDestructiveGraphqlSchemaUpdates": true,
+    "replaceTableUponGsiUpdate": true,
+    "pointInTimeRecoverySpecification": {
+     "Fn::If": [
+      "ShouldUsePointInTimeRecovery",
+      {
+       "PointInTimeRecoveryEnabled": true
+      },
+      {
+       "Ref": "AWS::NoValue"
+      }
+     ]
+    },
+    "billingMode": {
+     "Fn::If": [
+      "ShouldUsePayPerRequestBilling",
+      "PAY_PER_REQUEST",
+      {
+       "Ref": "AWS::NoValue"
+      }
+     ]
+    }
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-aceplatform-dannywilson-sandbox-62ec12a132/data/amplifyData/Quote/QuoteTable/Default/Default"
+   }
+  },
+  "QuoteIAMRole86239DCD": {
+   "Type": "AWS::IAM::Role",
+   "Properties": {
+    "AssumeRolePolicyDocument": {
+     "Statement": [
+      {
+       "Action": "sts:AssumeRole",
+       "Effect": "Allow",
+       "Principal": {
+        "Service": "appsync.amazonaws.com"
+       }
+      }
+     ],
+     "Version": "2012-10-17"
+    },
+    "Policies": [
+     {
+      "PolicyDocument": {
+       "Statement": [
+        {
+         "Action": [
+          "dynamodb:BatchGetItem",
+          "dynamodb:BatchWriteItem",
+          "dynamodb:PutItem",
+          "dynamodb:DeleteItem",
+          "dynamodb:GetItem",
+          "dynamodb:Scan",
+          "dynamodb:Query",
+          "dynamodb:UpdateItem",
+          "dynamodb:ConditionCheckItem",
+          "dynamodb:DescribeTable",
+          "dynamodb:GetRecords",
+          "dynamodb:GetShardIterator"
+         ],
+         "Effect": "Allow",
+         "Resource": [
+          {
+           "Fn::Sub": [
+            "arn:${AWS::Partition}:dynamodb:${AWS::Region}:${AWS::AccountId}:table/${tablename}",
+            {
+             "tablename": {
+              "Fn::Join": [
+               "",
+               [
+                "Quote-",
+                {
+                 "Ref": "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132dataamplifyDataGraphQLAPI1643E516ApiId"
+                },
+                "-NONE"
+               ]
+              ]
+             }
+            }
+           ]
+          },
+          {
+           "Fn::Sub": [
+            "arn:${AWS::Partition}:dynamodb:${AWS::Region}:${AWS::AccountId}:table/${tablename}/*",
+            {
+             "tablename": {
+              "Fn::Join": [
+               "",
+               [
+                "Quote-",
+                {
+                 "Ref": "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132dataamplifyDataGraphQLAPI1643E516ApiId"
+                },
+                "-NONE"
+               ]
+              ]
+             }
+            }
+           ]
+          }
+         ]
+        }
+       ],
+       "Version": "2012-10-17"
+      },
+      "PolicyName": "DynamoDBAccess"
+     }
+    ],
+    "RoleName": {
+     "Fn::Join": [
+      "",
+      [
+       "QuoteIAMRoleff5860-",
+       {
+        "Ref": "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132dataamplifyDataGraphQLAPI1643E516ApiId"
+       },
+       "-NONE"
+      ]
+     ]
+    },
+    "Tags": [
+     {
+      "Key": "amplify:deployment-type",
+      "Value": "sandbox"
+     },
+     {
+      "Key": "amplify:friendly-name",
+      "Value": "amplifyData"
+     },
+     {
+      "Key": "created-by",
+      "Value": "amplify"
+     }
+    ]
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-aceplatform-dannywilson-sandbox-62ec12a132/data/amplifyData/Quote/QuoteIAMRole/Resource"
+   }
+  },
+  "QuoteDataSource": {
+   "Type": "AWS::AppSync::DataSource",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132dataamplifyDataGraphQLAPI1643E516ApiId"
+    },
+    "DynamoDBConfig": {
+     "AwsRegion": {
+      "Ref": "AWS::Region"
+     },
+     "TableName": {
+      "Fn::Select": [
+       1,
+       {
+        "Fn::Split": [
+         "/",
+         {
+          "Fn::Select": [
+           5,
+           {
+            "Fn::Split": [
+             ":",
+             {
+              "Fn::GetAtt": [
+               "QuoteTable",
+               "TableArn"
+              ]
+             }
+            ]
+           }
+          ]
+         }
+        ]
+       }
+      ]
+     }
+    },
+    "Name": "QuoteTable",
+    "ServiceRoleArn": {
+     "Fn::GetAtt": [
+      "QuoteIAMRole86239DCD",
+      "Arn"
+     ]
+    },
+    "Type": "AMAZON_DYNAMODB"
+   },
+   "DependsOn": [
+    "QuoteIAMRole86239DCD"
+   ],
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-aceplatform-dannywilson-sandbox-62ec12a132/data/amplifyData/Quote/QuoteDataSource/Resource"
+   }
+  },
+  "QuerygetQuoteauth0FunctionQuerygetQuoteauth0FunctionAppSyncFunctionF3DB96F8": {
+   "Type": "AWS::AppSync::FunctionConfiguration",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132dataamplifyDataGraphQLAPI1643E516ApiId"
+    },
+    "DataSourceName": {
+     "Ref": "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132dataamplifyDataGraphQLAPINONEDS8ED56022Name"
+    },
+    "FunctionVersion": "2018-05-29",
+    "Name": "QuerygetQuoteauth0Function",
+    "RequestMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/373548617c20dd4db0dc12ede0881e4633a3c4ed7bd70c901175a923626a5edf.vtl"
+    },
+    "ResponseMappingTemplate": "$util.toJson({})"
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-aceplatform-dannywilson-sandbox-62ec12a132/data/amplifyData/Quote/QuerygetQuoteauth0Function/QuerygetQuoteauth0Function.AppSyncFunction"
+   }
+  },
+  "QuerygetQuotepostAuth0FunctionQuerygetQuotepostAuth0FunctionAppSyncFunction52C793B4": {
+   "Type": "AWS::AppSync::FunctionConfiguration",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132dataamplifyDataGraphQLAPI1643E516ApiId"
+    },
+    "DataSourceName": {
+     "Ref": "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132dataamplifyDataGraphQLAPINONEDS8ED56022Name"
+    },
+    "FunctionVersion": "2018-05-29",
+    "Name": "QuerygetQuotepostAuth0Function",
+    "RequestMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/c1721bcd774e27c514d3454b5be4f9bdd094c0161b57ddf053d618e3b0086a77.vtl"
+    },
+    "ResponseMappingTemplate": "$util.toJson({})"
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-aceplatform-dannywilson-sandbox-62ec12a132/data/amplifyData/Quote/QuerygetQuotepostAuth0Function/QuerygetQuotepostAuth0Function.AppSyncFunction"
+   }
+  },
+  "QueryGetQuoteDataResolverFnQueryGetQuoteDataResolverFnAppSyncFunctionC8388E4F": {
+   "Type": "AWS::AppSync::FunctionConfiguration",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132dataamplifyDataGraphQLAPI1643E516ApiId"
+    },
+    "DataSourceName": {
+     "Fn::GetAtt": [
+      "QuoteDataSource",
+      "Name"
+     ]
+    },
+    "FunctionVersion": "2018-05-29",
+    "Name": "QueryGetQuoteDataResolverFn",
+    "RequestMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/08f4d557693d96c1a4efba0f9dc91330e4b19772fd5477c156468843e3d9cb5e.vtl"
+    },
+    "ResponseMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/4c6a2d29f01c6091bd1d9afe16e5849d456c96f17c3b215938c8067399532719.vtl"
+    }
+   },
+   "DependsOn": [
+    "QuoteDataSource"
+   ],
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-aceplatform-dannywilson-sandbox-62ec12a132/data/amplifyData/Quote/QueryGetQuoteDataResolverFn/QueryGetQuoteDataResolverFn.AppSyncFunction"
+   }
+  },
+  "GetQuoteResolver": {
+   "Type": "AWS::AppSync::Resolver",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132dataamplifyDataGraphQLAPI1643E516ApiId"
+    },
+    "FieldName": "getQuote",
+    "Kind": "PIPELINE",
+    "PipelineConfig": {
+     "Functions": [
+      {
+       "Fn::GetAtt": [
+        "QuerygetQuoteauth0FunctionQuerygetQuoteauth0FunctionAppSyncFunctionF3DB96F8",
+        "FunctionId"
+       ]
+      },
+      {
+       "Fn::GetAtt": [
+        "QuerygetQuotepostAuth0FunctionQuerygetQuotepostAuth0FunctionAppSyncFunction52C793B4",
+        "FunctionId"
+       ]
+      },
+      {
+       "Fn::GetAtt": [
+        "QueryGetQuoteDataResolverFnQueryGetQuoteDataResolverFnAppSyncFunctionC8388E4F",
+        "FunctionId"
+       ]
+      }
+     ]
+    },
+    "RequestMappingTemplate": {
+     "Fn::Join": [
+      "",
+      [
+       "$util.qr($ctx.stash.put(\"typeName\", \"Query\"))\n$util.qr($ctx.stash.put(\"fieldName\", \"getQuote\"))\n$util.qr($ctx.stash.put(\"conditions\", []))\n$util.qr($ctx.stash.put(\"metadata\", {}))\n$util.qr($ctx.stash.metadata.put(\"dataSourceType\", \"AMAZON_DYNAMODB\"))\n$util.qr($ctx.stash.metadata.put(\"apiId\", \"",
+       {
+        "Ref": "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132dataamplifyDataGraphQLAPI1643E516ApiId"
+       },
+       "\"))\n$util.qr($ctx.stash.put(\"connectionAttributes\", {}))\n$util.qr($ctx.stash.put(\"tableName\", \"",
+       {
+        "Fn::Select": [
+         1,
+         {
+          "Fn::Split": [
+           "/",
+           {
+            "Fn::Select": [
+             5,
+             {
+              "Fn::Split": [
+               ":",
+               {
+                "Fn::GetAtt": [
+                 "QuoteTable",
+                 "TableArn"
+                ]
+               }
+              ]
+             }
+            ]
+           }
+          ]
+         }
+        ]
+       },
+       "\"))\n$util.qr($ctx.stash.put(\"authRole\", \"arn:",
+       {
+        "Ref": "AWS::Partition"
+       },
+       ":sts::",
+       {
+        "Ref": "AWS::AccountId"
+       },
+       ":assumed-role/",
+       {
+        "Ref": "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132authNestedStackauthNestedStackResource699DB456Outputsamplifyaceplatformdannywilsonsandbox62ec12a132authamplifyAuthauthenticatedUserRole8F54B8ECRef"
+       },
+       "/CognitoIdentityCredentials\"))\n$util.qr($ctx.stash.put(\"unauthRole\", \"arn:",
+       {
+        "Ref": "AWS::Partition"
+       },
+       ":sts::",
+       {
+        "Ref": "AWS::AccountId"
+       },
+       ":assumed-role/",
+       {
+        "Ref": "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132authNestedStackauthNestedStackResource699DB456Outputsamplifyaceplatformdannywilsonsandbox62ec12a132authamplifyAuthunauthenticatedUserRoleEAFB7608Ref"
+       },
+       "/CognitoIdentityCredentials\"))\n$util.qr($ctx.stash.put(\"identityPoolId\", \"",
+       {
+        "Ref": "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132authNestedStackauthNestedStackResource699DB456Outputsamplifyaceplatformdannywilsonsandbox62ec12a132authamplifyAuthIdentityPool856F4105Ref"
+       },
+       "\"))\n$util.qr($ctx.stash.put(\"adminRoles\", []))\n$util.toJson({})"
+      ]
+     ]
+    },
+    "ResponseMappingTemplate": "$util.toJson($ctx.prev.result)",
+    "TypeName": "Query"
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-aceplatform-dannywilson-sandbox-62ec12a132/data/amplifyData/Quote/queryGetQuoteResolver"
+   }
+  },
+  "QuerylistQuotesauth0FunctionQuerylistQuotesauth0FunctionAppSyncFunction47B99908": {
+   "Type": "AWS::AppSync::FunctionConfiguration",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132dataamplifyDataGraphQLAPI1643E516ApiId"
+    },
+    "DataSourceName": {
+     "Ref": "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132dataamplifyDataGraphQLAPINONEDS8ED56022Name"
+    },
+    "FunctionVersion": "2018-05-29",
+    "Name": "QuerylistQuotesauth0Function",
+    "RequestMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/373548617c20dd4db0dc12ede0881e4633a3c4ed7bd70c901175a923626a5edf.vtl"
+    },
+    "ResponseMappingTemplate": "$util.toJson({})"
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-aceplatform-dannywilson-sandbox-62ec12a132/data/amplifyData/Quote/QuerylistQuotesauth0Function/QuerylistQuotesauth0Function.AppSyncFunction"
+   }
+  },
+  "QuerylistQuotespostAuth0FunctionQuerylistQuotespostAuth0FunctionAppSyncFunction796B4948": {
+   "Type": "AWS::AppSync::FunctionConfiguration",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132dataamplifyDataGraphQLAPI1643E516ApiId"
+    },
+    "DataSourceName": {
+     "Ref": "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132dataamplifyDataGraphQLAPINONEDS8ED56022Name"
+    },
+    "FunctionVersion": "2018-05-29",
+    "Name": "QuerylistQuotespostAuth0Function",
+    "RequestMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/c1721bcd774e27c514d3454b5be4f9bdd094c0161b57ddf053d618e3b0086a77.vtl"
+    },
+    "ResponseMappingTemplate": "$util.toJson({})"
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-aceplatform-dannywilson-sandbox-62ec12a132/data/amplifyData/Quote/QuerylistQuotespostAuth0Function/QuerylistQuotespostAuth0Function.AppSyncFunction"
+   }
+  },
+  "QueryListQuotesDataResolverFnQueryListQuotesDataResolverFnAppSyncFunction0E76C714": {
+   "Type": "AWS::AppSync::FunctionConfiguration",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132dataamplifyDataGraphQLAPI1643E516ApiId"
+    },
+    "DataSourceName": {
+     "Fn::GetAtt": [
+      "QuoteDataSource",
+      "Name"
+     ]
+    },
+    "FunctionVersion": "2018-05-29",
+    "Name": "QueryListQuotesDataResolverFn",
+    "RequestMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/9fcbe070ecd3023c5bf5b966fa9584757db9762eef123bad0820bd87591b2174.vtl"
+    },
+    "ResponseMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/cc01911d0269d4080ea57505dc445dfc315ef7ad85d3d9d4ea1357858bff451d.vtl"
+    }
+   },
+   "DependsOn": [
+    "QuoteDataSource"
+   ],
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-aceplatform-dannywilson-sandbox-62ec12a132/data/amplifyData/Quote/QueryListQuotesDataResolverFn/QueryListQuotesDataResolverFn.AppSyncFunction"
+   }
+  },
+  "ListQuoteResolver": {
+   "Type": "AWS::AppSync::Resolver",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132dataamplifyDataGraphQLAPI1643E516ApiId"
+    },
+    "FieldName": "listQuotes",
+    "Kind": "PIPELINE",
+    "PipelineConfig": {
+     "Functions": [
+      {
+       "Fn::GetAtt": [
+        "QuerylistQuotesauth0FunctionQuerylistQuotesauth0FunctionAppSyncFunction47B99908",
+        "FunctionId"
+       ]
+      },
+      {
+       "Fn::GetAtt": [
+        "QuerylistQuotespostAuth0FunctionQuerylistQuotespostAuth0FunctionAppSyncFunction796B4948",
+        "FunctionId"
+       ]
+      },
+      {
+       "Fn::GetAtt": [
+        "QueryListQuotesDataResolverFnQueryListQuotesDataResolverFnAppSyncFunction0E76C714",
+        "FunctionId"
+       ]
+      }
+     ]
+    },
+    "RequestMappingTemplate": {
+     "Fn::Join": [
+      "",
+      [
+       "$util.qr($ctx.stash.put(\"typeName\", \"Query\"))\n$util.qr($ctx.stash.put(\"fieldName\", \"listQuotes\"))\n$util.qr($ctx.stash.put(\"conditions\", []))\n$util.qr($ctx.stash.put(\"metadata\", {}))\n$util.qr($ctx.stash.metadata.put(\"dataSourceType\", \"AMAZON_DYNAMODB\"))\n$util.qr($ctx.stash.metadata.put(\"apiId\", \"",
+       {
+        "Ref": "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132dataamplifyDataGraphQLAPI1643E516ApiId"
+       },
+       "\"))\n$util.qr($ctx.stash.put(\"connectionAttributes\", {}))\n$util.qr($ctx.stash.put(\"tableName\", \"",
+       {
+        "Fn::Select": [
+         1,
+         {
+          "Fn::Split": [
+           "/",
+           {
+            "Fn::Select": [
+             5,
+             {
+              "Fn::Split": [
+               ":",
+               {
+                "Fn::GetAtt": [
+                 "QuoteTable",
+                 "TableArn"
+                ]
+               }
+              ]
+             }
+            ]
+           }
+          ]
+         }
+        ]
+       },
+       "\"))\n$util.qr($ctx.stash.put(\"authRole\", \"arn:",
+       {
+        "Ref": "AWS::Partition"
+       },
+       ":sts::",
+       {
+        "Ref": "AWS::AccountId"
+       },
+       ":assumed-role/",
+       {
+        "Ref": "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132authNestedStackauthNestedStackResource699DB456Outputsamplifyaceplatformdannywilsonsandbox62ec12a132authamplifyAuthauthenticatedUserRole8F54B8ECRef"
+       },
+       "/CognitoIdentityCredentials\"))\n$util.qr($ctx.stash.put(\"unauthRole\", \"arn:",
+       {
+        "Ref": "AWS::Partition"
+       },
+       ":sts::",
+       {
+        "Ref": "AWS::AccountId"
+       },
+       ":assumed-role/",
+       {
+        "Ref": "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132authNestedStackauthNestedStackResource699DB456Outputsamplifyaceplatformdannywilsonsandbox62ec12a132authamplifyAuthunauthenticatedUserRoleEAFB7608Ref"
+       },
+       "/CognitoIdentityCredentials\"))\n$util.qr($ctx.stash.put(\"identityPoolId\", \"",
+       {
+        "Ref": "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132authNestedStackauthNestedStackResource699DB456Outputsamplifyaceplatformdannywilsonsandbox62ec12a132authamplifyAuthIdentityPool856F4105Ref"
+       },
+       "\"))\n$util.qr($ctx.stash.put(\"adminRoles\", []))\n$util.toJson({})"
+      ]
+     ]
+    },
+    "ResponseMappingTemplate": "$util.toJson($ctx.prev.result)",
+    "TypeName": "Query"
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-aceplatform-dannywilson-sandbox-62ec12a132/data/amplifyData/Quote/queryListQuotesResolver"
+   }
+  },
+  "MutationcreateQuoteinit0FunctionMutationcreateQuoteinit0FunctionAppSyncFunction073BBE3F": {
+   "Type": "AWS::AppSync::FunctionConfiguration",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132dataamplifyDataGraphQLAPI1643E516ApiId"
+    },
+    "DataSourceName": {
+     "Ref": "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132dataamplifyDataGraphQLAPINONEDS8ED56022Name"
+    },
+    "FunctionVersion": "2018-05-29",
+    "Name": "MutationcreateQuoteinit0Function",
+    "RequestMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/a183ddccbd956316c38ef97177b8f088ef0826f62023323f5ae6053d348ccffc.vtl"
+    },
+    "ResponseMappingTemplate": "$util.toJson({})"
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-aceplatform-dannywilson-sandbox-62ec12a132/data/amplifyData/Quote/MutationcreateQuoteinit0Function/MutationcreateQuoteinit0Function.AppSyncFunction"
+   }
+  },
+  "MutationcreateQuoteauth0FunctionMutationcreateQuoteauth0FunctionAppSyncFunction1FF6CB7F": {
+   "Type": "AWS::AppSync::FunctionConfiguration",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132dataamplifyDataGraphQLAPI1643E516ApiId"
+    },
+    "DataSourceName": {
+     "Ref": "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132dataamplifyDataGraphQLAPINONEDS8ED56022Name"
+    },
+    "FunctionVersion": "2018-05-29",
+    "Name": "MutationcreateQuoteauth0Function",
+    "RequestMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/8c767144f1a1211cbde94ada63339e04474afa49a72fb17e7e7fb85a20829a57.vtl"
+    },
+    "ResponseMappingTemplate": "$util.toJson({})"
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-aceplatform-dannywilson-sandbox-62ec12a132/data/amplifyData/Quote/MutationcreateQuoteauth0Function/MutationcreateQuoteauth0Function.AppSyncFunction"
+   }
+  },
+  "MutationcreateQuotepostAuth0FunctionMutationcreateQuotepostAuth0FunctionAppSyncFunctionABCC6870": {
+   "Type": "AWS::AppSync::FunctionConfiguration",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132dataamplifyDataGraphQLAPI1643E516ApiId"
+    },
+    "DataSourceName": {
+     "Ref": "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132dataamplifyDataGraphQLAPINONEDS8ED56022Name"
+    },
+    "FunctionVersion": "2018-05-29",
+    "Name": "MutationcreateQuotepostAuth0Function",
+    "RequestMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/c1721bcd774e27c514d3454b5be4f9bdd094c0161b57ddf053d618e3b0086a77.vtl"
+    },
+    "ResponseMappingTemplate": "$util.toJson({})"
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-aceplatform-dannywilson-sandbox-62ec12a132/data/amplifyData/Quote/MutationcreateQuotepostAuth0Function/MutationcreateQuotepostAuth0Function.AppSyncFunction"
+   }
+  },
+  "MutationCreateQuoteDataResolverFnMutationCreateQuoteDataResolverFnAppSyncFunctionB28A8779": {
+   "Type": "AWS::AppSync::FunctionConfiguration",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132dataamplifyDataGraphQLAPI1643E516ApiId"
+    },
+    "DataSourceName": {
+     "Fn::GetAtt": [
+      "QuoteDataSource",
+      "Name"
+     ]
+    },
+    "FunctionVersion": "2018-05-29",
+    "Name": "MutationCreateQuoteDataResolverFn",
+    "RequestMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/b8c9ff1546ff80f15facaba96cab667ac68ab84a5ec690f12ff8a5dbc330af52.vtl"
+    },
+    "ResponseMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/f4a52b72209a9dfa197b5e7367a5c378c5bb86de6e29ddd9e48b49a3fe54b249.vtl"
+    }
+   },
+   "DependsOn": [
+    "QuoteDataSource"
+   ],
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-aceplatform-dannywilson-sandbox-62ec12a132/data/amplifyData/Quote/MutationCreateQuoteDataResolverFn/MutationCreateQuoteDataResolverFn.AppSyncFunction"
+   }
+  },
+  "CreateQuoteResolver": {
+   "Type": "AWS::AppSync::Resolver",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132dataamplifyDataGraphQLAPI1643E516ApiId"
+    },
+    "FieldName": "createQuote",
+    "Kind": "PIPELINE",
+    "PipelineConfig": {
+     "Functions": [
+      {
+       "Fn::GetAtt": [
+        "MutationcreateQuoteinit0FunctionMutationcreateQuoteinit0FunctionAppSyncFunction073BBE3F",
+        "FunctionId"
+       ]
+      },
+      {
+       "Fn::GetAtt": [
+        "MutationcreateQuoteauth0FunctionMutationcreateQuoteauth0FunctionAppSyncFunction1FF6CB7F",
+        "FunctionId"
+       ]
+      },
+      {
+       "Fn::GetAtt": [
+        "MutationcreateQuotepostAuth0FunctionMutationcreateQuotepostAuth0FunctionAppSyncFunctionABCC6870",
+        "FunctionId"
+       ]
+      },
+      {
+       "Fn::GetAtt": [
+        "MutationCreateQuoteDataResolverFnMutationCreateQuoteDataResolverFnAppSyncFunctionB28A8779",
+        "FunctionId"
+       ]
+      }
+     ]
+    },
+    "RequestMappingTemplate": {
+     "Fn::Join": [
+      "",
+      [
+       "$util.qr($ctx.stash.put(\"typeName\", \"Mutation\"))\n$util.qr($ctx.stash.put(\"fieldName\", \"createQuote\"))\n$util.qr($ctx.stash.put(\"conditions\", []))\n$util.qr($ctx.stash.put(\"metadata\", {}))\n$util.qr($ctx.stash.metadata.put(\"dataSourceType\", \"AMAZON_DYNAMODB\"))\n$util.qr($ctx.stash.metadata.put(\"apiId\", \"",
+       {
+        "Ref": "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132dataamplifyDataGraphQLAPI1643E516ApiId"
+       },
+       "\"))\n$util.qr($ctx.stash.put(\"connectionAttributes\", {}))\n$util.qr($ctx.stash.put(\"tableName\", \"",
+       {
+        "Fn::Select": [
+         1,
+         {
+          "Fn::Split": [
+           "/",
+           {
+            "Fn::Select": [
+             5,
+             {
+              "Fn::Split": [
+               ":",
+               {
+                "Fn::GetAtt": [
+                 "QuoteTable",
+                 "TableArn"
+                ]
+               }
+              ]
+             }
+            ]
+           }
+          ]
+         }
+        ]
+       },
+       "\"))\n$util.qr($ctx.stash.put(\"authRole\", \"arn:",
+       {
+        "Ref": "AWS::Partition"
+       },
+       ":sts::",
+       {
+        "Ref": "AWS::AccountId"
+       },
+       ":assumed-role/",
+       {
+        "Ref": "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132authNestedStackauthNestedStackResource699DB456Outputsamplifyaceplatformdannywilsonsandbox62ec12a132authamplifyAuthauthenticatedUserRole8F54B8ECRef"
+       },
+       "/CognitoIdentityCredentials\"))\n$util.qr($ctx.stash.put(\"unauthRole\", \"arn:",
+       {
+        "Ref": "AWS::Partition"
+       },
+       ":sts::",
+       {
+        "Ref": "AWS::AccountId"
+       },
+       ":assumed-role/",
+       {
+        "Ref": "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132authNestedStackauthNestedStackResource699DB456Outputsamplifyaceplatformdannywilsonsandbox62ec12a132authamplifyAuthunauthenticatedUserRoleEAFB7608Ref"
+       },
+       "/CognitoIdentityCredentials\"))\n$util.qr($ctx.stash.put(\"identityPoolId\", \"",
+       {
+        "Ref": "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132authNestedStackauthNestedStackResource699DB456Outputsamplifyaceplatformdannywilsonsandbox62ec12a132authamplifyAuthIdentityPool856F4105Ref"
+       },
+       "\"))\n$util.qr($ctx.stash.put(\"adminRoles\", []))\n$util.toJson({})"
+      ]
+     ]
+    },
+    "ResponseMappingTemplate": "$util.toJson($ctx.prev.result)",
+    "TypeName": "Mutation"
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-aceplatform-dannywilson-sandbox-62ec12a132/data/amplifyData/Quote/mutationCreateQuoteResolver"
+   }
+  },
+  "MutationupdateQuoteinit0FunctionMutationupdateQuoteinit0FunctionAppSyncFunctionF485160B": {
+   "Type": "AWS::AppSync::FunctionConfiguration",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132dataamplifyDataGraphQLAPI1643E516ApiId"
+    },
+    "DataSourceName": {
+     "Ref": "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132dataamplifyDataGraphQLAPINONEDS8ED56022Name"
+    },
+    "FunctionVersion": "2018-05-29",
+    "Name": "MutationupdateQuoteinit0Function",
+    "RequestMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/06db846fd14e6fc371f22b12b5545ba8e2dbfeda85d8c8d586c71c282166657b.vtl"
+    },
+    "ResponseMappingTemplate": "$util.toJson({})"
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-aceplatform-dannywilson-sandbox-62ec12a132/data/amplifyData/Quote/MutationupdateQuoteinit0Function/MutationupdateQuoteinit0Function.AppSyncFunction"
+   }
+  },
+  "MutationupdateQuoteauth0FunctionMutationupdateQuoteauth0FunctionAppSyncFunctionD25AB9B9": {
+   "Type": "AWS::AppSync::FunctionConfiguration",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132dataamplifyDataGraphQLAPI1643E516ApiId"
+    },
+    "DataSourceName": {
+     "Fn::GetAtt": [
+      "QuoteDataSource",
+      "Name"
+     ]
+    },
+    "FunctionVersion": "2018-05-29",
+    "Name": "MutationupdateQuoteauth0Function",
+    "RequestMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/1f5fed297da9c32ae3af922bf3a38ccf23b956078887d16891ec06c20c64722c.vtl"
+    },
+    "ResponseMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/6a04ce4ece26bea8cc8e7a02d4bfad0a80bcf8338e4d5cb3eba9ca7b97b168e8.vtl"
+    }
+   },
+   "DependsOn": [
+    "QuoteDataSource"
+   ],
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-aceplatform-dannywilson-sandbox-62ec12a132/data/amplifyData/Quote/MutationupdateQuoteauth0Function/MutationupdateQuoteauth0Function.AppSyncFunction"
+   }
+  },
+  "MutationupdateQuotepostAuth0FunctionMutationupdateQuotepostAuth0FunctionAppSyncFunction7FD0EDC1": {
+   "Type": "AWS::AppSync::FunctionConfiguration",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132dataamplifyDataGraphQLAPI1643E516ApiId"
+    },
+    "DataSourceName": {
+     "Ref": "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132dataamplifyDataGraphQLAPINONEDS8ED56022Name"
+    },
+    "FunctionVersion": "2018-05-29",
+    "Name": "MutationupdateQuotepostAuth0Function",
+    "RequestMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/c1721bcd774e27c514d3454b5be4f9bdd094c0161b57ddf053d618e3b0086a77.vtl"
+    },
+    "ResponseMappingTemplate": "$util.toJson({})"
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-aceplatform-dannywilson-sandbox-62ec12a132/data/amplifyData/Quote/MutationupdateQuotepostAuth0Function/MutationupdateQuotepostAuth0Function.AppSyncFunction"
+   }
+  },
+  "MutationUpdateQuoteDataResolverFnMutationUpdateQuoteDataResolverFnAppSyncFunctionF403CAE2": {
+   "Type": "AWS::AppSync::FunctionConfiguration",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132dataamplifyDataGraphQLAPI1643E516ApiId"
+    },
+    "DataSourceName": {
+     "Fn::GetAtt": [
+      "QuoteDataSource",
+      "Name"
+     ]
+    },
+    "FunctionVersion": "2018-05-29",
+    "Name": "MutationUpdateQuoteDataResolverFn",
+    "RequestMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/474bf0776ec2164a13191d1a0a9e057154931e4918fea5086f49850d02a5371b.vtl"
+    },
+    "ResponseMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/f4a52b72209a9dfa197b5e7367a5c378c5bb86de6e29ddd9e48b49a3fe54b249.vtl"
+    }
+   },
+   "DependsOn": [
+    "QuoteDataSource"
+   ],
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-aceplatform-dannywilson-sandbox-62ec12a132/data/amplifyData/Quote/MutationUpdateQuoteDataResolverFn/MutationUpdateQuoteDataResolverFn.AppSyncFunction"
+   }
+  },
+  "UpdateQuoteResolver": {
+   "Type": "AWS::AppSync::Resolver",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132dataamplifyDataGraphQLAPI1643E516ApiId"
+    },
+    "FieldName": "updateQuote",
+    "Kind": "PIPELINE",
+    "PipelineConfig": {
+     "Functions": [
+      {
+       "Fn::GetAtt": [
+        "MutationupdateQuoteinit0FunctionMutationupdateQuoteinit0FunctionAppSyncFunctionF485160B",
+        "FunctionId"
+       ]
+      },
+      {
+       "Fn::GetAtt": [
+        "MutationupdateQuoteauth0FunctionMutationupdateQuoteauth0FunctionAppSyncFunctionD25AB9B9",
+        "FunctionId"
+       ]
+      },
+      {
+       "Fn::GetAtt": [
+        "MutationupdateQuotepostAuth0FunctionMutationupdateQuotepostAuth0FunctionAppSyncFunction7FD0EDC1",
+        "FunctionId"
+       ]
+      },
+      {
+       "Fn::GetAtt": [
+        "MutationUpdateQuoteDataResolverFnMutationUpdateQuoteDataResolverFnAppSyncFunctionF403CAE2",
+        "FunctionId"
+       ]
+      }
+     ]
+    },
+    "RequestMappingTemplate": {
+     "Fn::Join": [
+      "",
+      [
+       "$util.qr($ctx.stash.put(\"typeName\", \"Mutation\"))\n$util.qr($ctx.stash.put(\"fieldName\", \"updateQuote\"))\n$util.qr($ctx.stash.put(\"conditions\", []))\n$util.qr($ctx.stash.put(\"metadata\", {}))\n$util.qr($ctx.stash.metadata.put(\"dataSourceType\", \"AMAZON_DYNAMODB\"))\n$util.qr($ctx.stash.metadata.put(\"apiId\", \"",
+       {
+        "Ref": "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132dataamplifyDataGraphQLAPI1643E516ApiId"
+       },
+       "\"))\n$util.qr($ctx.stash.put(\"connectionAttributes\", {}))\n$util.qr($ctx.stash.put(\"tableName\", \"",
+       {
+        "Fn::Select": [
+         1,
+         {
+          "Fn::Split": [
+           "/",
+           {
+            "Fn::Select": [
+             5,
+             {
+              "Fn::Split": [
+               ":",
+               {
+                "Fn::GetAtt": [
+                 "QuoteTable",
+                 "TableArn"
+                ]
+               }
+              ]
+             }
+            ]
+           }
+          ]
+         }
+        ]
+       },
+       "\"))\n$util.qr($ctx.stash.put(\"authRole\", \"arn:",
+       {
+        "Ref": "AWS::Partition"
+       },
+       ":sts::",
+       {
+        "Ref": "AWS::AccountId"
+       },
+       ":assumed-role/",
+       {
+        "Ref": "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132authNestedStackauthNestedStackResource699DB456Outputsamplifyaceplatformdannywilsonsandbox62ec12a132authamplifyAuthauthenticatedUserRole8F54B8ECRef"
+       },
+       "/CognitoIdentityCredentials\"))\n$util.qr($ctx.stash.put(\"unauthRole\", \"arn:",
+       {
+        "Ref": "AWS::Partition"
+       },
+       ":sts::",
+       {
+        "Ref": "AWS::AccountId"
+       },
+       ":assumed-role/",
+       {
+        "Ref": "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132authNestedStackauthNestedStackResource699DB456Outputsamplifyaceplatformdannywilsonsandbox62ec12a132authamplifyAuthunauthenticatedUserRoleEAFB7608Ref"
+       },
+       "/CognitoIdentityCredentials\"))\n$util.qr($ctx.stash.put(\"identityPoolId\", \"",
+       {
+        "Ref": "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132authNestedStackauthNestedStackResource699DB456Outputsamplifyaceplatformdannywilsonsandbox62ec12a132authamplifyAuthIdentityPool856F4105Ref"
+       },
+       "\"))\n$util.qr($ctx.stash.put(\"adminRoles\", []))\n$util.toJson({})"
+      ]
+     ]
+    },
+    "ResponseMappingTemplate": "$util.toJson($ctx.prev.result)",
+    "TypeName": "Mutation"
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-aceplatform-dannywilson-sandbox-62ec12a132/data/amplifyData/Quote/mutationUpdateQuoteResolver"
+   }
+  },
+  "MutationdeleteQuoteauth0FunctionMutationdeleteQuoteauth0FunctionAppSyncFunction88972A6E": {
+   "Type": "AWS::AppSync::FunctionConfiguration",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132dataamplifyDataGraphQLAPI1643E516ApiId"
+    },
+    "DataSourceName": {
+     "Fn::GetAtt": [
+      "QuoteDataSource",
+      "Name"
+     ]
+    },
+    "FunctionVersion": "2018-05-29",
+    "Name": "MutationdeleteQuoteauth0Function",
+    "RequestMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/1f5fed297da9c32ae3af922bf3a38ccf23b956078887d16891ec06c20c64722c.vtl"
+    },
+    "ResponseMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/04f6bed7af439a23b1a11557e8d7822047bf1aef84879aa4d069b593e381fcfb.vtl"
+    }
+   },
+   "DependsOn": [
+    "QuoteDataSource"
+   ],
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-aceplatform-dannywilson-sandbox-62ec12a132/data/amplifyData/Quote/MutationdeleteQuoteauth0Function/MutationdeleteQuoteauth0Function.AppSyncFunction"
+   }
+  },
+  "MutationdeleteQuotepostAuth0FunctionMutationdeleteQuotepostAuth0FunctionAppSyncFunctionB0972A49": {
+   "Type": "AWS::AppSync::FunctionConfiguration",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132dataamplifyDataGraphQLAPI1643E516ApiId"
+    },
+    "DataSourceName": {
+     "Ref": "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132dataamplifyDataGraphQLAPINONEDS8ED56022Name"
+    },
+    "FunctionVersion": "2018-05-29",
+    "Name": "MutationdeleteQuotepostAuth0Function",
+    "RequestMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/c1721bcd774e27c514d3454b5be4f9bdd094c0161b57ddf053d618e3b0086a77.vtl"
+    },
+    "ResponseMappingTemplate": "$util.toJson({})"
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-aceplatform-dannywilson-sandbox-62ec12a132/data/amplifyData/Quote/MutationdeleteQuotepostAuth0Function/MutationdeleteQuotepostAuth0Function.AppSyncFunction"
+   }
+  },
+  "MutationDeleteQuoteDataResolverFnMutationDeleteQuoteDataResolverFnAppSyncFunction48BFB9F9": {
+   "Type": "AWS::AppSync::FunctionConfiguration",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132dataamplifyDataGraphQLAPI1643E516ApiId"
+    },
+    "DataSourceName": {
+     "Fn::GetAtt": [
+      "QuoteDataSource",
+      "Name"
+     ]
+    },
+    "FunctionVersion": "2018-05-29",
+    "Name": "MutationDeleteQuoteDataResolverFn",
+    "RequestMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/4f7907d1209a2c9953a0c053df402c634e359546d70c7cc5c2e8e21ea734880f.vtl"
+    },
+    "ResponseMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/f4a52b72209a9dfa197b5e7367a5c378c5bb86de6e29ddd9e48b49a3fe54b249.vtl"
+    }
+   },
+   "DependsOn": [
+    "QuoteDataSource"
+   ],
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-aceplatform-dannywilson-sandbox-62ec12a132/data/amplifyData/Quote/MutationDeleteQuoteDataResolverFn/MutationDeleteQuoteDataResolverFn.AppSyncFunction"
+   }
+  },
+  "DeleteQuoteResolver": {
+   "Type": "AWS::AppSync::Resolver",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132dataamplifyDataGraphQLAPI1643E516ApiId"
+    },
+    "FieldName": "deleteQuote",
+    "Kind": "PIPELINE",
+    "PipelineConfig": {
+     "Functions": [
+      {
+       "Fn::GetAtt": [
+        "MutationdeleteQuoteauth0FunctionMutationdeleteQuoteauth0FunctionAppSyncFunction88972A6E",
+        "FunctionId"
+       ]
+      },
+      {
+       "Fn::GetAtt": [
+        "MutationdeleteQuotepostAuth0FunctionMutationdeleteQuotepostAuth0FunctionAppSyncFunctionB0972A49",
+        "FunctionId"
+       ]
+      },
+      {
+       "Fn::GetAtt": [
+        "MutationDeleteQuoteDataResolverFnMutationDeleteQuoteDataResolverFnAppSyncFunction48BFB9F9",
+        "FunctionId"
+       ]
+      }
+     ]
+    },
+    "RequestMappingTemplate": {
+     "Fn::Join": [
+      "",
+      [
+       "$util.qr($ctx.stash.put(\"typeName\", \"Mutation\"))\n$util.qr($ctx.stash.put(\"fieldName\", \"deleteQuote\"))\n$util.qr($ctx.stash.put(\"conditions\", []))\n$util.qr($ctx.stash.put(\"metadata\", {}))\n$util.qr($ctx.stash.metadata.put(\"dataSourceType\", \"AMAZON_DYNAMODB\"))\n$util.qr($ctx.stash.metadata.put(\"apiId\", \"",
+       {
+        "Ref": "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132dataamplifyDataGraphQLAPI1643E516ApiId"
+       },
+       "\"))\n$util.qr($ctx.stash.put(\"connectionAttributes\", {}))\n$util.qr($ctx.stash.put(\"tableName\", \"",
+       {
+        "Fn::Select": [
+         1,
+         {
+          "Fn::Split": [
+           "/",
+           {
+            "Fn::Select": [
+             5,
+             {
+              "Fn::Split": [
+               ":",
+               {
+                "Fn::GetAtt": [
+                 "QuoteTable",
+                 "TableArn"
+                ]
+               }
+              ]
+             }
+            ]
+           }
+          ]
+         }
+        ]
+       },
+       "\"))\n$util.qr($ctx.stash.put(\"authRole\", \"arn:",
+       {
+        "Ref": "AWS::Partition"
+       },
+       ":sts::",
+       {
+        "Ref": "AWS::AccountId"
+       },
+       ":assumed-role/",
+       {
+        "Ref": "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132authNestedStackauthNestedStackResource699DB456Outputsamplifyaceplatformdannywilsonsandbox62ec12a132authamplifyAuthauthenticatedUserRole8F54B8ECRef"
+       },
+       "/CognitoIdentityCredentials\"))\n$util.qr($ctx.stash.put(\"unauthRole\", \"arn:",
+       {
+        "Ref": "AWS::Partition"
+       },
+       ":sts::",
+       {
+        "Ref": "AWS::AccountId"
+       },
+       ":assumed-role/",
+       {
+        "Ref": "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132authNestedStackauthNestedStackResource699DB456Outputsamplifyaceplatformdannywilsonsandbox62ec12a132authamplifyAuthunauthenticatedUserRoleEAFB7608Ref"
+       },
+       "/CognitoIdentityCredentials\"))\n$util.qr($ctx.stash.put(\"identityPoolId\", \"",
+       {
+        "Ref": "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132authNestedStackauthNestedStackResource699DB456Outputsamplifyaceplatformdannywilsonsandbox62ec12a132authamplifyAuthIdentityPool856F4105Ref"
+       },
+       "\"))\n$util.qr($ctx.stash.put(\"adminRoles\", []))\n$util.toJson({})"
+      ]
+     ]
+    },
+    "ResponseMappingTemplate": "$util.toJson($ctx.prev.result)",
+    "TypeName": "Mutation"
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-aceplatform-dannywilson-sandbox-62ec12a132/data/amplifyData/Quote/mutationDeleteQuoteResolver"
+   }
+  },
+  "SubscriptiononCreateQuoteauth0FunctionSubscriptiononCreateQuoteauth0FunctionAppSyncFunction8D235BE2": {
+   "Type": "AWS::AppSync::FunctionConfiguration",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132dataamplifyDataGraphQLAPI1643E516ApiId"
+    },
+    "DataSourceName": {
+     "Ref": "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132dataamplifyDataGraphQLAPINONEDS8ED56022Name"
+    },
+    "FunctionVersion": "2018-05-29",
+    "Name": "SubscriptiononCreateQuoteauth0Function",
+    "RequestMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/9e565a489e2b98e69b18aa290621f38916dc378b54fe7e2e2f6fcf77a6b0be6f.vtl"
+    },
+    "ResponseMappingTemplate": "$util.toJson({})"
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-aceplatform-dannywilson-sandbox-62ec12a132/data/amplifyData/Quote/SubscriptiononCreateQuoteauth0Function/SubscriptiononCreateQuoteauth0Function.AppSyncFunction"
+   }
+  },
+  "SubscriptiononCreateQuotepostAuth0FunctionSubscriptiononCreateQuotepostAuth0FunctionAppSyncFunctionD9622B8D": {
+   "Type": "AWS::AppSync::FunctionConfiguration",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132dataamplifyDataGraphQLAPI1643E516ApiId"
+    },
+    "DataSourceName": {
+     "Ref": "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132dataamplifyDataGraphQLAPINONEDS8ED56022Name"
+    },
+    "FunctionVersion": "2018-05-29",
+    "Name": "SubscriptiononCreateQuotepostAuth0Function",
+    "RequestMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/c1721bcd774e27c514d3454b5be4f9bdd094c0161b57ddf053d618e3b0086a77.vtl"
+    },
+    "ResponseMappingTemplate": "$util.toJson({})"
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-aceplatform-dannywilson-sandbox-62ec12a132/data/amplifyData/Quote/SubscriptiononCreateQuotepostAuth0Function/SubscriptiononCreateQuotepostAuth0Function.AppSyncFunction"
+   }
+  },
+  "SubscriptionOnCreateQuoteDataResolverFnSubscriptionOnCreateQuoteDataResolverFnAppSyncFunction8DDA593C": {
+   "Type": "AWS::AppSync::FunctionConfiguration",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132dataamplifyDataGraphQLAPI1643E516ApiId"
+    },
+    "DataSourceName": {
+     "Ref": "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132dataamplifyDataGraphQLAPINONEDS8ED56022Name"
+    },
+    "FunctionVersion": "2018-05-29",
+    "Name": "SubscriptionOnCreateQuoteDataResolverFn",
+    "RequestMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/fe3c43ada4b9d681a5e2312663ef7a73386424d73b73e51f8e2e9d4b50f7c502.vtl"
+    },
+    "ResponseMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/e0cff47fb007f0bbf2a4e43ca256d6aa7ec109821769fd79fa7c5e83f0e7f9fc.vtl"
+    }
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-aceplatform-dannywilson-sandbox-62ec12a132/data/amplifyData/Quote/SubscriptionOnCreateQuoteDataResolverFn/SubscriptionOnCreateQuoteDataResolverFn.AppSyncFunction"
+   }
+  },
+  "SubscriptiononCreateQuoteResolver": {
+   "Type": "AWS::AppSync::Resolver",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132dataamplifyDataGraphQLAPI1643E516ApiId"
+    },
+    "FieldName": "onCreateQuote",
+    "Kind": "PIPELINE",
+    "PipelineConfig": {
+     "Functions": [
+      {
+       "Fn::GetAtt": [
+        "SubscriptiononCreateQuoteauth0FunctionSubscriptiononCreateQuoteauth0FunctionAppSyncFunction8D235BE2",
+        "FunctionId"
+       ]
+      },
+      {
+       "Fn::GetAtt": [
+        "SubscriptiononCreateQuotepostAuth0FunctionSubscriptiononCreateQuotepostAuth0FunctionAppSyncFunctionD9622B8D",
+        "FunctionId"
+       ]
+      },
+      {
+       "Fn::GetAtt": [
+        "SubscriptionOnCreateQuoteDataResolverFnSubscriptionOnCreateQuoteDataResolverFnAppSyncFunction8DDA593C",
+        "FunctionId"
+       ]
+      }
+     ]
+    },
+    "RequestMappingTemplate": {
+     "Fn::Join": [
+      "",
+      [
+       "$util.qr($ctx.stash.put(\"typeName\", \"Subscription\"))\n$util.qr($ctx.stash.put(\"fieldName\", \"onCreateQuote\"))\n$util.qr($ctx.stash.put(\"conditions\", []))\n$util.qr($ctx.stash.put(\"metadata\", {}))\n$util.qr($ctx.stash.metadata.put(\"dataSourceType\", \"NONE\"))\n$util.qr($ctx.stash.metadata.put(\"apiId\", \"",
+       {
+        "Ref": "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132dataamplifyDataGraphQLAPI1643E516ApiId"
+       },
+       "\"))\n$util.qr($ctx.stash.put(\"connectionAttributes\", {}))\n\n$util.qr($ctx.stash.put(\"authRole\", \"arn:",
+       {
+        "Ref": "AWS::Partition"
+       },
+       ":sts::",
+       {
+        "Ref": "AWS::AccountId"
+       },
+       ":assumed-role/",
+       {
+        "Ref": "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132authNestedStackauthNestedStackResource699DB456Outputsamplifyaceplatformdannywilsonsandbox62ec12a132authamplifyAuthauthenticatedUserRole8F54B8ECRef"
+       },
+       "/CognitoIdentityCredentials\"))\n$util.qr($ctx.stash.put(\"unauthRole\", \"arn:",
+       {
+        "Ref": "AWS::Partition"
+       },
+       ":sts::",
+       {
+        "Ref": "AWS::AccountId"
+       },
+       ":assumed-role/",
+       {
+        "Ref": "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132authNestedStackauthNestedStackResource699DB456Outputsamplifyaceplatformdannywilsonsandbox62ec12a132authamplifyAuthunauthenticatedUserRoleEAFB7608Ref"
+       },
+       "/CognitoIdentityCredentials\"))\n$util.qr($ctx.stash.put(\"identityPoolId\", \"",
+       {
+        "Ref": "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132authNestedStackauthNestedStackResource699DB456Outputsamplifyaceplatformdannywilsonsandbox62ec12a132authamplifyAuthIdentityPool856F4105Ref"
+       },
+       "\"))\n$util.qr($ctx.stash.put(\"adminRoles\", []))\n$util.toJson({})"
+      ]
+     ]
+    },
+    "ResponseMappingTemplate": "$util.toJson($ctx.prev.result)",
+    "TypeName": "Subscription"
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-aceplatform-dannywilson-sandbox-62ec12a132/data/amplifyData/Quote/subscriptionOnCreateQuoteResolver"
+   }
+  },
+  "SubscriptiononUpdateQuoteauth0FunctionSubscriptiononUpdateQuoteauth0FunctionAppSyncFunctionB97ADD2A": {
+   "Type": "AWS::AppSync::FunctionConfiguration",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132dataamplifyDataGraphQLAPI1643E516ApiId"
+    },
+    "DataSourceName": {
+     "Ref": "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132dataamplifyDataGraphQLAPINONEDS8ED56022Name"
+    },
+    "FunctionVersion": "2018-05-29",
+    "Name": "SubscriptiononUpdateQuoteauth0Function",
+    "RequestMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/9e565a489e2b98e69b18aa290621f38916dc378b54fe7e2e2f6fcf77a6b0be6f.vtl"
+    },
+    "ResponseMappingTemplate": "$util.toJson({})"
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-aceplatform-dannywilson-sandbox-62ec12a132/data/amplifyData/Quote/SubscriptiononUpdateQuoteauth0Function/SubscriptiononUpdateQuoteauth0Function.AppSyncFunction"
+   }
+  },
+  "SubscriptiononUpdateQuotepostAuth0FunctionSubscriptiononUpdateQuotepostAuth0FunctionAppSyncFunctionBF3DDA55": {
+   "Type": "AWS::AppSync::FunctionConfiguration",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132dataamplifyDataGraphQLAPI1643E516ApiId"
+    },
+    "DataSourceName": {
+     "Ref": "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132dataamplifyDataGraphQLAPINONEDS8ED56022Name"
+    },
+    "FunctionVersion": "2018-05-29",
+    "Name": "SubscriptiononUpdateQuotepostAuth0Function",
+    "RequestMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/c1721bcd774e27c514d3454b5be4f9bdd094c0161b57ddf053d618e3b0086a77.vtl"
+    },
+    "ResponseMappingTemplate": "$util.toJson({})"
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-aceplatform-dannywilson-sandbox-62ec12a132/data/amplifyData/Quote/SubscriptiononUpdateQuotepostAuth0Function/SubscriptiononUpdateQuotepostAuth0Function.AppSyncFunction"
+   }
+  },
+  "SubscriptionOnUpdateQuoteDataResolverFnSubscriptionOnUpdateQuoteDataResolverFnAppSyncFunction21CC685D": {
+   "Type": "AWS::AppSync::FunctionConfiguration",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132dataamplifyDataGraphQLAPI1643E516ApiId"
+    },
+    "DataSourceName": {
+     "Ref": "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132dataamplifyDataGraphQLAPINONEDS8ED56022Name"
+    },
+    "FunctionVersion": "2018-05-29",
+    "Name": "SubscriptionOnUpdateQuoteDataResolverFn",
+    "RequestMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/fe3c43ada4b9d681a5e2312663ef7a73386424d73b73e51f8e2e9d4b50f7c502.vtl"
+    },
+    "ResponseMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/e0cff47fb007f0bbf2a4e43ca256d6aa7ec109821769fd79fa7c5e83f0e7f9fc.vtl"
+    }
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-aceplatform-dannywilson-sandbox-62ec12a132/data/amplifyData/Quote/SubscriptionOnUpdateQuoteDataResolverFn/SubscriptionOnUpdateQuoteDataResolverFn.AppSyncFunction"
+   }
+  },
+  "SubscriptiononUpdateQuoteResolver": {
+   "Type": "AWS::AppSync::Resolver",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132dataamplifyDataGraphQLAPI1643E516ApiId"
+    },
+    "FieldName": "onUpdateQuote",
+    "Kind": "PIPELINE",
+    "PipelineConfig": {
+     "Functions": [
+      {
+       "Fn::GetAtt": [
+        "SubscriptiononUpdateQuoteauth0FunctionSubscriptiononUpdateQuoteauth0FunctionAppSyncFunctionB97ADD2A",
+        "FunctionId"
+       ]
+      },
+      {
+       "Fn::GetAtt": [
+        "SubscriptiononUpdateQuotepostAuth0FunctionSubscriptiononUpdateQuotepostAuth0FunctionAppSyncFunctionBF3DDA55",
+        "FunctionId"
+       ]
+      },
+      {
+       "Fn::GetAtt": [
+        "SubscriptionOnUpdateQuoteDataResolverFnSubscriptionOnUpdateQuoteDataResolverFnAppSyncFunction21CC685D",
+        "FunctionId"
+       ]
+      }
+     ]
+    },
+    "RequestMappingTemplate": {
+     "Fn::Join": [
+      "",
+      [
+       "$util.qr($ctx.stash.put(\"typeName\", \"Subscription\"))\n$util.qr($ctx.stash.put(\"fieldName\", \"onUpdateQuote\"))\n$util.qr($ctx.stash.put(\"conditions\", []))\n$util.qr($ctx.stash.put(\"metadata\", {}))\n$util.qr($ctx.stash.metadata.put(\"dataSourceType\", \"NONE\"))\n$util.qr($ctx.stash.metadata.put(\"apiId\", \"",
+       {
+        "Ref": "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132dataamplifyDataGraphQLAPI1643E516ApiId"
+       },
+       "\"))\n$util.qr($ctx.stash.put(\"connectionAttributes\", {}))\n\n$util.qr($ctx.stash.put(\"authRole\", \"arn:",
+       {
+        "Ref": "AWS::Partition"
+       },
+       ":sts::",
+       {
+        "Ref": "AWS::AccountId"
+       },
+       ":assumed-role/",
+       {
+        "Ref": "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132authNestedStackauthNestedStackResource699DB456Outputsamplifyaceplatformdannywilsonsandbox62ec12a132authamplifyAuthauthenticatedUserRole8F54B8ECRef"
+       },
+       "/CognitoIdentityCredentials\"))\n$util.qr($ctx.stash.put(\"unauthRole\", \"arn:",
+       {
+        "Ref": "AWS::Partition"
+       },
+       ":sts::",
+       {
+        "Ref": "AWS::AccountId"
+       },
+       ":assumed-role/",
+       {
+        "Ref": "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132authNestedStackauthNestedStackResource699DB456Outputsamplifyaceplatformdannywilsonsandbox62ec12a132authamplifyAuthunauthenticatedUserRoleEAFB7608Ref"
+       },
+       "/CognitoIdentityCredentials\"))\n$util.qr($ctx.stash.put(\"identityPoolId\", \"",
+       {
+        "Ref": "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132authNestedStackauthNestedStackResource699DB456Outputsamplifyaceplatformdannywilsonsandbox62ec12a132authamplifyAuthIdentityPool856F4105Ref"
+       },
+       "\"))\n$util.qr($ctx.stash.put(\"adminRoles\", []))\n$util.toJson({})"
+      ]
+     ]
+    },
+    "ResponseMappingTemplate": "$util.toJson($ctx.prev.result)",
+    "TypeName": "Subscription"
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-aceplatform-dannywilson-sandbox-62ec12a132/data/amplifyData/Quote/subscriptionOnUpdateQuoteResolver"
+   }
+  },
+  "SubscriptiononDeleteQuoteauth0FunctionSubscriptiononDeleteQuoteauth0FunctionAppSyncFunction19FC9FD1": {
+   "Type": "AWS::AppSync::FunctionConfiguration",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132dataamplifyDataGraphQLAPI1643E516ApiId"
+    },
+    "DataSourceName": {
+     "Ref": "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132dataamplifyDataGraphQLAPINONEDS8ED56022Name"
+    },
+    "FunctionVersion": "2018-05-29",
+    "Name": "SubscriptiononDeleteQuoteauth0Function",
+    "RequestMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/9e565a489e2b98e69b18aa290621f38916dc378b54fe7e2e2f6fcf77a6b0be6f.vtl"
+    },
+    "ResponseMappingTemplate": "$util.toJson({})"
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-aceplatform-dannywilson-sandbox-62ec12a132/data/amplifyData/Quote/SubscriptiononDeleteQuoteauth0Function/SubscriptiononDeleteQuoteauth0Function.AppSyncFunction"
+   }
+  },
+  "SubscriptiononDeleteQuotepostAuth0FunctionSubscriptiononDeleteQuotepostAuth0FunctionAppSyncFunction135E7629": {
+   "Type": "AWS::AppSync::FunctionConfiguration",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132dataamplifyDataGraphQLAPI1643E516ApiId"
+    },
+    "DataSourceName": {
+     "Ref": "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132dataamplifyDataGraphQLAPINONEDS8ED56022Name"
+    },
+    "FunctionVersion": "2018-05-29",
+    "Name": "SubscriptiononDeleteQuotepostAuth0Function",
+    "RequestMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/c1721bcd774e27c514d3454b5be4f9bdd094c0161b57ddf053d618e3b0086a77.vtl"
+    },
+    "ResponseMappingTemplate": "$util.toJson({})"
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-aceplatform-dannywilson-sandbox-62ec12a132/data/amplifyData/Quote/SubscriptiononDeleteQuotepostAuth0Function/SubscriptiononDeleteQuotepostAuth0Function.AppSyncFunction"
+   }
+  },
+  "SubscriptionOnDeleteQuoteDataResolverFnSubscriptionOnDeleteQuoteDataResolverFnAppSyncFunctionA3F41D3E": {
+   "Type": "AWS::AppSync::FunctionConfiguration",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132dataamplifyDataGraphQLAPI1643E516ApiId"
+    },
+    "DataSourceName": {
+     "Ref": "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132dataamplifyDataGraphQLAPINONEDS8ED56022Name"
+    },
+    "FunctionVersion": "2018-05-29",
+    "Name": "SubscriptionOnDeleteQuoteDataResolverFn",
+    "RequestMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/fe3c43ada4b9d681a5e2312663ef7a73386424d73b73e51f8e2e9d4b50f7c502.vtl"
+    },
+    "ResponseMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/e0cff47fb007f0bbf2a4e43ca256d6aa7ec109821769fd79fa7c5e83f0e7f9fc.vtl"
+    }
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-aceplatform-dannywilson-sandbox-62ec12a132/data/amplifyData/Quote/SubscriptionOnDeleteQuoteDataResolverFn/SubscriptionOnDeleteQuoteDataResolverFn.AppSyncFunction"
+   }
+  },
+  "SubscriptiononDeleteQuoteResolver": {
+   "Type": "AWS::AppSync::Resolver",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132dataamplifyDataGraphQLAPI1643E516ApiId"
+    },
+    "FieldName": "onDeleteQuote",
+    "Kind": "PIPELINE",
+    "PipelineConfig": {
+     "Functions": [
+      {
+       "Fn::GetAtt": [
+        "SubscriptiononDeleteQuoteauth0FunctionSubscriptiononDeleteQuoteauth0FunctionAppSyncFunction19FC9FD1",
+        "FunctionId"
+       ]
+      },
+      {
+       "Fn::GetAtt": [
+        "SubscriptiononDeleteQuotepostAuth0FunctionSubscriptiononDeleteQuotepostAuth0FunctionAppSyncFunction135E7629",
+        "FunctionId"
+       ]
+      },
+      {
+       "Fn::GetAtt": [
+        "SubscriptionOnDeleteQuoteDataResolverFnSubscriptionOnDeleteQuoteDataResolverFnAppSyncFunctionA3F41D3E",
+        "FunctionId"
+       ]
+      }
+     ]
+    },
+    "RequestMappingTemplate": {
+     "Fn::Join": [
+      "",
+      [
+       "$util.qr($ctx.stash.put(\"typeName\", \"Subscription\"))\n$util.qr($ctx.stash.put(\"fieldName\", \"onDeleteQuote\"))\n$util.qr($ctx.stash.put(\"conditions\", []))\n$util.qr($ctx.stash.put(\"metadata\", {}))\n$util.qr($ctx.stash.metadata.put(\"dataSourceType\", \"NONE\"))\n$util.qr($ctx.stash.metadata.put(\"apiId\", \"",
+       {
+        "Ref": "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132dataamplifyDataGraphQLAPI1643E516ApiId"
+       },
+       "\"))\n$util.qr($ctx.stash.put(\"connectionAttributes\", {}))\n\n$util.qr($ctx.stash.put(\"authRole\", \"arn:",
+       {
+        "Ref": "AWS::Partition"
+       },
+       ":sts::",
+       {
+        "Ref": "AWS::AccountId"
+       },
+       ":assumed-role/",
+       {
+        "Ref": "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132authNestedStackauthNestedStackResource699DB456Outputsamplifyaceplatformdannywilsonsandbox62ec12a132authamplifyAuthauthenticatedUserRole8F54B8ECRef"
+       },
+       "/CognitoIdentityCredentials\"))\n$util.qr($ctx.stash.put(\"unauthRole\", \"arn:",
+       {
+        "Ref": "AWS::Partition"
+       },
+       ":sts::",
+       {
+        "Ref": "AWS::AccountId"
+       },
+       ":assumed-role/",
+       {
+        "Ref": "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132authNestedStackauthNestedStackResource699DB456Outputsamplifyaceplatformdannywilsonsandbox62ec12a132authamplifyAuthunauthenticatedUserRoleEAFB7608Ref"
+       },
+       "/CognitoIdentityCredentials\"))\n$util.qr($ctx.stash.put(\"identityPoolId\", \"",
+       {
+        "Ref": "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132authNestedStackauthNestedStackResource699DB456Outputsamplifyaceplatformdannywilsonsandbox62ec12a132authamplifyAuthIdentityPool856F4105Ref"
+       },
+       "\"))\n$util.qr($ctx.stash.put(\"adminRoles\", []))\n$util.toJson({})"
+      ]
+     ]
+    },
+    "ResponseMappingTemplate": "$util.toJson($ctx.prev.result)",
+    "TypeName": "Subscription"
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-aceplatform-dannywilson-sandbox-62ec12a132/data/amplifyData/Quote/subscriptionOnDeleteQuoteResolver"
+   }
+  },
+  "QuoteOwnerDataResolverFnQuoteOwnerDataResolverFnAppSyncFunction94F3591E": {
+   "Type": "AWS::AppSync::FunctionConfiguration",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132dataamplifyDataGraphQLAPI1643E516ApiId"
+    },
+    "DataSourceName": {
+     "Ref": "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132dataamplifyDataGraphQLAPINONEDS8ED56022Name"
+    },
+    "FunctionVersion": "2018-05-29",
+    "Name": "QuoteOwnerDataResolverFn",
+    "RequestMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/041534e5fd916595f752318f161512d7c7f83b9f2cf32d0f0be381c12253ff68.vtl"
+    },
+    "ResponseMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/064303962e481067b44300212516363b99aaee539b6bafaf756fdd83ff0b60f0.vtl"
+    }
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-aceplatform-dannywilson-sandbox-62ec12a132/data/amplifyData/Quote/QuoteOwnerDataResolverFn/QuoteOwnerDataResolverFn.AppSyncFunction"
+   }
+  },
+  "QuoteownerResolver": {
+   "Type": "AWS::AppSync::Resolver",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132dataamplifyDataGraphQLAPI1643E516ApiId"
+    },
+    "FieldName": "owner",
+    "Kind": "PIPELINE",
+    "PipelineConfig": {
+     "Functions": [
+      {
+       "Fn::GetAtt": [
+        "QuoteOwnerDataResolverFnQuoteOwnerDataResolverFnAppSyncFunction94F3591E",
+        "FunctionId"
+       ]
+      }
+     ]
+    },
+    "RequestMappingTemplate": {
+     "Fn::Join": [
+      "",
+      [
+       "$util.qr($ctx.stash.put(\"typeName\", \"Quote\"))\n$util.qr($ctx.stash.put(\"fieldName\", \"owner\"))\n$util.qr($ctx.stash.put(\"conditions\", []))\n$util.qr($ctx.stash.put(\"metadata\", {}))\n$util.qr($ctx.stash.metadata.put(\"dataSourceType\", \"NONE\"))\n$util.qr($ctx.stash.metadata.put(\"apiId\", \"",
+       {
+        "Ref": "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132dataamplifyDataGraphQLAPI1643E516ApiId"
+       },
+       "\"))\n$util.qr($ctx.stash.put(\"connectionAttributes\", {}))\n\n$util.qr($ctx.stash.put(\"authRole\", \"arn:",
+       {
+        "Ref": "AWS::Partition"
+       },
+       ":sts::",
+       {
+        "Ref": "AWS::AccountId"
+       },
+       ":assumed-role/",
+       {
+        "Ref": "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132authNestedStackauthNestedStackResource699DB456Outputsamplifyaceplatformdannywilsonsandbox62ec12a132authamplifyAuthauthenticatedUserRole8F54B8ECRef"
+       },
+       "/CognitoIdentityCredentials\"))\n$util.qr($ctx.stash.put(\"unauthRole\", \"arn:",
+       {
+        "Ref": "AWS::Partition"
+       },
+       ":sts::",
+       {
+        "Ref": "AWS::AccountId"
+       },
+       ":assumed-role/",
+       {
+        "Ref": "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132authNestedStackauthNestedStackResource699DB456Outputsamplifyaceplatformdannywilsonsandbox62ec12a132authamplifyAuthunauthenticatedUserRoleEAFB7608Ref"
+       },
+       "/CognitoIdentityCredentials\"))\n$util.qr($ctx.stash.put(\"identityPoolId\", \"",
+       {
+        "Ref": "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132authNestedStackauthNestedStackResource699DB456Outputsamplifyaceplatformdannywilsonsandbox62ec12a132authamplifyAuthIdentityPool856F4105Ref"
+       },
+       "\"))\n$util.qr($ctx.stash.put(\"adminRoles\", []))\n$util.toJson({})"
+      ]
+     ]
+    },
+    "ResponseMappingTemplate": "$util.toJson($ctx.prev.result)",
+    "TypeName": "Quote"
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-aceplatform-dannywilson-sandbox-62ec12a132/data/amplifyData/Quote/quoteOwnerResolver"
+   }
+  },
+  "CDKMetadata": {
+   "Type": "AWS::CDK::Metadata",
+   "Properties": {
+    "Analytics": "v2:deflate64:H4sIAAAAAAAA/1WOwW6DMAyGn6X31BNU2s4raMdugt0rkxiUAg6KnVYV4t0n6NRpp9+f/Mn+c8hfc8h2eJO9df1+8A3MJxIlVyva3hQtf2HEkZTiCkVg59UHNhVJSNGSKZJoGP+w5eeMNznP7s44BtfANzYDHVHIeBxhrsLwsMNAi8FpkjtbmMtNL5sSFevnyf/0kdiuJYrAre9SxK3R7+fhSnExcjijCKnA+xpGDnBMtiddCyyr+5l0Smq2da3Yee4Ww8ERXOTlmueQvUG2u4j3+5hY/UhQPfIH6NZVqjYBAAA="
+   },
+   "Metadata": {
+    "aws:cdk:path": "amplify-aceplatform-dannywilson-sandbox-62ec12a132/data/amplifyData/Quote/CDKMetadata/Default"
+   },
+   "Condition": "CDKMetadataAvailable"
+  }
+ },
+ "Outputs": {
+  "GetAttQuoteTableStreamArn": {
+   "Description": "Your DynamoDB table StreamArn.",
+   "Value": {
+    "Fn::GetAtt": [
+     "QuoteTable",
+     "TableStreamArn"
+    ]
+   },
+   "Export": {
+    "Name": {
+     "Fn::Join": [
+      ":",
+      [
+       {
+        "Ref": "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132dataamplifyDataGraphQLAPI1643E516ApiId"
+       },
+       "GetAtt:QuoteTable:StreamArn"
+      ]
+     ]
+    }
+   }
+  },
+  "GetAttQuoteTableName": {
+   "Description": "Your DynamoDB table name.",
+   "Value": {
+    "Fn::Join": [
+     "",
+     [
+      "Quote-",
+      {
+       "Ref": "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132dataamplifyDataGraphQLAPI1643E516ApiId"
+      },
+      "-NONE"
+     ]
+    ]
+   },
+   "Export": {
+    "Name": {
+     "Fn::Join": [
+      ":",
+      [
+       {
+        "Ref": "referencetoamplifyaceplatformdannywilsonsandbox62ec12a132dataamplifyDataGraphQLAPI1643E516ApiId"
+       },
+       "GetAtt:QuoteTable:Name"
+      ]
+     ]
+    }
+   }
+  }
+ }
+}

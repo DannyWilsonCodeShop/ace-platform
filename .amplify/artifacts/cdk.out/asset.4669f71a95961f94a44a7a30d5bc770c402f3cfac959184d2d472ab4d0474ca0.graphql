@@ -1,0 +1,1638 @@
+type Quote @aws_iam @aws_cognito_user_pools {
+  serviceType: QuoteServiceType
+  status: QuoteStatus
+  firstName: String!
+  lastName: String!
+  email: String!
+  phone: String!
+  organization: String
+  howHeard: String
+  eventType: String
+  eventDates: AWSJSON
+  sameServicesAllDates: Boolean
+  services: [String]
+  perDayDetails: AWSJSON
+  genre: String
+  speeches: String
+  budget: String
+  venueName: String
+  venueAddress: String
+  roomName: String
+  floorAccess: String
+  indoorOutdoor: String
+  roomSize: String
+  powerAvailability: String
+  loadInTime: String
+  micWireless: String
+  micWired: String
+  auxInputs: String
+  monitorSpeakers: String
+  additionalNotes: String
+  digitalServices: [String]
+  projectDescription: String
+  hasExisting: String
+  existingUrl: String
+  pageCount: String
+  timeline: String
+  features: [String]
+  designDirection: String
+  referenceSites: String
+  digitalBudget: String
+  ongoingSupport: String
+  digitalNotes: String
+  aiAnalysis: String
+  internalNotes: String
+  assignedTo: String
+  quotedAmount: Float
+  finalAmount: Float
+  source: String
+  id: ID!
+  createdAt: AWSDateTime!
+  updatedAt: AWSDateTime!
+  owner: String
+}
+
+type Gig @aws_iam @aws_cognito_user_pools {
+  quoteId: String
+  clientId: String!
+  status: GigStatus
+  eventType: String!
+  eventDates: AWSJSON
+  services: [String]
+  perDayDetails: AWSJSON
+  venueName: String!
+  venueAddress: String!
+  roomName: String
+  floorAccess: String
+  indoorOutdoor: String
+  roomSize: String
+  assignedCrew: [String]
+  equipmentIds: [String]
+  checklist: AWSJSON
+  quotedAmount: Float
+  depositAmount: Float
+  depositPaid: Boolean
+  depositPaidAt: String
+  balanceAmount: Float
+  balancePaid: Boolean
+  balancePaidAt: String
+  invoiceId: String
+  internalNotes: String
+  clientNotes: String
+  client: Client
+  messages(filter: ModelMessageFilterInput, sortDirection: ModelSortDirection, limit: Int, nextToken: String): ModelMessageConnection
+  id: ID!
+  createdAt: AWSDateTime!
+  updatedAt: AWSDateTime!
+}
+
+type Client @aws_iam @aws_cognito_user_pools {
+  firstName: String!
+  lastName: String!
+  email: String!
+  phone: String!
+  organization: String
+  totalGigs: Int
+  totalRevenue: Float
+  isRepeatClient: Boolean
+  notes: String
+  tags: [String]
+  cognitoUserId: String
+  gigs(filter: ModelGigFilterInput, sortDirection: ModelSortDirection, limit: Int, nextToken: String): ModelGigConnection
+  invoices(filter: ModelInvoiceFilterInput, sortDirection: ModelSortDirection, limit: Int, nextToken: String): ModelInvoiceConnection
+  id: ID!
+  createdAt: AWSDateTime!
+  updatedAt: AWSDateTime!
+}
+
+type Equipment @aws_iam @aws_cognito_user_pools {
+  name: String!
+  category: EquipmentCategory
+  brand: String
+  model: String
+  serialNumber: String
+  status: EquipmentStatus
+  condition: EquipmentCondition
+  purchaseDate: String
+  purchasePrice: Float
+  notes: String
+  maintenanceLog: AWSJSON
+  currentGigId: String
+  id: ID!
+  createdAt: AWSDateTime!
+  updatedAt: AWSDateTime!
+}
+
+type Invoice @aws_iam @aws_cognito_user_pools {
+  gigId: String
+  clientId: String!
+  status: InvoiceStatus
+  sentAt: String
+  dueDate: String!
+  paidAt: String
+  lineItems: AWSJSON
+  subtotal: Float!
+  discount: Float
+  discountReason: String
+  tax: Float
+  total: Float!
+  depositRequired: Float
+  depositPaid: Float
+  balanceDue: Float
+  notes: String
+  paymentLink: String
+  client: Client
+  id: ID!
+  createdAt: AWSDateTime!
+  updatedAt: AWSDateTime!
+}
+
+type CrewMember @aws_iam @aws_cognito_user_pools {
+  userId: String!
+  name: String!
+  phone: String!
+  email: String!
+  role: CrewMemberRole
+  skills: [String]
+  availability: AWSJSON
+  hourlyRate: Float
+  totalGigs: Int
+  id: ID!
+  createdAt: AWSDateTime!
+  updatedAt: AWSDateTime!
+}
+
+type Message @aws_iam @aws_cognito_user_pools {
+  gigId: String!
+  senderId: String!
+  senderRole: String!
+  senderName: String!
+  content: String!
+  readBy: [String]
+  gig: Gig
+  id: ID!
+  createdAt: AWSDateTime!
+  updatedAt: AWSDateTime!
+}
+
+type Subscriber @aws_iam @aws_cognito_user_pools {
+  email: String!
+  name: String
+  source: String
+  status: SubscriberStatus
+  id: ID!
+  createdAt: AWSDateTime!
+  updatedAt: AWSDateTime!
+}
+
+type Notification @aws_iam @aws_cognito_user_pools {
+  userId: String!
+  type: NotificationType
+  channel: NotificationChannel
+  title: String!
+  message: String!
+  read: Boolean
+  metadata: AWSJSON
+  id: ID!
+  createdAt: AWSDateTime!
+  updatedAt: AWSDateTime!
+  owner: String
+}
+
+enum QuoteServiceType {
+  event
+  digital
+}
+
+enum QuoteStatus {
+  new
+  reviewed
+  quoted
+  accepted
+  declined
+  expired
+}
+
+enum GigStatus {
+  upcoming
+  confirmed
+  loaded_in
+  live
+  complete
+  paid
+  cancelled
+}
+
+enum EquipmentCategory {
+  speakers
+  microphones
+  mixers
+  cables
+  stands
+  monitors
+  lighting
+  other
+}
+
+enum EquipmentStatus {
+  available
+  deployed
+  maintenance
+  retired
+}
+
+enum EquipmentCondition {
+  excellent
+  good
+  fair
+  poor
+}
+
+enum InvoiceStatus {
+  draft
+  sent
+  viewed
+  partial
+  paid
+  overdue
+  cancelled
+}
+
+enum CrewMemberRole {
+  dj
+  sound_tech
+  crew
+  mc
+  musician
+  coordinator
+}
+
+enum SubscriberStatus {
+  active
+  unsubscribed
+}
+
+enum NotificationType {
+  new_quote
+  quote_accepted
+  payment_received
+  gig_reminder
+  gig_update
+  message
+}
+
+enum NotificationChannel {
+  email
+  sms
+  in_app
+}
+
+input AmplifyAIConversationTurnErrorInput {
+  errorType: String!
+  message: String!
+}
+
+input ModelStringInput {
+  ne: String
+  eq: String
+  le: String
+  lt: String
+  ge: String
+  gt: String
+  contains: String
+  notContains: String
+  between: [String]
+  beginsWith: String
+  attributeExists: Boolean
+  attributeType: ModelAttributeTypes
+  size: ModelSizeInput
+}
+
+input ModelIntInput {
+  ne: Int
+  eq: Int
+  le: Int
+  lt: Int
+  ge: Int
+  gt: Int
+  between: [Int]
+  attributeExists: Boolean
+  attributeType: ModelAttributeTypes
+}
+
+input ModelFloatInput {
+  ne: Float
+  eq: Float
+  le: Float
+  lt: Float
+  ge: Float
+  gt: Float
+  between: [Float]
+  attributeExists: Boolean
+  attributeType: ModelAttributeTypes
+}
+
+input ModelBooleanInput {
+  ne: Boolean
+  eq: Boolean
+  attributeExists: Boolean
+  attributeType: ModelAttributeTypes
+}
+
+input ModelIDInput {
+  ne: ID
+  eq: ID
+  le: ID
+  lt: ID
+  ge: ID
+  gt: ID
+  contains: ID
+  notContains: ID
+  between: [ID]
+  beginsWith: ID
+  attributeExists: Boolean
+  attributeType: ModelAttributeTypes
+  size: ModelSizeInput
+}
+
+input ModelSubscriptionStringInput {
+  ne: String
+  eq: String
+  le: String
+  lt: String
+  ge: String
+  gt: String
+  contains: String
+  notContains: String
+  between: [String]
+  beginsWith: String
+  in: [String]
+  notIn: [String]
+}
+
+input ModelSubscriptionIntInput {
+  ne: Int
+  eq: Int
+  le: Int
+  lt: Int
+  ge: Int
+  gt: Int
+  between: [Int]
+  in: [Int]
+  notIn: [Int]
+}
+
+input ModelSubscriptionFloatInput {
+  ne: Float
+  eq: Float
+  le: Float
+  lt: Float
+  ge: Float
+  gt: Float
+  between: [Float]
+  in: [Float]
+  notIn: [Float]
+}
+
+input ModelSubscriptionBooleanInput {
+  ne: Boolean
+  eq: Boolean
+}
+
+input ModelSubscriptionIDInput {
+  ne: ID
+  eq: ID
+  le: ID
+  lt: ID
+  ge: ID
+  gt: ID
+  contains: ID
+  notContains: ID
+  between: [ID]
+  beginsWith: ID
+  in: [ID]
+  notIn: [ID]
+}
+
+enum ModelAttributeTypes {
+  binary
+  binarySet
+  bool
+  list
+  map
+  number
+  numberSet
+  string
+  stringSet
+  _null
+}
+
+input ModelSizeInput {
+  ne: Int
+  eq: Int
+  le: Int
+  lt: Int
+  ge: Int
+  gt: Int
+  between: [Int]
+}
+
+enum ModelSortDirection {
+  ASC
+  DESC
+}
+
+type ModelQuoteConnection @aws_iam @aws_cognito_user_pools {
+  items: [Quote]!
+  nextToken: String
+}
+
+input ModelQuoteServiceTypeInput {
+  eq: QuoteServiceType
+  ne: QuoteServiceType
+}
+
+input ModelQuoteStatusInput {
+  eq: QuoteStatus
+  ne: QuoteStatus
+}
+
+input ModelQuoteFilterInput {
+  serviceType: ModelQuoteServiceTypeInput
+  status: ModelQuoteStatusInput
+  firstName: ModelStringInput
+  lastName: ModelStringInput
+  email: ModelStringInput
+  phone: ModelStringInput
+  organization: ModelStringInput
+  howHeard: ModelStringInput
+  eventType: ModelStringInput
+  eventDates: ModelStringInput
+  sameServicesAllDates: ModelBooleanInput
+  services: ModelStringInput
+  perDayDetails: ModelStringInput
+  genre: ModelStringInput
+  speeches: ModelStringInput
+  budget: ModelStringInput
+  venueName: ModelStringInput
+  venueAddress: ModelStringInput
+  roomName: ModelStringInput
+  floorAccess: ModelStringInput
+  indoorOutdoor: ModelStringInput
+  roomSize: ModelStringInput
+  powerAvailability: ModelStringInput
+  loadInTime: ModelStringInput
+  micWireless: ModelStringInput
+  micWired: ModelStringInput
+  auxInputs: ModelStringInput
+  monitorSpeakers: ModelStringInput
+  additionalNotes: ModelStringInput
+  digitalServices: ModelStringInput
+  projectDescription: ModelStringInput
+  hasExisting: ModelStringInput
+  existingUrl: ModelStringInput
+  pageCount: ModelStringInput
+  timeline: ModelStringInput
+  features: ModelStringInput
+  designDirection: ModelStringInput
+  referenceSites: ModelStringInput
+  digitalBudget: ModelStringInput
+  ongoingSupport: ModelStringInput
+  digitalNotes: ModelStringInput
+  aiAnalysis: ModelStringInput
+  internalNotes: ModelStringInput
+  assignedTo: ModelStringInput
+  quotedAmount: ModelFloatInput
+  finalAmount: ModelFloatInput
+  source: ModelStringInput
+  id: ModelIDInput
+  createdAt: ModelStringInput
+  updatedAt: ModelStringInput
+  and: [ModelQuoteFilterInput]
+  or: [ModelQuoteFilterInput]
+  not: ModelQuoteFilterInput
+  owner: ModelStringInput
+}
+
+type Query {
+  getQuote(id: ID!): Quote @aws_iam @aws_cognito_user_pools
+  listQuotes(filter: ModelQuoteFilterInput, limit: Int, nextToken: String): ModelQuoteConnection @aws_iam @aws_cognito_user_pools
+  getGig(id: ID!): Gig @aws_iam @aws_cognito_user_pools
+  listGigs(filter: ModelGigFilterInput, limit: Int, nextToken: String): ModelGigConnection @aws_iam @aws_cognito_user_pools
+  getClient(id: ID!): Client @aws_iam @aws_cognito_user_pools
+  listClients(filter: ModelClientFilterInput, limit: Int, nextToken: String): ModelClientConnection @aws_iam @aws_cognito_user_pools
+  getEquipment(id: ID!): Equipment @aws_iam @aws_cognito_user_pools
+  listEquipment(filter: ModelEquipmentFilterInput, limit: Int, nextToken: String): ModelEquipmentConnection @aws_iam @aws_cognito_user_pools
+  getInvoice(id: ID!): Invoice @aws_iam @aws_cognito_user_pools
+  listInvoices(filter: ModelInvoiceFilterInput, limit: Int, nextToken: String): ModelInvoiceConnection @aws_iam @aws_cognito_user_pools
+  getCrewMember(id: ID!): CrewMember @aws_iam @aws_cognito_user_pools
+  listCrewMembers(filter: ModelCrewMemberFilterInput, limit: Int, nextToken: String): ModelCrewMemberConnection @aws_iam @aws_cognito_user_pools
+  getMessage(id: ID!): Message @aws_iam @aws_cognito_user_pools
+  listMessages(filter: ModelMessageFilterInput, limit: Int, nextToken: String): ModelMessageConnection @aws_iam @aws_cognito_user_pools
+  getSubscriber(id: ID!): Subscriber @aws_iam @aws_cognito_user_pools
+  listSubscribers(filter: ModelSubscriberFilterInput, limit: Int, nextToken: String): ModelSubscriberConnection @aws_iam @aws_cognito_user_pools
+  getNotification(id: ID!): Notification @aws_iam @aws_cognito_user_pools
+  listNotifications(filter: ModelNotificationFilterInput, limit: Int, nextToken: String): ModelNotificationConnection @aws_iam @aws_cognito_user_pools
+}
+
+input ModelQuoteConditionInput {
+  serviceType: ModelQuoteServiceTypeInput
+  status: ModelQuoteStatusInput
+  firstName: ModelStringInput
+  lastName: ModelStringInput
+  email: ModelStringInput
+  phone: ModelStringInput
+  organization: ModelStringInput
+  howHeard: ModelStringInput
+  eventType: ModelStringInput
+  eventDates: ModelStringInput
+  sameServicesAllDates: ModelBooleanInput
+  services: ModelStringInput
+  perDayDetails: ModelStringInput
+  genre: ModelStringInput
+  speeches: ModelStringInput
+  budget: ModelStringInput
+  venueName: ModelStringInput
+  venueAddress: ModelStringInput
+  roomName: ModelStringInput
+  floorAccess: ModelStringInput
+  indoorOutdoor: ModelStringInput
+  roomSize: ModelStringInput
+  powerAvailability: ModelStringInput
+  loadInTime: ModelStringInput
+  micWireless: ModelStringInput
+  micWired: ModelStringInput
+  auxInputs: ModelStringInput
+  monitorSpeakers: ModelStringInput
+  additionalNotes: ModelStringInput
+  digitalServices: ModelStringInput
+  projectDescription: ModelStringInput
+  hasExisting: ModelStringInput
+  existingUrl: ModelStringInput
+  pageCount: ModelStringInput
+  timeline: ModelStringInput
+  features: ModelStringInput
+  designDirection: ModelStringInput
+  referenceSites: ModelStringInput
+  digitalBudget: ModelStringInput
+  ongoingSupport: ModelStringInput
+  digitalNotes: ModelStringInput
+  aiAnalysis: ModelStringInput
+  internalNotes: ModelStringInput
+  assignedTo: ModelStringInput
+  quotedAmount: ModelFloatInput
+  finalAmount: ModelFloatInput
+  source: ModelStringInput
+  and: [ModelQuoteConditionInput]
+  or: [ModelQuoteConditionInput]
+  not: ModelQuoteConditionInput
+  createdAt: ModelStringInput
+  updatedAt: ModelStringInput
+  owner: ModelStringInput
+}
+
+input CreateQuoteInput {
+  serviceType: QuoteServiceType
+  status: QuoteStatus
+  firstName: String!
+  lastName: String!
+  email: String!
+  phone: String!
+  organization: String
+  howHeard: String
+  eventType: String
+  eventDates: AWSJSON
+  sameServicesAllDates: Boolean
+  services: [String]
+  perDayDetails: AWSJSON
+  genre: String
+  speeches: String
+  budget: String
+  venueName: String
+  venueAddress: String
+  roomName: String
+  floorAccess: String
+  indoorOutdoor: String
+  roomSize: String
+  powerAvailability: String
+  loadInTime: String
+  micWireless: String
+  micWired: String
+  auxInputs: String
+  monitorSpeakers: String
+  additionalNotes: String
+  digitalServices: [String]
+  projectDescription: String
+  hasExisting: String
+  existingUrl: String
+  pageCount: String
+  timeline: String
+  features: [String]
+  designDirection: String
+  referenceSites: String
+  digitalBudget: String
+  ongoingSupport: String
+  digitalNotes: String
+  aiAnalysis: String
+  internalNotes: String
+  assignedTo: String
+  quotedAmount: Float
+  finalAmount: Float
+  source: String
+  id: ID
+}
+
+input UpdateQuoteInput {
+  serviceType: QuoteServiceType
+  status: QuoteStatus
+  firstName: String
+  lastName: String
+  email: String
+  phone: String
+  organization: String
+  howHeard: String
+  eventType: String
+  eventDates: AWSJSON
+  sameServicesAllDates: Boolean
+  services: [String]
+  perDayDetails: AWSJSON
+  genre: String
+  speeches: String
+  budget: String
+  venueName: String
+  venueAddress: String
+  roomName: String
+  floorAccess: String
+  indoorOutdoor: String
+  roomSize: String
+  powerAvailability: String
+  loadInTime: String
+  micWireless: String
+  micWired: String
+  auxInputs: String
+  monitorSpeakers: String
+  additionalNotes: String
+  digitalServices: [String]
+  projectDescription: String
+  hasExisting: String
+  existingUrl: String
+  pageCount: String
+  timeline: String
+  features: [String]
+  designDirection: String
+  referenceSites: String
+  digitalBudget: String
+  ongoingSupport: String
+  digitalNotes: String
+  aiAnalysis: String
+  internalNotes: String
+  assignedTo: String
+  quotedAmount: Float
+  finalAmount: Float
+  source: String
+  id: ID!
+}
+
+input DeleteQuoteInput {
+  id: ID!
+}
+
+type Mutation {
+  createQuote(input: CreateQuoteInput!, condition: ModelQuoteConditionInput): Quote @aws_iam @aws_cognito_user_pools
+  updateQuote(input: UpdateQuoteInput!, condition: ModelQuoteConditionInput): Quote @aws_iam @aws_cognito_user_pools
+  deleteQuote(input: DeleteQuoteInput!, condition: ModelQuoteConditionInput): Quote @aws_iam @aws_cognito_user_pools
+  createGig(input: CreateGigInput!, condition: ModelGigConditionInput): Gig @aws_iam @aws_cognito_user_pools
+  updateGig(input: UpdateGigInput!, condition: ModelGigConditionInput): Gig @aws_iam @aws_cognito_user_pools
+  deleteGig(input: DeleteGigInput!, condition: ModelGigConditionInput): Gig @aws_iam @aws_cognito_user_pools
+  createClient(input: CreateClientInput!, condition: ModelClientConditionInput): Client @aws_iam @aws_cognito_user_pools
+  updateClient(input: UpdateClientInput!, condition: ModelClientConditionInput): Client @aws_iam @aws_cognito_user_pools
+  deleteClient(input: DeleteClientInput!, condition: ModelClientConditionInput): Client @aws_iam @aws_cognito_user_pools
+  createEquipment(input: CreateEquipmentInput!, condition: ModelEquipmentConditionInput): Equipment @aws_iam @aws_cognito_user_pools
+  updateEquipment(input: UpdateEquipmentInput!, condition: ModelEquipmentConditionInput): Equipment @aws_iam @aws_cognito_user_pools
+  deleteEquipment(input: DeleteEquipmentInput!, condition: ModelEquipmentConditionInput): Equipment @aws_iam @aws_cognito_user_pools
+  createInvoice(input: CreateInvoiceInput!, condition: ModelInvoiceConditionInput): Invoice @aws_iam @aws_cognito_user_pools
+  updateInvoice(input: UpdateInvoiceInput!, condition: ModelInvoiceConditionInput): Invoice @aws_iam @aws_cognito_user_pools
+  deleteInvoice(input: DeleteInvoiceInput!, condition: ModelInvoiceConditionInput): Invoice @aws_iam @aws_cognito_user_pools
+  createCrewMember(input: CreateCrewMemberInput!, condition: ModelCrewMemberConditionInput): CrewMember @aws_iam @aws_cognito_user_pools
+  updateCrewMember(input: UpdateCrewMemberInput!, condition: ModelCrewMemberConditionInput): CrewMember @aws_iam @aws_cognito_user_pools
+  deleteCrewMember(input: DeleteCrewMemberInput!, condition: ModelCrewMemberConditionInput): CrewMember @aws_iam @aws_cognito_user_pools
+  createMessage(input: CreateMessageInput!, condition: ModelMessageConditionInput): Message @aws_iam @aws_cognito_user_pools
+  updateMessage(input: UpdateMessageInput!, condition: ModelMessageConditionInput): Message @aws_iam @aws_cognito_user_pools
+  deleteMessage(input: DeleteMessageInput!, condition: ModelMessageConditionInput): Message @aws_iam @aws_cognito_user_pools
+  createSubscriber(input: CreateSubscriberInput!, condition: ModelSubscriberConditionInput): Subscriber @aws_iam @aws_cognito_user_pools
+  updateSubscriber(input: UpdateSubscriberInput!, condition: ModelSubscriberConditionInput): Subscriber @aws_iam @aws_cognito_user_pools
+  deleteSubscriber(input: DeleteSubscriberInput!, condition: ModelSubscriberConditionInput): Subscriber @aws_iam @aws_cognito_user_pools
+  createNotification(input: CreateNotificationInput!, condition: ModelNotificationConditionInput): Notification @aws_iam @aws_cognito_user_pools
+  updateNotification(input: UpdateNotificationInput!, condition: ModelNotificationConditionInput): Notification @aws_iam @aws_cognito_user_pools
+  deleteNotification(input: DeleteNotificationInput!, condition: ModelNotificationConditionInput): Notification @aws_iam @aws_cognito_user_pools
+}
+
+input ModelSubscriptionQuoteFilterInput {
+  serviceType: ModelSubscriptionStringInput
+  status: ModelSubscriptionStringInput
+  firstName: ModelSubscriptionStringInput
+  lastName: ModelSubscriptionStringInput
+  email: ModelSubscriptionStringInput
+  phone: ModelSubscriptionStringInput
+  organization: ModelSubscriptionStringInput
+  howHeard: ModelSubscriptionStringInput
+  eventType: ModelSubscriptionStringInput
+  eventDates: ModelSubscriptionStringInput
+  sameServicesAllDates: ModelSubscriptionBooleanInput
+  services: ModelSubscriptionStringInput
+  perDayDetails: ModelSubscriptionStringInput
+  genre: ModelSubscriptionStringInput
+  speeches: ModelSubscriptionStringInput
+  budget: ModelSubscriptionStringInput
+  venueName: ModelSubscriptionStringInput
+  venueAddress: ModelSubscriptionStringInput
+  roomName: ModelSubscriptionStringInput
+  floorAccess: ModelSubscriptionStringInput
+  indoorOutdoor: ModelSubscriptionStringInput
+  roomSize: ModelSubscriptionStringInput
+  powerAvailability: ModelSubscriptionStringInput
+  loadInTime: ModelSubscriptionStringInput
+  micWireless: ModelSubscriptionStringInput
+  micWired: ModelSubscriptionStringInput
+  auxInputs: ModelSubscriptionStringInput
+  monitorSpeakers: ModelSubscriptionStringInput
+  additionalNotes: ModelSubscriptionStringInput
+  digitalServices: ModelSubscriptionStringInput
+  projectDescription: ModelSubscriptionStringInput
+  hasExisting: ModelSubscriptionStringInput
+  existingUrl: ModelSubscriptionStringInput
+  pageCount: ModelSubscriptionStringInput
+  timeline: ModelSubscriptionStringInput
+  features: ModelSubscriptionStringInput
+  designDirection: ModelSubscriptionStringInput
+  referenceSites: ModelSubscriptionStringInput
+  digitalBudget: ModelSubscriptionStringInput
+  ongoingSupport: ModelSubscriptionStringInput
+  digitalNotes: ModelSubscriptionStringInput
+  aiAnalysis: ModelSubscriptionStringInput
+  internalNotes: ModelSubscriptionStringInput
+  assignedTo: ModelSubscriptionStringInput
+  quotedAmount: ModelSubscriptionFloatInput
+  finalAmount: ModelSubscriptionFloatInput
+  source: ModelSubscriptionStringInput
+  id: ModelSubscriptionIDInput
+  createdAt: ModelSubscriptionStringInput
+  updatedAt: ModelSubscriptionStringInput
+  and: [ModelSubscriptionQuoteFilterInput]
+  or: [ModelSubscriptionQuoteFilterInput]
+  owner: ModelStringInput
+}
+
+type Subscription {
+  onCreateQuote(filter: ModelSubscriptionQuoteFilterInput, owner: String): Quote @aws_subscribe(mutations: ["createQuote"]) @aws_iam @aws_cognito_user_pools
+  onUpdateQuote(filter: ModelSubscriptionQuoteFilterInput, owner: String): Quote @aws_subscribe(mutations: ["updateQuote"]) @aws_iam @aws_cognito_user_pools
+  onDeleteQuote(filter: ModelSubscriptionQuoteFilterInput, owner: String): Quote @aws_subscribe(mutations: ["deleteQuote"]) @aws_iam @aws_cognito_user_pools
+  onCreateGig(filter: ModelSubscriptionGigFilterInput): Gig @aws_subscribe(mutations: ["createGig"]) @aws_iam @aws_cognito_user_pools
+  onUpdateGig(filter: ModelSubscriptionGigFilterInput): Gig @aws_subscribe(mutations: ["updateGig"]) @aws_iam @aws_cognito_user_pools
+  onDeleteGig(filter: ModelSubscriptionGigFilterInput): Gig @aws_subscribe(mutations: ["deleteGig"]) @aws_iam @aws_cognito_user_pools
+  onCreateClient(filter: ModelSubscriptionClientFilterInput): Client @aws_subscribe(mutations: ["createClient"]) @aws_iam @aws_cognito_user_pools
+  onUpdateClient(filter: ModelSubscriptionClientFilterInput): Client @aws_subscribe(mutations: ["updateClient"]) @aws_iam @aws_cognito_user_pools
+  onDeleteClient(filter: ModelSubscriptionClientFilterInput): Client @aws_subscribe(mutations: ["deleteClient"]) @aws_iam @aws_cognito_user_pools
+  onCreateEquipment(filter: ModelSubscriptionEquipmentFilterInput): Equipment @aws_subscribe(mutations: ["createEquipment"]) @aws_iam @aws_cognito_user_pools
+  onUpdateEquipment(filter: ModelSubscriptionEquipmentFilterInput): Equipment @aws_subscribe(mutations: ["updateEquipment"]) @aws_iam @aws_cognito_user_pools
+  onDeleteEquipment(filter: ModelSubscriptionEquipmentFilterInput): Equipment @aws_subscribe(mutations: ["deleteEquipment"]) @aws_iam @aws_cognito_user_pools
+  onCreateInvoice(filter: ModelSubscriptionInvoiceFilterInput): Invoice @aws_subscribe(mutations: ["createInvoice"]) @aws_iam @aws_cognito_user_pools
+  onUpdateInvoice(filter: ModelSubscriptionInvoiceFilterInput): Invoice @aws_subscribe(mutations: ["updateInvoice"]) @aws_iam @aws_cognito_user_pools
+  onDeleteInvoice(filter: ModelSubscriptionInvoiceFilterInput): Invoice @aws_subscribe(mutations: ["deleteInvoice"]) @aws_iam @aws_cognito_user_pools
+  onCreateCrewMember(filter: ModelSubscriptionCrewMemberFilterInput): CrewMember @aws_subscribe(mutations: ["createCrewMember"]) @aws_iam @aws_cognito_user_pools
+  onUpdateCrewMember(filter: ModelSubscriptionCrewMemberFilterInput): CrewMember @aws_subscribe(mutations: ["updateCrewMember"]) @aws_iam @aws_cognito_user_pools
+  onDeleteCrewMember(filter: ModelSubscriptionCrewMemberFilterInput): CrewMember @aws_subscribe(mutations: ["deleteCrewMember"]) @aws_iam @aws_cognito_user_pools
+  onCreateMessage(filter: ModelSubscriptionMessageFilterInput): Message @aws_subscribe(mutations: ["createMessage"]) @aws_iam @aws_cognito_user_pools
+  onUpdateMessage(filter: ModelSubscriptionMessageFilterInput): Message @aws_subscribe(mutations: ["updateMessage"]) @aws_iam @aws_cognito_user_pools
+  onDeleteMessage(filter: ModelSubscriptionMessageFilterInput): Message @aws_subscribe(mutations: ["deleteMessage"]) @aws_iam @aws_cognito_user_pools
+  onCreateSubscriber(filter: ModelSubscriptionSubscriberFilterInput): Subscriber @aws_subscribe(mutations: ["createSubscriber"]) @aws_iam @aws_cognito_user_pools
+  onUpdateSubscriber(filter: ModelSubscriptionSubscriberFilterInput): Subscriber @aws_subscribe(mutations: ["updateSubscriber"]) @aws_iam @aws_cognito_user_pools
+  onDeleteSubscriber(filter: ModelSubscriptionSubscriberFilterInput): Subscriber @aws_subscribe(mutations: ["deleteSubscriber"]) @aws_iam @aws_cognito_user_pools
+  onCreateNotification(filter: ModelSubscriptionNotificationFilterInput, owner: String): Notification @aws_subscribe(mutations: ["createNotification"]) @aws_iam @aws_cognito_user_pools
+  onUpdateNotification(filter: ModelSubscriptionNotificationFilterInput, owner: String): Notification @aws_subscribe(mutations: ["updateNotification"]) @aws_iam @aws_cognito_user_pools
+  onDeleteNotification(filter: ModelSubscriptionNotificationFilterInput, owner: String): Notification @aws_subscribe(mutations: ["deleteNotification"]) @aws_iam @aws_cognito_user_pools
+}
+
+type ModelGigConnection @aws_iam @aws_cognito_user_pools {
+  items: [Gig]!
+  nextToken: String
+}
+
+input ModelGigStatusInput {
+  eq: GigStatus
+  ne: GigStatus
+}
+
+input ModelGigFilterInput {
+  quoteId: ModelStringInput
+  clientId: ModelStringInput
+  status: ModelGigStatusInput
+  eventType: ModelStringInput
+  eventDates: ModelStringInput
+  services: ModelStringInput
+  perDayDetails: ModelStringInput
+  venueName: ModelStringInput
+  venueAddress: ModelStringInput
+  roomName: ModelStringInput
+  floorAccess: ModelStringInput
+  indoorOutdoor: ModelStringInput
+  roomSize: ModelStringInput
+  assignedCrew: ModelStringInput
+  equipmentIds: ModelStringInput
+  checklist: ModelStringInput
+  quotedAmount: ModelFloatInput
+  depositAmount: ModelFloatInput
+  depositPaid: ModelBooleanInput
+  depositPaidAt: ModelStringInput
+  balanceAmount: ModelFloatInput
+  balancePaid: ModelBooleanInput
+  balancePaidAt: ModelStringInput
+  invoiceId: ModelStringInput
+  internalNotes: ModelStringInput
+  clientNotes: ModelStringInput
+  id: ModelIDInput
+  createdAt: ModelStringInput
+  updatedAt: ModelStringInput
+  and: [ModelGigFilterInput]
+  or: [ModelGigFilterInput]
+  not: ModelGigFilterInput
+}
+
+input ModelGigConditionInput {
+  quoteId: ModelStringInput
+  clientId: ModelStringInput
+  status: ModelGigStatusInput
+  eventType: ModelStringInput
+  eventDates: ModelStringInput
+  services: ModelStringInput
+  perDayDetails: ModelStringInput
+  venueName: ModelStringInput
+  venueAddress: ModelStringInput
+  roomName: ModelStringInput
+  floorAccess: ModelStringInput
+  indoorOutdoor: ModelStringInput
+  roomSize: ModelStringInput
+  assignedCrew: ModelStringInput
+  equipmentIds: ModelStringInput
+  checklist: ModelStringInput
+  quotedAmount: ModelFloatInput
+  depositAmount: ModelFloatInput
+  depositPaid: ModelBooleanInput
+  depositPaidAt: ModelStringInput
+  balanceAmount: ModelFloatInput
+  balancePaid: ModelBooleanInput
+  balancePaidAt: ModelStringInput
+  invoiceId: ModelStringInput
+  internalNotes: ModelStringInput
+  clientNotes: ModelStringInput
+  and: [ModelGigConditionInput]
+  or: [ModelGigConditionInput]
+  not: ModelGigConditionInput
+  createdAt: ModelStringInput
+  updatedAt: ModelStringInput
+}
+
+input CreateGigInput {
+  quoteId: String
+  clientId: String!
+  status: GigStatus
+  eventType: String!
+  eventDates: AWSJSON
+  services: [String]
+  perDayDetails: AWSJSON
+  venueName: String!
+  venueAddress: String!
+  roomName: String
+  floorAccess: String
+  indoorOutdoor: String
+  roomSize: String
+  assignedCrew: [String]
+  equipmentIds: [String]
+  checklist: AWSJSON
+  quotedAmount: Float
+  depositAmount: Float
+  depositPaid: Boolean
+  depositPaidAt: String
+  balanceAmount: Float
+  balancePaid: Boolean
+  balancePaidAt: String
+  invoiceId: String
+  internalNotes: String
+  clientNotes: String
+  id: ID
+}
+
+input UpdateGigInput {
+  quoteId: String
+  clientId: String
+  status: GigStatus
+  eventType: String
+  eventDates: AWSJSON
+  services: [String]
+  perDayDetails: AWSJSON
+  venueName: String
+  venueAddress: String
+  roomName: String
+  floorAccess: String
+  indoorOutdoor: String
+  roomSize: String
+  assignedCrew: [String]
+  equipmentIds: [String]
+  checklist: AWSJSON
+  quotedAmount: Float
+  depositAmount: Float
+  depositPaid: Boolean
+  depositPaidAt: String
+  balanceAmount: Float
+  balancePaid: Boolean
+  balancePaidAt: String
+  invoiceId: String
+  internalNotes: String
+  clientNotes: String
+  id: ID!
+}
+
+input DeleteGigInput {
+  id: ID!
+}
+
+input ModelSubscriptionGigFilterInput {
+  quoteId: ModelSubscriptionStringInput
+  clientId: ModelSubscriptionStringInput
+  status: ModelSubscriptionStringInput
+  eventType: ModelSubscriptionStringInput
+  eventDates: ModelSubscriptionStringInput
+  services: ModelSubscriptionStringInput
+  perDayDetails: ModelSubscriptionStringInput
+  venueName: ModelSubscriptionStringInput
+  venueAddress: ModelSubscriptionStringInput
+  roomName: ModelSubscriptionStringInput
+  floorAccess: ModelSubscriptionStringInput
+  indoorOutdoor: ModelSubscriptionStringInput
+  roomSize: ModelSubscriptionStringInput
+  assignedCrew: ModelSubscriptionStringInput
+  equipmentIds: ModelSubscriptionStringInput
+  checklist: ModelSubscriptionStringInput
+  quotedAmount: ModelSubscriptionFloatInput
+  depositAmount: ModelSubscriptionFloatInput
+  depositPaid: ModelSubscriptionBooleanInput
+  depositPaidAt: ModelSubscriptionStringInput
+  balanceAmount: ModelSubscriptionFloatInput
+  balancePaid: ModelSubscriptionBooleanInput
+  balancePaidAt: ModelSubscriptionStringInput
+  invoiceId: ModelSubscriptionStringInput
+  internalNotes: ModelSubscriptionStringInput
+  clientNotes: ModelSubscriptionStringInput
+  id: ModelSubscriptionIDInput
+  createdAt: ModelSubscriptionStringInput
+  updatedAt: ModelSubscriptionStringInput
+  and: [ModelSubscriptionGigFilterInput]
+  or: [ModelSubscriptionGigFilterInput]
+}
+
+type ModelClientConnection @aws_iam @aws_cognito_user_pools {
+  items: [Client]!
+  nextToken: String
+}
+
+input ModelClientFilterInput {
+  firstName: ModelStringInput
+  lastName: ModelStringInput
+  email: ModelStringInput
+  phone: ModelStringInput
+  organization: ModelStringInput
+  totalGigs: ModelIntInput
+  totalRevenue: ModelFloatInput
+  isRepeatClient: ModelBooleanInput
+  notes: ModelStringInput
+  tags: ModelStringInput
+  cognitoUserId: ModelStringInput
+  id: ModelIDInput
+  createdAt: ModelStringInput
+  updatedAt: ModelStringInput
+  and: [ModelClientFilterInput]
+  or: [ModelClientFilterInput]
+  not: ModelClientFilterInput
+}
+
+input ModelClientConditionInput {
+  firstName: ModelStringInput
+  lastName: ModelStringInput
+  email: ModelStringInput
+  phone: ModelStringInput
+  organization: ModelStringInput
+  totalGigs: ModelIntInput
+  totalRevenue: ModelFloatInput
+  isRepeatClient: ModelBooleanInput
+  notes: ModelStringInput
+  tags: ModelStringInput
+  cognitoUserId: ModelStringInput
+  and: [ModelClientConditionInput]
+  or: [ModelClientConditionInput]
+  not: ModelClientConditionInput
+  createdAt: ModelStringInput
+  updatedAt: ModelStringInput
+}
+
+input CreateClientInput {
+  firstName: String!
+  lastName: String!
+  email: String!
+  phone: String!
+  organization: String
+  totalGigs: Int
+  totalRevenue: Float
+  isRepeatClient: Boolean
+  notes: String
+  tags: [String]
+  cognitoUserId: String
+  id: ID
+}
+
+input UpdateClientInput {
+  firstName: String
+  lastName: String
+  email: String
+  phone: String
+  organization: String
+  totalGigs: Int
+  totalRevenue: Float
+  isRepeatClient: Boolean
+  notes: String
+  tags: [String]
+  cognitoUserId: String
+  id: ID!
+}
+
+input DeleteClientInput {
+  id: ID!
+}
+
+input ModelSubscriptionClientFilterInput {
+  firstName: ModelSubscriptionStringInput
+  lastName: ModelSubscriptionStringInput
+  email: ModelSubscriptionStringInput
+  phone: ModelSubscriptionStringInput
+  organization: ModelSubscriptionStringInput
+  totalGigs: ModelSubscriptionIntInput
+  totalRevenue: ModelSubscriptionFloatInput
+  isRepeatClient: ModelSubscriptionBooleanInput
+  notes: ModelSubscriptionStringInput
+  tags: ModelSubscriptionStringInput
+  cognitoUserId: ModelSubscriptionStringInput
+  id: ModelSubscriptionIDInput
+  createdAt: ModelSubscriptionStringInput
+  updatedAt: ModelSubscriptionStringInput
+  and: [ModelSubscriptionClientFilterInput]
+  or: [ModelSubscriptionClientFilterInput]
+}
+
+type ModelEquipmentConnection @aws_iam @aws_cognito_user_pools {
+  items: [Equipment]!
+  nextToken: String
+}
+
+input ModelEquipmentCategoryInput {
+  eq: EquipmentCategory
+  ne: EquipmentCategory
+}
+
+input ModelEquipmentStatusInput {
+  eq: EquipmentStatus
+  ne: EquipmentStatus
+}
+
+input ModelEquipmentConditionInput {
+  eq: EquipmentCondition
+  ne: EquipmentCondition
+}
+
+input ModelEquipmentFilterInput {
+  name: ModelStringInput
+  category: ModelEquipmentCategoryInput
+  brand: ModelStringInput
+  model: ModelStringInput
+  serialNumber: ModelStringInput
+  status: ModelEquipmentStatusInput
+  condition: ModelEquipmentConditionInput
+  purchaseDate: ModelStringInput
+  purchasePrice: ModelFloatInput
+  notes: ModelStringInput
+  maintenanceLog: ModelStringInput
+  currentGigId: ModelStringInput
+  id: ModelIDInput
+  createdAt: ModelStringInput
+  updatedAt: ModelStringInput
+  and: [ModelEquipmentFilterInput]
+  or: [ModelEquipmentFilterInput]
+  not: ModelEquipmentFilterInput
+}
+
+input CreateEquipmentInput {
+  name: String!
+  category: EquipmentCategory
+  brand: String
+  model: String
+  serialNumber: String
+  status: EquipmentStatus
+  condition: EquipmentCondition
+  purchaseDate: String
+  purchasePrice: Float
+  notes: String
+  maintenanceLog: AWSJSON
+  currentGigId: String
+  id: ID
+}
+
+input UpdateEquipmentInput {
+  name: String
+  category: EquipmentCategory
+  brand: String
+  model: String
+  serialNumber: String
+  status: EquipmentStatus
+  condition: EquipmentCondition
+  purchaseDate: String
+  purchasePrice: Float
+  notes: String
+  maintenanceLog: AWSJSON
+  currentGigId: String
+  id: ID!
+}
+
+input DeleteEquipmentInput {
+  id: ID!
+}
+
+input ModelSubscriptionEquipmentFilterInput {
+  name: ModelSubscriptionStringInput
+  category: ModelSubscriptionStringInput
+  brand: ModelSubscriptionStringInput
+  model: ModelSubscriptionStringInput
+  serialNumber: ModelSubscriptionStringInput
+  status: ModelSubscriptionStringInput
+  condition: ModelSubscriptionStringInput
+  purchaseDate: ModelSubscriptionStringInput
+  purchasePrice: ModelSubscriptionFloatInput
+  notes: ModelSubscriptionStringInput
+  maintenanceLog: ModelSubscriptionStringInput
+  currentGigId: ModelSubscriptionStringInput
+  id: ModelSubscriptionIDInput
+  createdAt: ModelSubscriptionStringInput
+  updatedAt: ModelSubscriptionStringInput
+  and: [ModelSubscriptionEquipmentFilterInput]
+  or: [ModelSubscriptionEquipmentFilterInput]
+}
+
+type ModelInvoiceConnection @aws_iam @aws_cognito_user_pools {
+  items: [Invoice]!
+  nextToken: String
+}
+
+input ModelInvoiceStatusInput {
+  eq: InvoiceStatus
+  ne: InvoiceStatus
+}
+
+input ModelInvoiceFilterInput {
+  gigId: ModelStringInput
+  clientId: ModelStringInput
+  status: ModelInvoiceStatusInput
+  sentAt: ModelStringInput
+  dueDate: ModelStringInput
+  paidAt: ModelStringInput
+  lineItems: ModelStringInput
+  subtotal: ModelFloatInput
+  discount: ModelFloatInput
+  discountReason: ModelStringInput
+  tax: ModelFloatInput
+  total: ModelFloatInput
+  depositRequired: ModelFloatInput
+  depositPaid: ModelFloatInput
+  balanceDue: ModelFloatInput
+  notes: ModelStringInput
+  paymentLink: ModelStringInput
+  id: ModelIDInput
+  createdAt: ModelStringInput
+  updatedAt: ModelStringInput
+  and: [ModelInvoiceFilterInput]
+  or: [ModelInvoiceFilterInput]
+  not: ModelInvoiceFilterInput
+}
+
+input ModelInvoiceConditionInput {
+  gigId: ModelStringInput
+  clientId: ModelStringInput
+  status: ModelInvoiceStatusInput
+  sentAt: ModelStringInput
+  dueDate: ModelStringInput
+  paidAt: ModelStringInput
+  lineItems: ModelStringInput
+  subtotal: ModelFloatInput
+  discount: ModelFloatInput
+  discountReason: ModelStringInput
+  tax: ModelFloatInput
+  total: ModelFloatInput
+  depositRequired: ModelFloatInput
+  depositPaid: ModelFloatInput
+  balanceDue: ModelFloatInput
+  notes: ModelStringInput
+  paymentLink: ModelStringInput
+  and: [ModelInvoiceConditionInput]
+  or: [ModelInvoiceConditionInput]
+  not: ModelInvoiceConditionInput
+  createdAt: ModelStringInput
+  updatedAt: ModelStringInput
+}
+
+input CreateInvoiceInput {
+  gigId: String
+  clientId: String!
+  status: InvoiceStatus
+  sentAt: String
+  dueDate: String!
+  paidAt: String
+  lineItems: AWSJSON
+  subtotal: Float!
+  discount: Float
+  discountReason: String
+  tax: Float
+  total: Float!
+  depositRequired: Float
+  depositPaid: Float
+  balanceDue: Float
+  notes: String
+  paymentLink: String
+  id: ID
+}
+
+input UpdateInvoiceInput {
+  gigId: String
+  clientId: String
+  status: InvoiceStatus
+  sentAt: String
+  dueDate: String
+  paidAt: String
+  lineItems: AWSJSON
+  subtotal: Float
+  discount: Float
+  discountReason: String
+  tax: Float
+  total: Float
+  depositRequired: Float
+  depositPaid: Float
+  balanceDue: Float
+  notes: String
+  paymentLink: String
+  id: ID!
+}
+
+input DeleteInvoiceInput {
+  id: ID!
+}
+
+input ModelSubscriptionInvoiceFilterInput {
+  gigId: ModelSubscriptionStringInput
+  clientId: ModelSubscriptionStringInput
+  status: ModelSubscriptionStringInput
+  sentAt: ModelSubscriptionStringInput
+  dueDate: ModelSubscriptionStringInput
+  paidAt: ModelSubscriptionStringInput
+  lineItems: ModelSubscriptionStringInput
+  subtotal: ModelSubscriptionFloatInput
+  discount: ModelSubscriptionFloatInput
+  discountReason: ModelSubscriptionStringInput
+  tax: ModelSubscriptionFloatInput
+  total: ModelSubscriptionFloatInput
+  depositRequired: ModelSubscriptionFloatInput
+  depositPaid: ModelSubscriptionFloatInput
+  balanceDue: ModelSubscriptionFloatInput
+  notes: ModelSubscriptionStringInput
+  paymentLink: ModelSubscriptionStringInput
+  id: ModelSubscriptionIDInput
+  createdAt: ModelSubscriptionStringInput
+  updatedAt: ModelSubscriptionStringInput
+  and: [ModelSubscriptionInvoiceFilterInput]
+  or: [ModelSubscriptionInvoiceFilterInput]
+}
+
+type ModelCrewMemberConnection @aws_iam @aws_cognito_user_pools {
+  items: [CrewMember]!
+  nextToken: String
+}
+
+input ModelCrewMemberRoleInput {
+  eq: CrewMemberRole
+  ne: CrewMemberRole
+}
+
+input ModelCrewMemberFilterInput {
+  userId: ModelStringInput
+  name: ModelStringInput
+  phone: ModelStringInput
+  email: ModelStringInput
+  role: ModelCrewMemberRoleInput
+  skills: ModelStringInput
+  availability: ModelStringInput
+  hourlyRate: ModelFloatInput
+  totalGigs: ModelIntInput
+  id: ModelIDInput
+  createdAt: ModelStringInput
+  updatedAt: ModelStringInput
+  and: [ModelCrewMemberFilterInput]
+  or: [ModelCrewMemberFilterInput]
+  not: ModelCrewMemberFilterInput
+}
+
+input ModelCrewMemberConditionInput {
+  userId: ModelStringInput
+  name: ModelStringInput
+  phone: ModelStringInput
+  email: ModelStringInput
+  role: ModelCrewMemberRoleInput
+  skills: ModelStringInput
+  availability: ModelStringInput
+  hourlyRate: ModelFloatInput
+  totalGigs: ModelIntInput
+  and: [ModelCrewMemberConditionInput]
+  or: [ModelCrewMemberConditionInput]
+  not: ModelCrewMemberConditionInput
+  createdAt: ModelStringInput
+  updatedAt: ModelStringInput
+}
+
+input CreateCrewMemberInput {
+  userId: String!
+  name: String!
+  phone: String!
+  email: String!
+  role: CrewMemberRole
+  skills: [String]
+  availability: AWSJSON
+  hourlyRate: Float
+  totalGigs: Int
+  id: ID
+}
+
+input UpdateCrewMemberInput {
+  userId: String
+  name: String
+  phone: String
+  email: String
+  role: CrewMemberRole
+  skills: [String]
+  availability: AWSJSON
+  hourlyRate: Float
+  totalGigs: Int
+  id: ID!
+}
+
+input DeleteCrewMemberInput {
+  id: ID!
+}
+
+input ModelSubscriptionCrewMemberFilterInput {
+  userId: ModelSubscriptionStringInput
+  name: ModelSubscriptionStringInput
+  phone: ModelSubscriptionStringInput
+  email: ModelSubscriptionStringInput
+  role: ModelSubscriptionStringInput
+  skills: ModelSubscriptionStringInput
+  availability: ModelSubscriptionStringInput
+  hourlyRate: ModelSubscriptionFloatInput
+  totalGigs: ModelSubscriptionIntInput
+  id: ModelSubscriptionIDInput
+  createdAt: ModelSubscriptionStringInput
+  updatedAt: ModelSubscriptionStringInput
+  and: [ModelSubscriptionCrewMemberFilterInput]
+  or: [ModelSubscriptionCrewMemberFilterInput]
+}
+
+type ModelMessageConnection @aws_iam @aws_cognito_user_pools {
+  items: [Message]!
+  nextToken: String
+}
+
+input ModelMessageFilterInput {
+  gigId: ModelStringInput
+  senderId: ModelStringInput
+  senderRole: ModelStringInput
+  senderName: ModelStringInput
+  content: ModelStringInput
+  readBy: ModelStringInput
+  id: ModelIDInput
+  createdAt: ModelStringInput
+  updatedAt: ModelStringInput
+  and: [ModelMessageFilterInput]
+  or: [ModelMessageFilterInput]
+  not: ModelMessageFilterInput
+}
+
+input ModelMessageConditionInput {
+  gigId: ModelStringInput
+  senderId: ModelStringInput
+  senderRole: ModelStringInput
+  senderName: ModelStringInput
+  content: ModelStringInput
+  readBy: ModelStringInput
+  and: [ModelMessageConditionInput]
+  or: [ModelMessageConditionInput]
+  not: ModelMessageConditionInput
+  createdAt: ModelStringInput
+  updatedAt: ModelStringInput
+}
+
+input CreateMessageInput {
+  gigId: String!
+  senderId: String!
+  senderRole: String!
+  senderName: String!
+  content: String!
+  readBy: [String]
+  id: ID
+}
+
+input UpdateMessageInput {
+  gigId: String
+  senderId: String
+  senderRole: String
+  senderName: String
+  content: String
+  readBy: [String]
+  id: ID!
+}
+
+input DeleteMessageInput {
+  id: ID!
+}
+
+input ModelSubscriptionMessageFilterInput {
+  gigId: ModelSubscriptionStringInput
+  senderId: ModelSubscriptionStringInput
+  senderRole: ModelSubscriptionStringInput
+  senderName: ModelSubscriptionStringInput
+  content: ModelSubscriptionStringInput
+  readBy: ModelSubscriptionStringInput
+  id: ModelSubscriptionIDInput
+  createdAt: ModelSubscriptionStringInput
+  updatedAt: ModelSubscriptionStringInput
+  and: [ModelSubscriptionMessageFilterInput]
+  or: [ModelSubscriptionMessageFilterInput]
+}
+
+type ModelSubscriberConnection @aws_iam @aws_cognito_user_pools {
+  items: [Subscriber]!
+  nextToken: String
+}
+
+input ModelSubscriberStatusInput {
+  eq: SubscriberStatus
+  ne: SubscriberStatus
+}
+
+input ModelSubscriberFilterInput {
+  email: ModelStringInput
+  name: ModelStringInput
+  source: ModelStringInput
+  status: ModelSubscriberStatusInput
+  id: ModelIDInput
+  createdAt: ModelStringInput
+  updatedAt: ModelStringInput
+  and: [ModelSubscriberFilterInput]
+  or: [ModelSubscriberFilterInput]
+  not: ModelSubscriberFilterInput
+}
+
+input ModelSubscriberConditionInput {
+  email: ModelStringInput
+  name: ModelStringInput
+  source: ModelStringInput
+  status: ModelSubscriberStatusInput
+  and: [ModelSubscriberConditionInput]
+  or: [ModelSubscriberConditionInput]
+  not: ModelSubscriberConditionInput
+  createdAt: ModelStringInput
+  updatedAt: ModelStringInput
+}
+
+input CreateSubscriberInput {
+  email: String!
+  name: String
+  source: String
+  status: SubscriberStatus
+  id: ID
+}
+
+input UpdateSubscriberInput {
+  email: String
+  name: String
+  source: String
+  status: SubscriberStatus
+  id: ID!
+}
+
+input DeleteSubscriberInput {
+  id: ID!
+}
+
+input ModelSubscriptionSubscriberFilterInput {
+  email: ModelSubscriptionStringInput
+  name: ModelSubscriptionStringInput
+  source: ModelSubscriptionStringInput
+  status: ModelSubscriptionStringInput
+  id: ModelSubscriptionIDInput
+  createdAt: ModelSubscriptionStringInput
+  updatedAt: ModelSubscriptionStringInput
+  and: [ModelSubscriptionSubscriberFilterInput]
+  or: [ModelSubscriptionSubscriberFilterInput]
+}
+
+type ModelNotificationConnection @aws_iam @aws_cognito_user_pools {
+  items: [Notification]!
+  nextToken: String
+}
+
+input ModelNotificationTypeInput {
+  eq: NotificationType
+  ne: NotificationType
+}
+
+input ModelNotificationChannelInput {
+  eq: NotificationChannel
+  ne: NotificationChannel
+}
+
+input ModelNotificationFilterInput {
+  userId: ModelStringInput
+  type: ModelNotificationTypeInput
+  channel: ModelNotificationChannelInput
+  title: ModelStringInput
+  message: ModelStringInput
+  read: ModelBooleanInput
+  metadata: ModelStringInput
+  id: ModelIDInput
+  createdAt: ModelStringInput
+  updatedAt: ModelStringInput
+  and: [ModelNotificationFilterInput]
+  or: [ModelNotificationFilterInput]
+  not: ModelNotificationFilterInput
+  owner: ModelStringInput
+}
+
+input ModelNotificationConditionInput {
+  userId: ModelStringInput
+  type: ModelNotificationTypeInput
+  channel: ModelNotificationChannelInput
+  title: ModelStringInput
+  message: ModelStringInput
+  read: ModelBooleanInput
+  metadata: ModelStringInput
+  and: [ModelNotificationConditionInput]
+  or: [ModelNotificationConditionInput]
+  not: ModelNotificationConditionInput
+  createdAt: ModelStringInput
+  updatedAt: ModelStringInput
+  owner: ModelStringInput
+}
+
+input CreateNotificationInput {
+  userId: String!
+  type: NotificationType
+  channel: NotificationChannel
+  title: String!
+  message: String!
+  read: Boolean
+  metadata: AWSJSON
+  id: ID
+}
+
+input UpdateNotificationInput {
+  userId: String
+  type: NotificationType
+  channel: NotificationChannel
+  title: String
+  message: String
+  read: Boolean
+  metadata: AWSJSON
+  id: ID!
+}
+
+input DeleteNotificationInput {
+  id: ID!
+}
+
+input ModelSubscriptionNotificationFilterInput {
+  userId: ModelSubscriptionStringInput
+  type: ModelSubscriptionStringInput
+  channel: ModelSubscriptionStringInput
+  title: ModelSubscriptionStringInput
+  message: ModelSubscriptionStringInput
+  read: ModelSubscriptionBooleanInput
+  metadata: ModelSubscriptionStringInput
+  id: ModelSubscriptionIDInput
+  createdAt: ModelSubscriptionStringInput
+  updatedAt: ModelSubscriptionStringInput
+  and: [ModelSubscriptionNotificationFilterInput]
+  or: [ModelSubscriptionNotificationFilterInput]
+  owner: ModelStringInput
+}
