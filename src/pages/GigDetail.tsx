@@ -4,6 +4,8 @@ import { generateClient } from 'aws-amplify/data';
 import type { Schema } from '../../amplify/data/resource';
 import { ArrowLeft, MapPin, Calendar, Users, CheckSquare, Square, DollarSign, MessageSquare } from 'lucide-react';
 import { format, parseISO } from 'date-fns';
+import EquipmentAssign from '../components/EquipmentAssign';
+import CrewAssign from '../components/CrewAssign';
 
 const client = generateClient<Schema>();
 
@@ -199,21 +201,22 @@ export default function GigDetail() {
             </div>
           </div>
 
+          {/* Equipment */}
+          <div className="card">
+            <EquipmentAssign
+              gigId={id!}
+              assignedIds={gig.equipmentIds || []}
+              onUpdate={(ids) => setGig({ ...gig, equipmentIds: ids })}
+            />
+          </div>
+
           {/* Crew */}
           <div className="card">
-            <h3 className="font-semibold mb-3 flex items-center gap-2">
-              <Users size={16} className="text-ace-purple" /> Crew
-            </h3>
-            {gig.assignedCrew?.length > 0 ? (
-              <div className="space-y-2 text-sm">
-                {gig.assignedCrew.map((id: string) => (
-                  <div key={id} className="text-ace-muted">{id}</div>
-                ))}
-              </div>
-            ) : (
-              <p className="text-ace-muted text-sm">No crew assigned yet.</p>
-            )}
-            <button className="btn-secondary w-full text-xs mt-3">Assign Crew</button>
+            <CrewAssign
+              gigId={id!}
+              assignedIds={gig.assignedCrew || []}
+              onUpdate={(ids) => setGig({ ...gig, assignedCrew: ids })}
+            />
           </div>
 
           {/* Client notes */}
