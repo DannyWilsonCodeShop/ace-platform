@@ -40,7 +40,16 @@ export default function Dashboard() {
 
   return (
     <div>
-      <h1 className="text-2xl font-bold mb-6">Dashboard</h1>
+      {/* Welcome banner */}
+      <div className="card mb-8 border-ace-purple/20 bg-gradient-to-r from-[#1e1e1e] to-[#1a1a2e]">
+        <div className="flex items-center gap-4">
+          <img src="/logo.png" alt="ACE" className="h-12 rounded-lg" />
+          <div>
+            <h1 className="text-xl font-bold">Welcome back</h1>
+            <p className="text-ace-muted text-sm">Atlanta Creative Exchange — Admin Portal</p>
+          </div>
+        </div>
+      </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
         {cards.map((stat) => (
