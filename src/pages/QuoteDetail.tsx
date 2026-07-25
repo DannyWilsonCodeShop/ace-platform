@@ -4,6 +4,7 @@ import { generateClient } from 'aws-amplify/data';
 import type { Schema } from '../../amplify/data/resource';
 import { ArrowLeft, Clock, MapPin, Music, Mic, Users, DollarSign, Brain, CheckCircle, XCircle } from 'lucide-react';
 import { format } from 'date-fns';
+import { createPortalUser } from '../utils/createPortalUser';
 
 const client = generateClient<Schema>();
 
@@ -138,6 +139,19 @@ export default function QuoteDetail() {
         id: clientRecord.id,
         totalGigs: (clientRecord.totalGigs || 0) + 1,
       });
+
+      // 5. Create customer portal account
+      try {
+        const portalResult = await createPortalUser({
+          action: 'createCustomer',
+          email: quote.email,
+          name: `${quote.firstName} ${quote.lastName}`,
+          phone: quote.phone || undefined,
+        });
+        console.log('Customer portal account:', portalResult.message);
+      } catch (err) {
+        console.warn('Customer portal account creation failed (non-blocking):', err);
+      }
 
       navigate(`/gigs/${newGig?.id}`);
     } catch (err) {
