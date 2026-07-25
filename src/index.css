@@ -31,16 +31,214 @@
   .badge-declined { @apply bg-red-500/20 text-red-400; }
 }
 
-/* Override Amplify UI theme */
+/* === ACE Branded Authenticator === */
 [data-amplify-authenticator] {
+  /* Layout */
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #0e0e0e;
+  background-image:
+    radial-gradient(ellipse at 20% 50%, rgba(0, 180, 216, 0.06) 0%, transparent 50%),
+    radial-gradient(ellipse at 80% 50%, rgba(233, 30, 140, 0.05) 0%, transparent 50%),
+    radial-gradient(ellipse at 50% 80%, rgba(123, 47, 247, 0.04) 0%, transparent 40%);
+
+  /* Colors */
   --amplify-colors-background-primary: #0e0e0e;
   --amplify-colors-background-secondary: #1e1e1e;
+  --amplify-colors-background-tertiary: #161616;
   --amplify-colors-font-primary: #f0f0f0;
   --amplify-colors-font-secondary: #a0a0a0;
-  --amplify-colors-brand-primary-10: #7b2ff7;
+  --amplify-colors-font-tertiary: #666;
+  --amplify-colors-brand-primary-10: rgba(123, 47, 247, 0.1);
+  --amplify-colors-brand-primary-20: rgba(123, 47, 247, 0.2);
+  --amplify-colors-brand-primary-40: rgba(123, 47, 247, 0.4);
+  --amplify-colors-brand-primary-60: #7b2ff7;
   --amplify-colors-brand-primary-80: #7b2ff7;
+  --amplify-colors-brand-primary-90: #6a22e0;
   --amplify-colors-brand-primary-100: #5a1fd6;
-  --amplify-colors-border-primary: rgba(255, 255, 255, 0.06);
+  --amplify-colors-border-primary: rgba(255, 255, 255, 0.08);
+  --amplify-colors-border-secondary: rgba(255, 255, 255, 0.04);
+  --amplify-colors-border-focus: #7b2ff7;
+  --amplify-colors-overlay-10: rgba(0, 0, 0, 0.5);
+
+  /* Typography */
+  --amplify-fonts-default-variable: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  --amplify-fonts-default-static: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  --amplify-font-sizes-small: 0.85rem;
+  --amplify-font-sizes-medium: 0.95rem;
+  --amplify-font-sizes-large: 1.1rem;
+  --amplify-font-sizes-xl: 1.5rem;
+
+  /* Spacing & Radius */
   --amplify-radii-small: 8px;
   --amplify-radii-medium: 12px;
+  --amplify-radii-large: 16px;
+  --amplify-space-small: 12px;
+  --amplify-space-medium: 20px;
+  --amplify-space-large: 32px;
+}
+
+/* Container card */
+[data-amplify-authenticator] [data-amplify-container] {
+  background: #1e1e1e;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 16px;
+  padding: 40px 36px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+  max-width: 420px;
+  width: 100%;
+}
+
+/* Header / Title */
+[data-amplify-authenticator] [data-amplify-router] {
+  background: transparent;
+  border: none;
+  box-shadow: none;
+}
+
+/* Form heading */
+[data-amplify-authenticator] .amplify-heading {
+  font-size: 1.4rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  background: linear-gradient(135deg, #00b4d8, #7b2ff7, #e91e8c);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  text-align: center;
+  margin-bottom: 8px;
+}
+
+/* Tabs (Sign In / Sign Up) */
+[data-amplify-authenticator] .amplify-tabs {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  margin-bottom: 24px;
+}
+
+[data-amplify-authenticator] .amplify-tabs-item {
+  color: #a0a0a0;
+  border-bottom: 2px solid transparent;
+  padding: 12px 16px;
+  font-weight: 500;
+  font-size: 0.9rem;
+  transition: all 0.2s ease;
+}
+
+[data-amplify-authenticator] .amplify-tabs-item:hover {
+  color: #f0f0f0;
+}
+
+[data-amplify-authenticator] .amplify-tabs-item[data-state="active"] {
+  color: #f0f0f0;
+  border-bottom-color: #7b2ff7;
+}
+
+/* Input fields */
+[data-amplify-authenticator] .amplify-input,
+[data-amplify-authenticator] .amplify-field-group__control {
+  background: #0e0e0e;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 8px;
+  color: #f0f0f0;
+  padding: 12px 14px;
+  font-size: 0.95rem;
+  transition: border-color 0.2s ease;
+}
+
+[data-amplify-authenticator] .amplify-input:focus,
+[data-amplify-authenticator] .amplify-field-group__control:focus {
+  border-color: #7b2ff7;
+  box-shadow: 0 0 0 3px rgba(123, 47, 247, 0.12);
+  outline: none;
+}
+
+[data-amplify-authenticator] .amplify-input::placeholder {
+  color: #555;
+}
+
+/* Labels */
+[data-amplify-authenticator] .amplify-label {
+  color: #a0a0a0;
+  font-size: 0.85rem;
+  font-weight: 500;
+  margin-bottom: 4px;
+}
+
+/* Primary button (Sign In) */
+[data-amplify-authenticator] .amplify-button--primary {
+  background: linear-gradient(135deg, #00b4d8, #7b2ff7, #e91e8c);
+  background-size: 200% 200%;
+  animation: gradientShift 4s ease infinite;
+  border: none;
+  border-radius: 8px;
+  color: white;
+  font-weight: 600;
+  font-size: 0.95rem;
+  padding: 14px;
+  width: 100%;
+  cursor: pointer;
+  transition: box-shadow 0.3s ease, transform 0.2s ease;
+  box-shadow: 0 4px 20px rgba(123, 47, 247, 0.3);
+}
+
+[data-amplify-authenticator] .amplify-button--primary:hover {
+  box-shadow: 0 8px 32px rgba(123, 47, 247, 0.4);
+  transform: translateY(-1px);
+}
+
+/* Link buttons (Forgot password, etc) */
+[data-amplify-authenticator] .amplify-button--link {
+  color: #7b2ff7;
+  font-size: 0.85rem;
+  font-weight: 500;
+}
+
+[data-amplify-authenticator] .amplify-button--link:hover {
+  color: #00b4d8;
+}
+
+/* Error messages */
+[data-amplify-authenticator] .amplify-alert {
+  background: rgba(233, 30, 140, 0.08);
+  border: 1px solid rgba(233, 30, 140, 0.2);
+  border-radius: 8px;
+  color: #e91e8c;
+  font-size: 0.85rem;
+}
+
+/* Footer text */
+[data-amplify-authenticator] .amplify-text {
+  color: #a0a0a0;
+  font-size: 0.85rem;
+}
+
+/* Password show/hide button */
+[data-amplify-authenticator] .amplify-field-group__outer-end .amplify-button {
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-left: none;
+  border-radius: 0 8px 8px 0;
+  color: #a0a0a0;
+}
+
+[data-amplify-authenticator] .amplify-field-group__outer-end .amplify-button:hover {
+  color: #f0f0f0;
+  background: rgba(255, 255, 255, 0.03);
+}
+
+@keyframes gradientShift {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+/* Responsive */
+@media (max-width: 480px) {
+  [data-amplify-authenticator] [data-amplify-container] {
+    padding: 32px 24px;
+    margin: 16px;
+    border-radius: 12px;
+  }
 }
