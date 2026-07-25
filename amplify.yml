@@ -12,7 +12,16 @@ frontend:
     baseDirectory: dist
     files:
       - '**/*'
+  customHeaders:
+    - pattern: '**/*'
+      headers:
+        - key: Cache-Control
+          value: no-cache
   cache:
     paths:
       - node_modules/**/*
       - .amplify/**/*
+customRules:
+  - source: '</^[^.]+$|\.(?!(css|gif|ico|jpg|js|png|txt|svg|woff|woff2|ttf|map|json)$)([^.]+$)/>'
+    target: /index.html
+    status: '200'
