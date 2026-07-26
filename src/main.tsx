@@ -8,13 +8,7 @@ import App from './App';
 import './index.css';
 
 // Configure Amplify with backend outputs
-// Fix: groups format compatibility with Authenticator
-const config = { ...outputs };
-if (config.auth?.groups) {
-  // Convert [{owner: {precedence: 0}}] to ['owner', 'manager', ...]
-  config.auth.groups = config.auth.groups.map((g: any) => Object.keys(g)[0]) as any;
-}
-Amplify.configure(config as any);
+Amplify.configure(outputs as any);
 
 const queryClient = new QueryClient({
   defaultOptions: {

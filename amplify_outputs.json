@@ -18,31 +18,11 @@
       "email"
     ],
     "groups": [
-      {
-        "owner": {
-          "precedence": 0
-        }
-      },
-      {
-        "manager": {
-          "precedence": 1
-        }
-      },
-      {
-        "crew": {
-          "precedence": 2
-        }
-      },
-      {
-        "performer": {
-          "precedence": 3
-        }
-      },
-      {
-        "customer": {
-          "precedence": 4
-        }
-      }
+      "owner",
+      "manager",
+      "crew",
+      "performer",
+      "customer"
     ],
     "mfa_configuration": "OPTIONAL",
     "password_policy": {
