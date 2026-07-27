@@ -7,9 +7,13 @@ import outputs from '../amplify_outputs.json';
 import App from './App';
 import './index.css';
 
-// Configure Amplify — deep copy and remove groups to prevent Authenticator crash
+// Configure Amplify — fix groups format before any module reads it
 const amplifyConfig = JSON.parse(JSON.stringify(outputs));
-delete amplifyConfig?.auth?.groups;
+if (amplifyConfig.auth?.groups && Array.isArray(amplifyConfig.auth.groups)) {
+  amplifyConfig.auth.groups = amplifyConfig.auth.groups.map((g: any) =>
+    typeof g === 'string' ? g : Object.keys(g)[0]
+  );
+}
 Amplify.configure(amplifyConfig);
 
 const queryClient = new QueryClient({
