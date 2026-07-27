@@ -7,11 +7,9 @@ import outputs from '../amplify_outputs.json';
 import App from './App';
 import './index.css';
 
-// Configure Amplify — remove groups to prevent Authenticator crash
-const amplifyConfig: any = { ...outputs };
-if (amplifyConfig.auth) {
-  delete amplifyConfig.auth.groups;
-}
+// Configure Amplify — deep copy and remove groups to prevent Authenticator crash
+const amplifyConfig = JSON.parse(JSON.stringify(outputs));
+delete amplifyConfig?.auth?.groups;
 Amplify.configure(amplifyConfig);
 
 const queryClient = new QueryClient({
