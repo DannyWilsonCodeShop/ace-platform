@@ -1,4 +1,3 @@
-import { getQuote, updateQuote } from '../utils/api';
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { getQuote, updateQuote } from '../utils/api';
