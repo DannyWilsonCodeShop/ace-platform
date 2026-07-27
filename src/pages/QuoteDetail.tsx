@@ -153,7 +153,7 @@ if (loading) return <div className="text-ace-muted">Loading quote...</div>;
                 {eventDates.length > 0 && (
                   <div>
                     <span className="text-ace-muted block mb-1">Date(s):</span>
-                    {eventDates.map((d: any, i: number) => (
+                    {(Array.isArray(eventDates) ? eventDates : []).map((d: any, i: number) => (
                       <div key={i} className="ml-2 mb-1">
                         <strong>Day {i + 1}:</strong> {d.date} ({d.startTime} – {d.endTime})
                       </div>
@@ -168,7 +168,7 @@ if (loading) return <div className="text-ace-muted">Loading quote...</div>;
                 {perDayDetails && (
                   <div className="mt-4 p-3 bg-ace-bg rounded-lg">
                     <span className="text-ace-muted text-xs uppercase tracking-wide block mb-2">Per-Day Breakdown</span>
-                    {perDayDetails.map((day: any, i: number) => (
+                    {(Array.isArray(perDayDetails) ? perDayDetails : []).map((day: any, i: number) => (
                       <div key={i} className="mb-2 pb-2 border-b border-ace-border last:border-0">
                         <strong className="text-ace-cyan text-xs">Day {i + 1}:</strong>
                         <span className="ml-2">{day.services?.join(', ')}</span>
