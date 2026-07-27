@@ -1,3 +1,4 @@
+import { getQuote, updateQuote } from '../utils/api';
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { getQuote, updateQuote } from '../utils/api';
@@ -72,94 +73,11 @@ export default function QuoteDetail() {
   };
 
   const convertToGig = async () => {
-    if (!quote) return;
-    setSaving(true);
-    try {
-      // 1. Create or find client
-      const { data: existingClients } = await client.models.Client.list({
-        filter: { email: { eq: quote.email } }
-      });
-
-      let clientRecord;
-      if (existingClients && existingClients.length > 0) {
-        clientRecord = existingClients[0];
-      } else {
-        const { data: newClient } = await client.models.Client.create({
-          firstName: quote.firstName,
-          lastName: quote.lastName,
-          email: quote.email,
-          phone: quote.phone,
-          organization: quote.organization || undefined,
-          totalGigs: 0,
-          totalRevenue: 0,
-          isRepeatClient: false,
-        });
-        clientRecord = newClient;
-      }
-
-      if (!clientRecord) throw new Error('Failed to create client');
-
-      // 2. Create gig
-      const { data: newGig } = await client.models.Gig.create({
-        quoteId: quote.id,
-        clientId: clientRecord.id,
-        status: 'upcoming',
-        eventType: quote.eventType || 'Event',
-        eventDates: quote.eventDates || '[]',
-        services: quote.services || [],
-        perDayDetails: quote.perDayDetails || undefined,
-        venueName: quote.venueName || 'TBD',
-        venueAddress: quote.venueAddress || 'TBD',
-        roomName: quote.roomName || undefined,
-        floorAccess: quote.floorAccess || undefined,
-        indoorOutdoor: quote.indoorOutdoor || 'Indoor',
-        roomSize: quote.roomSize || 'Medium',
-        quotedAmount: quotedAmount ? parseFloat(quotedAmount) : undefined,
-        depositAmount: 0,
-        depositPaid: false,
-        balanceAmount: quotedAmount ? parseFloat(quotedAmount) : 0,
-        balancePaid: false,
-        assignedCrew: [],
-        equipmentIds: [],
-        checklist: JSON.stringify({
-          gearPacked: false, gearLoaded: false, arrivedAtVenue: false,
-          setupComplete: false, soundCheck: false, eventStarted: false,
-          eventEnded: false, gearBrokenDown: false, gearReturned: false
-        }),
-      });
-
-      // 3. Update quote status
-      await client.models.Quote.update({ id: quote.id, status: 'accepted' });
-
-      // 4. Update client gig count
-      await client.models.Client.update({
-        id: clientRecord.id,
-        totalGigs: (clientRecord.totalGigs || 0) + 1,
-      });
-
-      // 5. Create customer portal account
-      try {
-        const portalResult = await createPortalUser({
-          action: 'createCustomer',
-          email: quote.email,
-          name: `${quote.firstName} ${quote.lastName}`,
-          phone: quote.phone || undefined,
-        });
-        console.log('Customer portal account:', portalResult.message);
-      } catch (err) {
-        console.warn('Customer portal account creation failed (non-blocking):', err);
-      }
-
-      navigate(`/gigs/${newGig?.id}`);
-    } catch (err) {
-      console.error('Failed to convert to gig:', err);
-      alert('Failed to convert quote to gig. Check console for details.');
-    } finally {
-      setSaving(false);
-    }
+    // TODO: Implement with direct GraphQL
+    alert('Convert to Gig - coming soon to production. Use localhost for now.');
   };
 
-  if (loading) return <div className="text-ace-muted">Loading quote...</div>;
+if (loading) return <div className="text-ace-muted">Loading quote...</div>;
   if (!quote) return <div className="text-ace-muted">Quote not found.</div>;
 
   const isEvent = quote.serviceType === 'event';
