@@ -1,7 +1,7 @@
-import { Authenticator } from '@aws-amplify/ui-react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { fetchAuthSession } from 'aws-amplify/auth';
 import { useEffect, useState } from 'react';
+import CustomAuth from './components/CustomAuth';
 
 // Admin pages
 import Layout from './layouts/Layout';
@@ -25,7 +25,6 @@ import MyEvents from './pages/portal/MyEvents';
 import MyInvoices from './pages/portal/MyInvoices';
 import MyMessages from './pages/portal/MyMessages';
 
-import '@aws-amplify/ui-react/styles.css';
 
 function AppContent({ signOut, user }: { signOut: (() => void) | undefined; user: any }) {
   const [userGroups, setUserGroups] = useState<string[]>([]);
@@ -95,38 +94,8 @@ function AppContent({ signOut, user }: { signOut: (() => void) | undefined; user
 
 export default function App() {
   return (
-    <Authenticator
-      components={{
-        Header() {
-          return (
-            <div style={{ textAlign: 'center', marginBottom: '8px' }}>
-              <h1 style={{
-                fontSize: '1.6rem',
-                fontWeight: 700,
-                background: 'linear-gradient(135deg, #00b4d8, #7b2ff7, #e91e8c)',
-                WebkitBackgroundClip: 'text',
-                WebkitTextFillColor: 'transparent',
-                backgroundClip: 'text',
-                marginBottom: '4px'
-              }}>
-                ACE Portal
-              </h1>
-              <p style={{ color: '#a0a0a0', fontSize: '0.8rem' }}>Atlanta Creative Exchange</p>
-            </div>
-          );
-        },
-        Footer() {
-          return (
-            <div style={{ textAlign: 'center', marginTop: '24px' }}>
-              <p style={{ color: '#555', fontSize: '0.75rem' }}>
-                &copy; 2026 Atlanta Creative Exchange
-              </p>
-            </div>
-          );
-        },
-      }}
-    >
+    <CustomAuth>
       {({ signOut, user }) => <AppContent signOut={signOut} user={user} />}
-    </Authenticator>
+    </CustomAuth>
   );
 }
