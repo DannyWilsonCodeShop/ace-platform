@@ -1,12 +1,9 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { generateClient } from 'aws-amplify/data';
-import type { Schema } from '../../amplify/data/resource';
+import { getQuote, updateQuote } from '../utils/api';
 import { ArrowLeft, Clock, MapPin, Music, Mic, Users, DollarSign, Brain, CheckCircle, XCircle } from 'lucide-react';
 import { format } from 'date-fns';
 import { createPortalUser } from '../utils/createPortalUser';
-
-const client = generateClient<Schema>();
 
 const statusOptions = ['new', 'reviewed', 'quoted', 'accepted', 'declined', 'expired'];
 const statusColors: Record<string, string> = {
@@ -31,7 +28,7 @@ export default function QuoteDetail() {
     async function load() {
       if (!id) return;
       try {
-        const { data } = await client.models.Quote.get({ id });
+        const data = await getQuote(id);
         setQuote(data);
         setNotes(data?.internalNotes || '');
         setQuotedAmount(data?.quotedAmount?.toString() || '');
@@ -48,7 +45,7 @@ export default function QuoteDetail() {
     if (!id) return;
     setSaving(true);
     try {
-      await client.models.Quote.update({ id, status: status as any });
+      await updateQuote({ id, status });
       setQuote({ ...quote, status });
     } catch (err) {
       console.error('Failed to update status:', err);
@@ -61,7 +58,7 @@ export default function QuoteDetail() {
     if (!id) return;
     setSaving(true);
     try {
-      await client.models.Quote.update({
+      await updateQuote({
         id,
         internalNotes: notes,
         quotedAmount: quotedAmount ? parseFloat(quotedAmount) : null,

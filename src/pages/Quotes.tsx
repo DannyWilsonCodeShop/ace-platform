@@ -1,11 +1,8 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { generateClient } from 'aws-amplify/data';
-import type { Schema } from '../../amplify/data/resource';
+import { listQuotes } from '../utils/api';
 import { FileText, Clock, ChevronRight } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
-
-const client = generateClient<Schema>();
 
 const statusBadge: Record<string, string> = {
   new: 'badge badge-new',
@@ -24,10 +21,8 @@ export default function Quotes() {
   useEffect(() => {
     async function load() {
       try {
-        const { data } = await client.models.Quote.list({
-          limit: 100,
-        });
-        setQuotes(data || []);
+        const data = await listQuotes();
+        setQuotes(data);
       } catch (err) {
         console.error('Failed to load quotes:', err);
       } finally {
@@ -35,12 +30,6 @@ export default function Quotes() {
       }
     }
     load();
-
-    // Real-time subscription for new quotes
-    const sub = client.models.Quote.observeQuery().subscribe({
-      next: ({ items }) => setQuotes(items),
-    });
-    return () => sub.unsubscribe();
   }, []);
 
   const filtered = filter === 'all' ? quotes : quotes.filter(q => q.status === filter);
