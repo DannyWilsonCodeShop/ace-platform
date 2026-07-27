@@ -55,6 +55,43 @@ export default function QuoteDetail() {
     finally { setSaving(false); }
   };
 
+  const handleSendQuoteToClient = async () => {
+    if (!quote || !quotedAmount) return;
+    setSaving(true);
+    try {
+      const amount = parseFloat(quotedAmount);
+      const response = await fetch('https://zuq0ae5dqf.execute-api.us-east-1.amazonaws.com/send-quote', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          quoteId: id,
+          clientName: `${quote.firstName} ${quote.lastName}`,
+          clientEmail: quote.email,
+          eventType: quote.eventType,
+          eventDates: eventDates,
+          services: services,
+          venueName: quote.venueName,
+          roomSize: quote.roomSize,
+          lineItems: [{ description: services.join(' + ') || 'Services', quantity: 1, unitPrice: amount, total: amount }],
+          subtotal: amount,
+          discount: 0,
+          total: amount,
+          depositRequired: Math.round(amount * 0.5),
+          notes: notes || '',
+          validUntil: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }),
+        }),
+      });
+      const result = await response.json();
+      if (result.success) {
+        alert(`Quote sent to ${quote.email}!`);
+        await handleUpdateStatus('quoted');
+      } else {
+        alert('Failed to send: ' + (result.error || 'Unknown error'));
+      }
+    } catch (err) { console.error(err); alert('Failed to send quote.'); }
+    finally { setSaving(false); }
+  };
+
   if (loading) return <div className="text-ace-muted">Loading quote...</div>;
   if (!quote) return <div className="text-ace-muted">Quote not found.</div>;
 
@@ -226,8 +263,18 @@ export default function QuoteDetail() {
           </div>
 
           <div className="card space-y-2">
-            <button onClick={() => handleUpdateStatus('accepted')} className="w-full flex items-center gap-2 justify-center px-4 py-2.5 rounded-lg bg-green-500/15 text-green-400 border border-green-500/20 text-sm"><CheckCircle size={16}/> Accept</button>
-            <button onClick={() => handleUpdateStatus('declined')} className="w-full flex items-center gap-2 justify-center px-4 py-2.5 rounded-lg bg-red-500/15 text-red-400 border border-red-500/20 text-sm"><XCircle size={16}/> Decline</button>
+            <button onClick={handleSendQuoteToClient} disabled={saving || !quotedAmount}
+              className="w-full flex items-center gap-2 justify-center px-4 py-2.5 rounded-lg bg-ace-purple/15 text-ace-purple border border-ace-purple/20 text-sm">
+              <DollarSign size={16}/> Send Quote to Client
+            </button>
+            <button onClick={() => handleUpdateStatus('accepted')}
+              className="w-full flex items-center gap-2 justify-center px-4 py-2.5 rounded-lg bg-green-500/15 text-green-400 border border-green-500/20 text-sm">
+              <CheckCircle size={16}/> Accept
+            </button>
+            <button onClick={() => handleUpdateStatus('declined')}
+              className="w-full flex items-center gap-2 justify-center px-4 py-2.5 rounded-lg bg-red-500/15 text-red-400 border border-red-500/20 text-sm">
+              <XCircle size={16}/> Decline
+            </button>
           </div>
 
           <div className="text-xs text-ace-muted space-y-1">
