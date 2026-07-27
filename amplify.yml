@@ -5,6 +5,7 @@ frontend:
       commands:
         - npm install
         - npm install @rollup/rollup-linux-x64-gnu --save-optional
+        - node scripts/patch-outputs.js
     build:
       commands:
         - npm run build
