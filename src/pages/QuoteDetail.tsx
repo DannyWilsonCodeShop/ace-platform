@@ -166,8 +166,23 @@ export default function QuoteDetail() {
   if (!quote) return <div className="text-ace-muted">Quote not found.</div>;
 
   const isEvent = quote.serviceType === 'event';
-  const eventDates = quote.eventDates ? JSON.parse(quote.eventDates) : [];
-  const perDayDetails = quote.perDayDetails ? JSON.parse(quote.perDayDetails) : null;
+  const eventDates = (() => {
+    try {
+      if (!quote.eventDates) return [];
+      if (typeof quote.eventDates === 'string') return JSON.parse(quote.eventDates);
+      return quote.eventDates;
+    } catch { return []; }
+  })();
+  const perDayDetails = (() => {
+    try {
+      if (!quote.perDayDetails) return null;
+      if (typeof quote.perDayDetails === 'string') return JSON.parse(quote.perDayDetails);
+      return quote.perDayDetails;
+    } catch { return null; }
+  })();
+  const services = Array.isArray(quote.services) ? quote.services.filter(Boolean) : [];
+  const digitalServices = Array.isArray(quote.digitalServices) ? quote.digitalServices.filter(Boolean) : [];
+  const features = Array.isArray(quote.features) ? quote.features.filter(Boolean) : [];
 
   return (
     <div className="max-w-4xl">
@@ -232,7 +247,7 @@ export default function QuoteDetail() {
                   </div>
                 )}
 
-                <div><span className="text-ace-muted">Services:</span> <strong>{quote.services?.join(', ')}</strong></div>
+                <div><span className="text-ace-muted">Services:</span> <strong>{services.join(', ')}</strong></div>
                 {quote.genre && <div><span className="text-ace-muted">Genre:</span> {quote.genre}</div>}
                 {quote.speeches && <div><span className="text-ace-muted">Speeches:</span> {quote.speeches}</div>}
 
@@ -251,12 +266,12 @@ export default function QuoteDetail() {
               </div>
             ) : (
               <div className="space-y-3 text-sm">
-                <div><span className="text-ace-muted">Services:</span> <strong>{quote.digitalServices?.join(', ')}</strong></div>
+                <div><span className="text-ace-muted">Services:</span> <strong>{digitalServices.join(', ')}</strong></div>
                 <div><span className="text-ace-muted">Description:</span> <p className="mt-1">{quote.projectDescription}</p></div>
                 {quote.hasExisting && <div><span className="text-ace-muted">Existing:</span> {quote.hasExisting}</div>}
                 {quote.existingUrl && <div><span className="text-ace-muted">URL:</span> <a href={quote.existingUrl} className="text-ace-cyan" target="_blank">{quote.existingUrl}</a></div>}
                 {quote.timeline && <div><span className="text-ace-muted">Timeline:</span> {quote.timeline}</div>}
-                {quote.features?.length > 0 && <div><span className="text-ace-muted">Features:</span> {quote.features.join(', ')}</div>}
+                {features.length > 0 && <div><span className="text-ace-muted">Features:</span> {features.join(', ')}</div>}
                 {quote.designDirection && <div><span className="text-ace-muted">Design:</span> {quote.designDirection}</div>}
                 {quote.digitalBudget && <div><span className="text-ace-muted">Budget:</span> <strong>{quote.digitalBudget}</strong></div>}
                 {quote.ongoingSupport && <div><span className="text-ace-muted">Support:</span> {quote.ongoingSupport}</div>}
