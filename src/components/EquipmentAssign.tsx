@@ -1,3 +1,3 @@
-export default function EquipmentAssign() {
-  return <div className="text-ace-muted text-sm">Coming soon.</div>;
+export default function EquipmentAssign({ gigId, assignedIds, onUpdate }: any) {
+  return <div className="text-sm text-ace-muted">Equipment assignment coming soon.</div>;
 }

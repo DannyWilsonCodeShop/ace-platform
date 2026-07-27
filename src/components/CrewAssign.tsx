@@ -1,3 +1,3 @@
-export default function CrewAssign() {
-  return <div className="text-ace-muted text-sm">Coming soon.</div>;
+export default function CrewAssign({ gigId, assignedIds, onUpdate }: any) {
+  return <div className="text-sm text-ace-muted">Crew assignment coming soon.</div>;
 }
