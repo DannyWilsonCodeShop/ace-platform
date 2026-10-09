@@ -22,6 +22,7 @@ import { fetchAuthSession } from 'aws-amplify/auth';
 import { format, parseISO } from 'date-fns';
 import {
   CalendarClock,
+  ExternalLink,
   FileSignature,
   MessageSquare,
   MonitorPlay,
@@ -38,6 +39,7 @@ import {
   listDemos,
   updateDemo,
   getContract,
+  updateContract,
   listInvoices,
 } from '../../utils/api';
 import { getTemplate } from '../../projects/templates';
@@ -59,8 +61,11 @@ import {
   sendProjectNoteNotification,
   sendMeetingRequestNotification,
   sendDemoFeedbackNotification,
+  sendContractSignedNotification,
 } from '../../utils/sendNotification';
 import { logProjectEvent } from '../../projects/lifecycleEvents';
+import { contractUrl } from '../../contracts/contracts';
+import { dropboxSign } from '../../contracts/providers/dropboxSign';
 
 /** Meeting modes mirror Green-Casting APPT_MODES (label + per-mode hint). */
 const APPT_MODES: { v: 'ZOOM' | 'IN_PERSON' | 'PHONE'; label: string; hint: string }[] = [
@@ -305,6 +310,53 @@ export default function MyProject() {
     await loadProjectData(project.id);
   }
 
+  // Auto-advance a freshly 'sent' contract to 'viewed' on first render. This is
+  // a customer field-scoped update (status only), UI-enforced per TD-1 — we do
+  // NOT widen schema auth. Guarded by a ref-like set so each contract flips at
+  // most once per mount.
+  const [autoViewed, setAutoViewed] = useState<Set<string>>(new Set());
+  useEffect(() => {
+    const toView = contracts.filter((c) => c.status === 'sent' && !autoViewed.has(c.id));
+    if (toView.length === 0) return;
+    setAutoViewed((prev) => {
+      const next = new Set(prev);
+      toView.forEach((c) => next.add(c.id));
+      return next;
+    });
+    (async () => {
+      for (const c of toView) {
+        try {
+          await updateContract({ id: c.id, status: 'viewed' });
+        } catch (err) {
+          console.error('Failed to mark contract viewed', err);
+        }
+      }
+      if (project) await loadProjectData(project.id);
+    })();
+  }, [contracts, autoViewed, project, loadProjectData]);
+
+  // Customer signs a manual-upload contract in-app. TD-1 field-scope: the
+  // updateContract payload carries ONLY status / signedAt / terms (never the
+  // documentKey, amount, provider, etc.); scoping is UI-enforced, mirroring the
+  // demo flow. The typed signer name is recorded inside the terms json so it is
+  // preserved alongside any existing terms. Manual signing does NOT depend on
+  // the PDF URL resolving (see the {entity_id} caveat).
+  async function signContract(c: any, signerName: string) {
+    const signedAt = new Date().toISOString();
+    const existing = parseTerms(c.terms);
+    const base = existing && typeof existing === 'object' ? existing : {};
+    const terms = { ...base, signerName, signedVia: 'in_app', signedAt };
+    await updateContract({ id: c.id, status: 'signed', signedAt, terms });
+    await sendContractSignedNotification({
+      projectName: project?.name || 'Your project',
+      signerName,
+    });
+    if (project) {
+      await logProjectEvent(project.id, 'customer', `signed the contract as ${signerName}`);
+      await loadProjectData(project.id);
+    }
+  }
+
   if (loading) return <div className="text-ace-muted">Loading your project...</div>;
   if (error) return <div className="card text-ace-muted">{error}</div>;
   if (!project) return <div className="card text-ace-muted">No project found.</div>;
@@ -538,16 +590,11 @@ export default function MyProject() {
         ) : (
           <div className="space-y-3">
             {contracts.map((c) => (
-              <div key={c.id} className="bg-[#0e0e0e] rounded-lg p-3">
-                <div className="flex items-center justify-between gap-2">
-                  <span className="badge bg-white/5 text-ace-muted">{c.status}</span>
-                  {c.amount != null && (
-                    <span className="text-sm">${Number(c.amount).toLocaleString()}</span>
-                  )}
-                </div>
-                {c.terms && <div className="text-xs text-ace-muted mt-2 whitespace-pre-wrap">{c.terms}</div>}
-                {/* Manual-upload contract is viewable; e-sign is a // TODO seam. */}
-              </div>
+              <CustomerContractCard
+                key={c.id}
+                contract={c}
+                onSign={(name) => signContract(c, name)}
+              />
             ))}
           </div>
         )}
@@ -795,6 +842,224 @@ function parseOptions(options: any): DemoOption[] {
       return null;
     })
     .filter((o): o is DemoOption => o !== null);
+}
+
+/**
+ * Contract.terms is a.json() — it can arrive as an already-parsed object, as a
+ * JSON string, or as a plain human-readable string. Parse defensively: return
+ * the object when it is one (or a JSON string that decodes to an object),
+ * otherwise return the original string so callers can render it as prose.
+ */
+function parseTerms(terms: any): any {
+  if (terms == null) return null;
+  if (typeof terms === 'object') return terms;
+  if (typeof terms === 'string') {
+    const trimmed = terms.trim();
+    if (trimmed.startsWith('{') || trimmed.startsWith('[')) {
+      try {
+        return JSON.parse(trimmed);
+      } catch {
+        return terms;
+      }
+    }
+    return terms;
+  }
+  return terms;
+}
+
+/**
+ * Signed-URL contract document link mirroring ProjectDetail's ContractDocLink
+ * and DemoImage: resolve the signed GET URL in an effect and fall back to a
+ * graceful "unavailable" message rather than erroring. This covers the
+ * {entity_id} identity-rule caveat where a customer may be denied the GET URL
+ * (clientId != their Cognito identity id).
+ */
+function CustomerContractDocLink({ docKey, label }: { docKey: string; label: string }) {
+  const [url, setUrl] = useState<string | null>(null);
+  const [resolved, setResolved] = useState(false);
+  useEffect(() => {
+    let active = true;
+    contractUrl(docKey)
+      .then((u) => {
+        if (active) setUrl(u);
+      })
+      .finally(() => {
+        if (active) setResolved(true);
+      });
+    return () => {
+      active = false;
+    };
+  }, [docKey]);
+
+  if (!resolved) {
+    return <div className="text-xs text-ace-muted mt-1">Loading {label}…</div>;
+  }
+  if (!url) {
+    return <div className="text-xs text-ace-muted mt-1">Document unavailable.</div>;
+  }
+  return (
+    <a
+      href={url}
+      target="_blank"
+      rel="noreferrer"
+      className="inline-flex items-center gap-1 mt-1 text-xs text-ace-cyan hover:text-white"
+    >
+      <ExternalLink size={12} /> View {label}
+    </a>
+  );
+}
+
+/**
+ * Customer-facing contract card: shows status / amount / terms, the document
+ * link(s) with a graceful fallback, and — for the manual_upload provider — an
+ * in-app type-to-sign form (full name + agree checkbox). For dropbox_sign it
+ * surfaces the provider signing link / a "not configured" or "pending" state
+ * and does NOT offer in-app type-to-sign.
+ */
+function CustomerContractCard({
+  contract: c,
+  onSign,
+}: {
+  contract: any;
+  onSign: (signerName: string) => void | Promise<void>;
+}) {
+  const terms = parseTerms(c.terms);
+  const termsIsObject = terms && typeof terms === 'object';
+  const isDropbox = c.provider === 'dropbox_sign';
+  const canSign = c.status === 'sent' || c.status === 'viewed';
+  const alreadySigned = c.status === 'signed' || c.status === 'countersigned';
+
+  return (
+    <div className="bg-[#0e0e0e] rounded-lg p-3">
+      <div className="flex items-center justify-between gap-2">
+        <span className="badge bg-white/5 text-ace-muted">{c.status}</span>
+        {c.amount != null && (
+          <span className="text-sm">${Number(c.amount).toLocaleString()}</span>
+        )}
+      </div>
+
+      {/* Terms — a.json() may be an object or a plain string. */}
+      {termsIsObject ? (
+        <div className="text-xs text-ace-muted mt-2 space-y-1">
+          {terms.signerName && (
+            <div>
+              <span className="text-white/70">Signed by:</span> {terms.signerName}
+            </div>
+          )}
+          {terms.notes && <div className="whitespace-pre-wrap">{terms.notes}</div>}
+        </div>
+      ) : (
+        terms && (
+          <div className="text-xs text-ace-muted mt-2 whitespace-pre-wrap">{String(terms)}</div>
+        )
+      )}
+
+      {/* Document link(s) with graceful fallback for the {entity_id} caveat. */}
+      {c.documentKey && <CustomerContractDocLink docKey={c.documentKey} label="document" />}
+      {c.signedDocumentKey && (
+        <CustomerContractDocLink docKey={c.signedDocumentKey} label="signed document" />
+      )}
+
+      {alreadySigned && (
+        <div className="text-xs text-green-400 mt-2">
+          {c.signedAt ? `Signed on ${fmtWhen(c.signedAt)}` : 'Signed'}
+        </div>
+      )}
+
+      {/* Signing area. */}
+      {!alreadySigned && isDropbox ? (
+        <DropboxSignNotice hasEnvelope={Boolean(c.providerEnvelopeId)} />
+      ) : (
+        !alreadySigned &&
+        canSign && <ManualSignForm onSign={onSign} />
+      )}
+    </div>
+  );
+}
+
+/**
+ * Dropbox Sign branch: this provider sends the signing request out of band
+ * (the signer completes it via Dropbox Sign's own flow, not in-app), so we
+ * surface a status notice instead of a type-to-sign form. When the provider is
+ * not configured we say so; when a signature request exists (envelope present)
+ * we point the signer to the emailed link; otherwise the link is still pending.
+ * No in-app type-to-sign is offered in this mode.
+ */
+function DropboxSignNotice({ hasEnvelope }: { hasEnvelope: boolean }) {
+  if (!dropboxSign.configured()) {
+    return (
+      <p className="text-xs text-ace-muted mt-3">
+        E-signing is not configured yet. Your project manager will reach out with next steps.
+      </p>
+    );
+  }
+  if (hasEnvelope) {
+    return (
+      <p className="text-xs text-ace-muted mt-3">
+        A signing request has been sent via Dropbox Sign. Check your email to review and sign the
+        contract.
+      </p>
+    );
+  }
+  return (
+    <p className="text-xs text-ace-muted mt-3">
+      Your signing link is being prepared. Check back shortly.
+    </p>
+  );
+}
+
+/**
+ * Manual in-app type-to-sign: full name + an explicit "I agree" checkbox. The
+ * Sign button is enabled only when both a name is typed and the box is checked.
+ */
+function ManualSignForm({
+  onSign,
+}: {
+  onSign: (signerName: string) => void | Promise<void>;
+}) {
+  const [name, setName] = useState('');
+  const [agree, setAgree] = useState(false);
+  const [busy, setBusy] = useState(false);
+  const ready = name.trim().length > 0 && agree;
+
+  async function submit() {
+    if (!ready) return;
+    setBusy(true);
+    try {
+      await onSign(name.trim());
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <div className="mt-3 space-y-2 border-t border-[rgba(255,255,255,0.06)] pt-3">
+      <label className="text-xs text-ace-muted block">Type your full name to sign</label>
+      <input
+        type="text"
+        className="input text-sm"
+        placeholder="Full name"
+        value={name}
+        onChange={(e) => setName(e.target.value)}
+      />
+      <label className="flex items-start gap-2 text-xs text-ace-muted">
+        <input
+          type="checkbox"
+          className="mt-0.5"
+          checked={agree}
+          onChange={(e) => setAgree(e.target.checked)}
+        />
+        <span>I agree to these terms and consent to signing electronically.</span>
+      </label>
+      <button
+        onClick={submit}
+        disabled={!ready || busy}
+        className="text-xs px-3 py-1.5 rounded-lg bg-ace-magenta/15 text-ace-magenta border border-ace-magenta/20 disabled:opacity-50"
+      >
+        {busy ? 'Signing…' : 'Sign contract'}
+      </button>
+    </div>
+  );
 }
 
 function fmtWhen(iso?: string): string {
