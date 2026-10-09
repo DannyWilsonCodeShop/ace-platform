@@ -19,7 +19,10 @@ import {
   CalendarClock,
   ScrollText,
   MessageSquare,
+  MonitorPlay,
   ExternalLink,
+  Plus,
+  Trash2,
 } from 'lucide-react';
 import {
   getProject,
@@ -31,9 +34,13 @@ import {
   listMeetings,
   createMeeting,
   updateMeeting,
+  listDemos,
+  createDemo,
+  updateDemo,
   getContract,
   getClient,
 } from '../utils/api';
+import { uploadDemoImage, slugify } from '../projects/demos';
 import { fetchAuthSession } from 'aws-amplify/auth';
 import { logProjectEvent } from '../projects/lifecycleEvents';
 import { sendMeetingResponseNotification } from '../utils/sendNotification';
@@ -53,8 +60,41 @@ import {
   DEV_STATUS_OPTIONS,
   VoiceNotePlayer,
   NoteComposer,
+  DemoImage,
 } from '../projects/ui';
 import { toStates } from './Projects';
+
+/** Demo kinds mirror the Demo model enum. */
+const DEMO_KINDS: { v: 'CHOICE_BOARD' | 'PROTOTYPE' | 'PREVIEW_URL' | 'DECK'; label: string }[] = [
+  { v: 'CHOICE_BOARD', label: 'Choice board (images)' },
+  { v: 'PROTOTYPE', label: 'Prototype (URL)' },
+  { v: 'PREVIEW_URL', label: 'Preview URL' },
+  { v: 'DECK', label: 'Deck (URL)' },
+];
+
+/** A single choice-board option as persisted in Demo.options. */
+type DemoOption = { slug: string; name: string; imageKey?: string; previewUrl?: string };
+
+/** Parse Demo.options (json or JSON string) into option objects. */
+function parseDemoOptions(options: any): DemoOption[] {
+  let raw: any = options;
+  if (typeof raw === 'string') {
+    try {
+      raw = JSON.parse(raw);
+    } catch {
+      return [];
+    }
+  }
+  if (!Array.isArray(raw)) return [];
+  return raw
+    .filter((o: any) => o && typeof o === 'object' && (o.slug || o.name))
+    .map((o: any) => ({
+      slug: String(o.slug || o.name),
+      name: String(o.name || o.slug),
+      imageKey: o.imageKey || undefined,
+      previewUrl: o.previewUrl || undefined,
+    }));
+}
 
 const CATEGORIES: { key: Category; label: string; accent: string }[] = [
   { key: 'frontend', label: 'Frontend', accent: 'bg-ace-cyan' },
@@ -87,6 +127,7 @@ export default function ProjectDetail() {
   const [notes, setNotes] = useState<any[]>([]);
   const [events, setEvents] = useState<any[]>([]);
   const [meetings, setMeetings] = useState<any[]>([]);
+  const [demos, setDemos] = useState<any[]>([]);
   const [contracts, setContracts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -94,17 +135,19 @@ export default function ProjectDetail() {
     if (!id) return;
     const proj = await getProject(id);
     setProject(proj);
-    const [pg, ns, ev, mt, ct] = await Promise.all([
+    const [pg, ns, ev, mt, dm, ct] = await Promise.all([
       listProjectPages(id),
       listProjectNotes(id),
       listProjectEvents(id),
       listMeetings(id),
+      listDemos(id),
       getContract(id),
     ]);
     setPages(pg);
     setNotes(ns);
     setEvents(ev);
     setMeetings(mt);
+    setDemos(dm);
     setContracts(ct);
     if (proj?.clientId) {
       try {
@@ -232,6 +275,42 @@ export default function ProjectDetail() {
     });
     await notifyMeetingResponse('reschedule', input.agenda, proposedAt);
     await logProjectEvent(id, 'admin', `scheduled a ${input.purpose} meeting (${input.mode})`);
+    await refresh();
+  }
+
+  // Admin creates a demo. For CHOICE_BOARD the option images were already
+  // uploaded (uploadDemoImage) by the create form and arrive as
+  // [{slug,name,imageKey,previewUrl}]. PREVIEW_URL/PROTOTYPE/DECK carry a
+  // previewUrl instead. New demos always start as DRAFT.
+  async function createDemoRecord(input: {
+    title: string;
+    kind: 'CHOICE_BOARD' | 'PROTOTYPE' | 'PREVIEW_URL' | 'DECK';
+    options: DemoOption[];
+    previewUrl: string;
+  }) {
+    if (!id) return;
+    const payload: Record<string, any> = {
+      projectId: id,
+      title: input.title,
+      kind: input.kind,
+      status: 'DRAFT',
+    };
+    if (input.kind === 'CHOICE_BOARD') payload.options = input.options;
+    else payload.previewUrl = input.previewUrl;
+    await createDemo(payload);
+    await logProjectEvent(id, 'admin', `created ${input.kind} demo "${input.title}"`);
+    await refresh();
+  }
+
+  async function shareDemo(d: any) {
+    await updateDemo({ id: d.id, status: 'SHARED' });
+    await logProjectEvent(id!, 'admin', `shared demo "${d.title}" with the client`);
+    await refresh();
+  }
+
+  async function approveDemo(d: any) {
+    await updateDemo({ id: d.id, status: 'APPROVED' });
+    await logProjectEvent(id!, 'admin', `marked demo "${d.title}" approved`);
     await refresh();
   }
 
@@ -396,6 +475,111 @@ export default function ProjectDetail() {
             {/* Admin composer: persist only (no owner-notification needed here). */}
             <NoteComposer projectId={project.id} onCreated={() => refresh()} />
           </div>
+
+          {/* Demos / choice board */}
+          <div className="card">
+            <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
+              <MonitorPlay size={18} className="text-ace-purple" /> Demos
+            </h2>
+
+            <DemoCreateForm projectId={project.id} onCreate={createDemoRecord} />
+
+            <div className="mt-4 space-y-3">
+              {demos.length === 0 ? (
+                <p className="text-sm text-ace-muted">No demos yet.</p>
+              ) : (
+                demos.map((d) => {
+                  const options = parseDemoOptions(d.options);
+                  return (
+                    <div key={d.id} className="bg-[#0e0e0e] rounded-lg p-3">
+                      <div className="flex items-center justify-between gap-2">
+                        <span className="text-sm font-medium">{d.title}</span>
+                        <span className="badge bg-white/5 text-ace-muted">{d.status}</span>
+                      </div>
+                      <div className="text-xs text-ace-muted mt-1">
+                        {DEMO_KINDS.find((k) => k.v === d.kind)?.label || d.kind}
+                      </div>
+
+                      {d.previewUrl && (
+                        <a
+                          href={d.previewUrl}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="inline-block mt-2 text-xs text-ace-cyan hover:text-white"
+                        >
+                          Open preview
+                        </a>
+                      )}
+
+                      {d.kind === 'CHOICE_BOARD' && options.length > 0 && (
+                        <div className="grid grid-cols-2 gap-2 mt-2">
+                          {options.map((opt) => {
+                            const selected = d.selectedOption === opt.slug;
+                            return (
+                              <div
+                                key={opt.slug}
+                                className={`rounded-lg border overflow-hidden ${
+                                  selected
+                                    ? 'border-ace-purple ring-1 ring-ace-purple'
+                                    : 'border-[rgba(255,255,255,0.06)]'
+                                }`}
+                              >
+                                {opt.imageKey ? (
+                                  <DemoImage
+                                    imageKey={opt.imageKey}
+                                    alt={opt.name}
+                                    className="w-full h-24 object-cover bg-black/40"
+                                  />
+                                ) : (
+                                  <div className="w-full h-24 flex items-center justify-center text-xs text-ace-muted bg-white/5">
+                                    No image
+                                  </div>
+                                )}
+                                <div className="flex items-center justify-between gap-1 px-2 py-1">
+                                  <span className="text-xs truncate">{opt.name}</span>
+                                  {selected && <span className="text-xs text-ace-purple">✓</span>}
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      )}
+
+                      {d.selectedOption && (
+                        <div className="text-xs mt-2">
+                          <span className="text-ace-muted">Client picked:</span> {d.selectedOption}
+                        </div>
+                      )}
+                      {d.clientFeedback && (
+                        <div className="text-xs text-ace-muted mt-1 whitespace-pre-wrap">
+                          <span className="text-white/70">Feedback:</span> {d.clientFeedback}
+                        </div>
+                      )}
+
+                      <div className="flex gap-2 mt-2 flex-wrap">
+                        {d.status === 'DRAFT' && (
+                          <button
+                            onClick={() => shareDemo(d)}
+                            className="text-xs px-3 py-1 rounded-lg bg-ace-cyan/15 text-ace-cyan border border-ace-cyan/20"
+                          >
+                            Share with client
+                          </button>
+                        )}
+                        {(d.status === 'SHARED' || d.status === 'FEEDBACK') && (
+                          <button
+                            onClick={() => approveDemo(d)}
+                            className="text-xs px-3 py-1 rounded-lg bg-green-500/15 text-green-400 border border-green-500/20"
+                          >
+                            Mark approved
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })
+              )}
+            </div>
+          </div>
         </div>
 
         {/* Sidebar */}
@@ -544,6 +728,242 @@ export default function ProjectDetail() {
             )}
           </div>
         </div>
+      </div>
+    </div>
+  );
+}
+
+function DemoCreateForm({
+  projectId,
+  onCreate,
+}: {
+  projectId: string;
+  onCreate: (input: {
+    title: string;
+    kind: 'CHOICE_BOARD' | 'PROTOTYPE' | 'PREVIEW_URL' | 'DECK';
+    options: DemoOption[];
+    previewUrl: string;
+  }) => void | Promise<void>;
+}) {
+  const [open, setOpen] = useState(false);
+  const [title, setTitle] = useState('');
+  const [kind, setKind] = useState<'CHOICE_BOARD' | 'PROTOTYPE' | 'PREVIEW_URL' | 'DECK'>(
+    'CHOICE_BOARD',
+  );
+  const [previewUrl, setPreviewUrl] = useState('');
+  const [options, setOptions] = useState<DemoOption[]>([]);
+  // Draft of the option being added before upload completes.
+  const [optName, setOptName] = useState('');
+  const [optPreview, setOptPreview] = useState('');
+  const [optFile, setOptFile] = useState<File | null>(null);
+  const [uploading, setUploading] = useState(false);
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  function reset() {
+    setTitle('');
+    setKind('CHOICE_BOARD');
+    setPreviewUrl('');
+    setOptions([]);
+    setOptName('');
+    setOptPreview('');
+    setOptFile(null);
+    setError(null);
+  }
+
+  // Upload the option image (downscaled client-side to <=2000px by
+  // uploadDemoImage) and append {slug,name,imageKey,previewUrl}.
+  async function addOption() {
+    if (!optName.trim()) {
+      setError('Give the option a name.');
+      return;
+    }
+    setError(null);
+    setUploading(true);
+    try {
+      let imageKey: string | undefined;
+      if (optFile) {
+        imageKey = await uploadDemoImage(projectId, optFile, optName.trim());
+      }
+      setOptions((prev) => [
+        ...prev,
+        {
+          slug: slugify(optName),
+          name: optName.trim(),
+          imageKey,
+          previewUrl: optPreview.trim() || undefined,
+        },
+      ]);
+      setOptName('');
+      setOptPreview('');
+      setOptFile(null);
+    } catch (err) {
+      console.error(err);
+      setError('Image upload failed. Please try a different file.');
+    } finally {
+      setUploading(false);
+    }
+  }
+
+  function removeOption(slug: string) {
+    setOptions((prev) => prev.filter((o) => o.slug !== slug));
+  }
+
+  async function submit() {
+    if (!title.trim()) {
+      setError('Give the demo a title.');
+      return;
+    }
+    if (kind === 'CHOICE_BOARD' && options.length === 0) {
+      setError('Add at least one choice-board option.');
+      return;
+    }
+    if (kind !== 'CHOICE_BOARD' && !previewUrl.trim()) {
+      setError('Enter a preview URL for this demo.');
+      return;
+    }
+    setBusy(true);
+    try {
+      await onCreate({ title: title.trim(), kind, options, previewUrl: previewUrl.trim() });
+      reset();
+      setOpen(false);
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  if (!open) {
+    return (
+      <button
+        onClick={() => setOpen(true)}
+        className="text-xs px-3 py-1.5 rounded-lg bg-ace-purple/15 text-ace-purple border border-ace-purple/20"
+      >
+        New demo
+      </button>
+    );
+  }
+
+  return (
+    <div className="bg-[#0e0e0e] rounded-lg p-3 space-y-3 border border-[rgba(255,255,255,0.04)]">
+      {error && (
+        <div className="text-xs px-3 py-2 rounded-lg bg-red-500/10 text-red-400">{error}</div>
+      )}
+
+      <div>
+        <label className="text-xs text-ace-muted mb-1 block">Title</label>
+        <input
+          type="text"
+          className="input text-sm"
+          placeholder="e.g. Homepage hero concepts"
+          value={title}
+          onChange={(e) => setTitle(e.target.value)}
+        />
+      </div>
+
+      <div>
+        <label className="text-xs text-ace-muted mb-1 block">Kind</label>
+        <select
+          className="input py-1.5 text-sm"
+          value={kind}
+          onChange={(e) => setKind(e.target.value as typeof kind)}
+        >
+          {DEMO_KINDS.map((k) => (
+            <option key={k.v} value={k.v}>
+              {k.label}
+            </option>
+          ))}
+        </select>
+      </div>
+
+      {kind === 'CHOICE_BOARD' ? (
+        <div className="space-y-2">
+          <label className="text-xs text-ace-muted block">Image options</label>
+          {options.length > 0 && (
+            <div className="space-y-1">
+              {options.map((o) => (
+                <div
+                  key={o.slug}
+                  className="flex items-center justify-between gap-2 text-xs bg-white/5 rounded-lg px-2 py-1"
+                >
+                  <span className="truncate">
+                    {o.name}
+                    {o.imageKey ? '' : ' (no image)'}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => removeOption(o.slug)}
+                    className="text-red-400 hover:text-red-300"
+                    title="Remove option"
+                  >
+                    <Trash2 size={12} />
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+
+          <div className="space-y-2 border border-[rgba(255,255,255,0.06)] rounded-lg p-2">
+            <input
+              type="text"
+              className="input text-sm"
+              placeholder="Option name"
+              value={optName}
+              onChange={(e) => setOptName(e.target.value)}
+            />
+            <input
+              type="file"
+              accept="image/*"
+              className="input text-xs py-1.5"
+              onChange={(e) => setOptFile(e.target.files?.[0] || null)}
+            />
+            <input
+              type="text"
+              className="input text-sm"
+              placeholder="Preview URL (optional)"
+              value={optPreview}
+              onChange={(e) => setOptPreview(e.target.value)}
+            />
+            <button
+              type="button"
+              onClick={addOption}
+              disabled={uploading || !optName.trim()}
+              className="flex items-center gap-1 text-xs px-3 py-1.5 rounded-lg bg-white/5 text-white border border-[rgba(255,255,255,0.06)] disabled:opacity-50"
+            >
+              <Plus size={12} /> {uploading ? 'Uploading…' : 'Add option'}
+            </button>
+          </div>
+        </div>
+      ) : (
+        <div>
+          <label className="text-xs text-ace-muted mb-1 block">Preview URL</label>
+          <input
+            type="text"
+            className="input text-sm"
+            placeholder="https://…"
+            value={previewUrl}
+            onChange={(e) => setPreviewUrl(e.target.value)}
+          />
+        </div>
+      )}
+
+      <div className="flex gap-2">
+        <button
+          onClick={submit}
+          disabled={busy || uploading}
+          className="text-xs px-3 py-1.5 rounded-lg bg-ace-purple/15 text-ace-purple border border-ace-purple/20 disabled:opacity-50"
+        >
+          {busy ? 'Creating…' : 'Create demo'}
+        </button>
+        <button
+          onClick={() => {
+            reset();
+            setOpen(false);
+          }}
+          disabled={busy}
+          className="text-xs px-3 py-1.5 rounded-lg border border-[rgba(255,255,255,0.06)] text-ace-muted hover:text-white"
+        >
+          Cancel
+        </button>
       </div>
     </div>
   );

@@ -12,6 +12,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { Mic, Square, Send } from 'lucide-react';
 import { createTextNote, createVoiceNote, voiceUrl } from './notes';
+import { demoImageUrl } from './demos';
 
 const DEV_STATUSES = [
   { v: 'NOT_STARTED', label: 'Not started' },
@@ -114,6 +115,51 @@ export function StarRating({
       ))}
     </div>
   );
+}
+
+/**
+ * Render a stored demo / choice-board image via a short-lived signed S3 GET
+ * URL (resolved from the imageKey — the image is NEVER inlined/base64'd).
+ * Used by both the admin demos panel and the customer review UI.
+ */
+export function DemoImage({
+  imageKey,
+  alt,
+  className,
+}: {
+  imageKey: string;
+  alt?: string;
+  className?: string;
+}) {
+  const [url, setUrl] = useState<string | null>(null);
+  const [failed, setFailed] = useState(false);
+  useEffect(() => {
+    let active = true;
+    setFailed(false);
+    demoImageUrl(imageKey).then((u) => {
+      if (!active) return;
+      if (u) setUrl(u);
+      else setFailed(true);
+    });
+    return () => {
+      active = false;
+    };
+  }, [imageKey]);
+  if (failed) {
+    return (
+      <div className={`flex items-center justify-center text-xs text-ace-muted bg-white/5 ${className || ''}`}>
+        Image unavailable
+      </div>
+    );
+  }
+  if (!url) {
+    return (
+      <div className={`flex items-center justify-center text-xs text-ace-muted bg-white/5 ${className || ''}`}>
+        Loading…
+      </div>
+    );
+  }
+  return <img src={url} alt={alt || 'Demo option'} className={className} onError={() => setFailed(true)} />;
 }
 
 /** Playback element for a stored voice note (resolves a signed URL). */

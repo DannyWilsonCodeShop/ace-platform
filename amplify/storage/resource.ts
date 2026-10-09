@@ -37,6 +37,16 @@ export const storage = defineStorage({
       allow.groups(['developer']).to(['read']),
       allow.entity('identity').to(['read', 'write']),
     ],
+    // Project demo / choice-board images (FEAT-003). Owner/manager own the
+    // assets (they create & share demos); developer gets read-only; the
+    // signed-in customer gets read-only so the review UI can resolve a signed
+    // GET URL. Customers do NOT upload demo images, so no write for identity
+    // here (mirrors the notes rule but drops customer write).
+    'project/{entity_id}/demos/*': [
+      allow.groups(['owner', 'manager']).to(['read', 'write', 'delete']),
+      allow.groups(['developer']).to(['read']),
+      allow.entity('identity').to(['read']),
+    ],
     // Equipment photos
     'equipment/*': [
       allow.groups(['owner', 'manager']).to(['read', 'write', 'delete']),

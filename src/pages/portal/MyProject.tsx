@@ -53,10 +53,12 @@ import {
   DevStatusBadge,
   VoiceNotePlayer,
   NoteComposer,
+  DemoImage,
 } from '../../projects/ui';
 import {
   sendProjectNoteNotification,
   sendMeetingRequestNotification,
+  sendDemoFeedbackNotification,
 } from '../../utils/sendNotification';
 import { logProjectEvent } from '../../projects/lifecycleEvents';
 
@@ -201,6 +203,12 @@ export default function MyProject() {
     return m;
   }, [pages]);
 
+  // Never show DRAFT demos to the customer — only SHARED/FEEDBACK/APPROVED.
+  const visibleDemos = useMemo(
+    () => demos.filter((d) => ['SHARED', 'FEEDBACK', 'APPROVED'].includes(d.status)),
+    [demos],
+  );
+
   // Customer rating writes ONLY clientApproval (field-scope enforced in UI;
   // the schema also limits the customer to read+update on ProjectPage).
   async function rate(item: TrackedItem, next: number) {
@@ -222,14 +230,39 @@ export default function MyProject() {
     if (project) await loadProjectData(project.id);
   }
 
-  async function pickDemoOption(demo: any, option: string) {
-    await updateDemo({ id: demo.id, selectedOption: option });
-    if (project) await loadProjectData(project.id);
+  // Customer picks a choice-board option. TD-1 field-scope: the customer
+  // updateDemo call sends ONLY selectedOption + status (never title/kind/
+  // options/previewUrl); scoping is UI-enforced, matching the
+  // ProjectPage.clientApproval pattern. Picking moves the demo to FEEDBACK,
+  // notifies the owner, and logs the activity.
+  async function pickDemoOption(demo: any, slug: string) {
+    await updateDemo({ id: demo.id, selectedOption: slug, status: 'FEEDBACK' });
+    await sendDemoFeedbackNotification({
+      projectName: project?.name || 'Your project',
+      demoTitle: demo.title || 'Demo',
+      selectedOption: slug,
+      clientFeedback: demo.clientFeedback || '',
+    });
+    if (project) {
+      await logProjectEvent(project.id, 'customer', `picked "${slug}" on demo "${demo.title}"`);
+      await loadProjectData(project.id);
+    }
   }
 
+  // Customer leaves written feedback. TD-1 field-scope: sends ONLY
+  // clientFeedback + status. Moves the demo to FEEDBACK, notifies, logs.
   async function sendDemoFeedback(demo: any, feedback: string) {
-    await updateDemo({ id: demo.id, clientFeedback: feedback });
-    if (project) await loadProjectData(project.id);
+    await updateDemo({ id: demo.id, clientFeedback: feedback, status: 'FEEDBACK' });
+    await sendDemoFeedbackNotification({
+      projectName: project?.name || 'Your project',
+      demoTitle: demo.title || 'Demo',
+      selectedOption: demo.selectedOption || '',
+      clientFeedback: feedback,
+    });
+    if (project) {
+      await logProjectEvent(project.id, 'customer', `left feedback on demo "${demo.title}"`);
+      await loadProjectData(project.id);
+    }
   }
 
   // Customer requests a meeting: resolve the Cognito sub (same access-token
@@ -363,48 +396,87 @@ export default function MyProject() {
         <NoteComposer projectId={project.id} onCreated={handleNoteCreated} />
       </div>
 
-      {/* Demos to review */}
-      {demos.length > 0 && (
+      {/* Demos to review — only SHARED/FEEDBACK/APPROVED are shown to the
+          customer; DRAFT demos stay hidden until the admin shares them. */}
+      {visibleDemos.length > 0 && (
         <div className="card">
           <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
             <MonitorPlay size={18} className="text-ace-purple" /> Demos to review
           </h2>
           <div className="space-y-4">
-            {demos.map((d) => {
+            {visibleDemos.map((d) => {
               const options = parseOptions(d.options);
+              const isChoiceBoard = d.kind === 'CHOICE_BOARD';
               return (
                 <div key={d.id} className="bg-[#0e0e0e] rounded-lg p-3">
                   <div className="flex items-center justify-between gap-2">
                     <span className="font-medium text-sm">{d.title}</span>
                     <span className="badge bg-white/5 text-ace-muted">{d.status}</span>
                   </div>
+
+                  {/* PREVIEW_URL / PROTOTYPE / DECK: show the link/asset. */}
                   {d.previewUrl && (
                     <a
                       href={d.previewUrl}
                       target="_blank"
                       rel="noreferrer"
-                      className="text-xs text-ace-cyan hover:text-white"
+                      className="inline-block mt-2 text-xs text-ace-cyan hover:text-white"
                     >
                       Open preview
                     </a>
                   )}
-                  {options.length > 0 && (
-                    <div className="flex gap-2 flex-wrap mt-2">
-                      {options.map((opt) => (
-                        <button
-                          key={opt}
-                          onClick={() => pickDemoOption(d, opt)}
-                          className={`text-xs px-3 py-1 rounded-lg border ${
-                            d.selectedOption === opt
-                              ? 'border-ace-purple bg-ace-purple/15 text-white'
-                              : 'border-[rgba(255,255,255,0.06)] text-ace-muted hover:text-white'
-                          }`}
-                        >
-                          {opt}
-                        </button>
-                      ))}
+
+                  {/* CHOICE_BOARD: image cards resolved via signed S3 URLs
+                      (DemoImage), never inlined. Clicking a card selects it. */}
+                  {isChoiceBoard && options.length > 0 && (
+                    <div className="grid sm:grid-cols-2 gap-3 mt-3">
+                      {options.map((opt) => {
+                        const selected = d.selectedOption === opt.slug;
+                        return (
+                          <button
+                            key={opt.slug}
+                            type="button"
+                            onClick={() => pickDemoOption(d, opt.slug)}
+                            className={`text-left rounded-lg border overflow-hidden transition-colors ${
+                              selected
+                                ? 'border-ace-purple ring-1 ring-ace-purple'
+                                : 'border-[rgba(255,255,255,0.06)] hover:border-ace-purple/50'
+                            }`}
+                          >
+                            {opt.imageKey ? (
+                              <DemoImage
+                                imageKey={opt.imageKey}
+                                alt={opt.name}
+                                className="w-full h-40 object-cover bg-black/40"
+                              />
+                            ) : (
+                              <div className="w-full h-40 flex items-center justify-center text-xs text-ace-muted bg-white/5">
+                                No image
+                              </div>
+                            )}
+                            <div className="flex items-center justify-between gap-2 px-3 py-2">
+                              <span className="text-xs font-medium truncate">{opt.name}</span>
+                              {selected && (
+                                <span className="text-xs text-ace-purple">Selected ✓</span>
+                              )}
+                            </div>
+                            {opt.previewUrl && (
+                              <a
+                                href={opt.previewUrl}
+                                target="_blank"
+                                rel="noreferrer"
+                                onClick={(e) => e.stopPropagation()}
+                                className="block px-3 pb-2 text-xs text-ace-cyan hover:text-white"
+                              >
+                                Open preview
+                              </a>
+                            )}
+                          </button>
+                        );
+                      })}
                     </div>
                   )}
+
                   <DemoFeedback
                     initial={d.clientFeedback || ''}
                     onSave={(fb) => sendDemoFeedback(d, fb)}
@@ -691,17 +763,38 @@ function DemoFeedback({
   );
 }
 
-function parseOptions(options: any): string[] {
-  if (Array.isArray(options)) return options.filter(Boolean);
-  if (typeof options === 'string') {
+/** A single choice-board option as stored in Demo.options (json). */
+type DemoOption = { slug: string; name: string; imageKey?: string; previewUrl?: string };
+
+/**
+ * Parse Demo.options (a json column that may arrive as an array already, or as
+ * a JSON string) into [{slug,name,imageKey,previewUrl}] objects. Tolerates the
+ * legacy plain-string shape by wrapping each string into an option object.
+ */
+function parseOptions(options: any): DemoOption[] {
+  let raw: any = options;
+  if (typeof raw === 'string') {
     try {
-      const parsed = JSON.parse(options);
-      return Array.isArray(parsed) ? parsed.filter(Boolean) : [];
+      raw = JSON.parse(raw);
     } catch {
       return [];
     }
   }
-  return [];
+  if (!Array.isArray(raw)) return [];
+  return raw
+    .map((o: any): DemoOption | null => {
+      if (typeof o === 'string') return { slug: o, name: o };
+      if (o && typeof o === 'object' && (o.slug || o.name)) {
+        return {
+          slug: String(o.slug || o.name),
+          name: String(o.name || o.slug),
+          imageKey: o.imageKey || undefined,
+          previewUrl: o.previewUrl || undefined,
+        };
+      }
+      return null;
+    })
+    .filter((o): o is DemoOption => o !== null);
 }
 
 function fmtWhen(iso?: string): string {
