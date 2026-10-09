@@ -28,6 +28,15 @@ export const storage = defineStorage({
       allow.groups(['owner', 'manager']).to(['read', 'write', 'delete']),
       allow.entity('identity').to(['read']), // customer sees own files
     ],
+    // Project voice notes — the signed-in customer can upload/play their own
+    // voice notes (REQUIRED deliverable, not a seam). Mirrors the
+    // clients/{entity_id}/* customer rule but grants write so a customer can
+    // record. Builders (developer) get read-only.
+    'project/{entity_id}/notes/*': [
+      allow.groups(['owner', 'manager']).to(['read', 'write', 'delete']),
+      allow.groups(['developer']).to(['read']),
+      allow.entity('identity').to(['read', 'write']),
+    ],
     // Equipment photos
     'equipment/*': [
       allow.groups(['owner', 'manager']).to(['read', 'write', 'delete']),
