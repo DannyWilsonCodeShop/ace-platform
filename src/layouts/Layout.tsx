@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { NavLink } from 'react-router-dom';
 import {
-  LayoutDashboard, FileText, Calendar, Users, Package,
+  LayoutDashboard, FileText, Calendar, FolderKanban, Users, Package,
   Receipt, UserCog, Mail, Settings, LogOut, Menu
 } from 'lucide-react';
 
@@ -9,6 +9,7 @@ const navigation = [
   { name: 'Dashboard', path: '/', icon: LayoutDashboard },
   { name: 'Quotes', path: '/quotes', icon: FileText },
   { name: 'Gigs', path: '/gigs', icon: Calendar },
+  { name: 'Projects', path: '/projects', icon: FolderKanban },
   { name: 'Clients', path: '/clients', icon: Users },
   { name: 'Equipment', path: '/equipment', icon: Package },
   { name: 'Invoices', path: '/invoices', icon: Receipt },

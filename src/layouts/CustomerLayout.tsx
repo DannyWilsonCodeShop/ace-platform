@@ -1,8 +1,8 @@
 import { NavLink } from 'react-router-dom';
-import { Calendar, Receipt, MessageSquare, LogOut } from 'lucide-react';
+import { FolderKanban, Receipt, MessageSquare, LogOut } from 'lucide-react';
 
 const navigation = [
-  { name: 'My Events', path: '/portal', icon: Calendar },
+  { name: 'My Project', path: '/portal', icon: FolderKanban },
   { name: 'Invoices & Payments', path: '/portal/invoices', icon: Receipt },
   { name: 'Messages', path: '/portal/messages', icon: MessageSquare },
 ];

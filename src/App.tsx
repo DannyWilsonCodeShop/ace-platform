@@ -10,6 +10,8 @@ import Quotes from './pages/Quotes';
 import QuoteDetail from './pages/QuoteDetail';
 import Gigs from './pages/Gigs';
 import GigDetail from './pages/GigDetail';
+import Projects from './pages/Projects';
+import ProjectDetail from './pages/ProjectDetail';
 import Clients from './pages/Clients';
 import Equipment from './pages/Equipment';
 import Invoices from './pages/Invoices';
@@ -21,7 +23,7 @@ import Settings from './pages/Settings';
 
 // Customer portal pages
 import CustomerLayout from './layouts/CustomerLayout';
-import MyEvents from './pages/portal/MyEvents';
+import MyProject from './pages/portal/MyProject';
 import MyInvoices from './pages/portal/MyInvoices';
 import MyMessages from './pages/portal/MyMessages';
 
@@ -60,7 +62,7 @@ function AppContent({ signOut, user }: { signOut: (() => void) | undefined; user
     return (
       <CustomerLayout user={user} signOut={signOut}>
         <Routes>
-          <Route path="/portal" element={<MyEvents />} />
+          <Route path="/portal" element={<MyProject />} />
           <Route path="/portal/invoices" element={<MyInvoices />} />
           <Route path="/portal/messages" element={<MyMessages />} />
           <Route path="*" element={<Navigate to="/portal" replace />} />
@@ -78,6 +80,8 @@ function AppContent({ signOut, user }: { signOut: (() => void) | undefined; user
         <Route path="/quotes/:id" element={<QuoteDetail />} />
         <Route path="/gigs" element={<Gigs />} />
         <Route path="/gigs/:id" element={<GigDetail />} />
+        <Route path="/projects" element={<Projects />} />
+        <Route path="/projects/:id" element={<ProjectDetail />} />
         <Route path="/clients" element={<Clients />} />
         <Route path="/equipment" element={<Equipment />} />
         <Route path="/invoices" element={<Invoices />} />
