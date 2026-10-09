@@ -15,10 +15,17 @@ export const TEMPLATES: Record<string, ProjectTemplate> = {
   [appBuildTemplate.key]: appBuildTemplate,
 };
 
-/** Resolve a template by key, falling back to the default app-build template. */
+/**
+ * Resolve a template by key, falling back to the default app-build template.
+ *
+ * Returns a fresh copy each call (with its own `launch` object) so callers can
+ * safely overlay a project's stored launch window / backendCeiling without
+ * mutating the shared registry singleton — otherwise concurrent list rendering
+ * would cross-contaminate per-project launch-window progress.
+ */
 export function getTemplate(key?: string | null): ProjectTemplate {
-  if (key && TEMPLATES[key]) return TEMPLATES[key];
-  return TEMPLATES[DEFAULT_TEMPLATE_KEY];
+  const base = (key && TEMPLATES[key]) || TEMPLATES[DEFAULT_TEMPLATE_KEY];
+  return { ...base, launch: { ...base.launch } };
 }
 
 export type { Category, Owner, TrackedItem, ProjectTemplate } from './types';
