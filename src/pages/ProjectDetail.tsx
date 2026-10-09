@@ -29,10 +29,14 @@ import {
   listProjectNotes,
   listProjectEvents,
   listMeetings,
+  createMeeting,
   updateMeeting,
   getContract,
   getClient,
 } from '../utils/api';
+import { fetchAuthSession } from 'aws-amplify/auth';
+import { logProjectEvent } from '../projects/lifecycleEvents';
+import { sendMeetingResponseNotification } from '../utils/sendNotification';
 import { getTemplate } from '../projects/templates';
 import type { Category, TrackedItem } from '../projects/templates/types';
 import {
@@ -56,6 +60,22 @@ const CATEGORIES: { key: Category; label: string; accent: string }[] = [
   { key: 'frontend', label: 'Frontend', accent: 'bg-ace-cyan' },
   { key: 'backend', label: 'Backend', accent: 'bg-ace-purple' },
   { key: 'middleware', label: 'Setup / middleware', accent: 'bg-ace-magenta' },
+];
+
+/** Meeting modes mirror Green-Casting APPT_MODES (label + per-mode hint). */
+const APPT_MODES: { v: 'ZOOM' | 'IN_PERSON' | 'PHONE'; label: string; hint: string }[] = [
+  { v: 'ZOOM', label: 'Zoom', hint: 'Zoom link (optional)' },
+  { v: 'IN_PERSON', label: 'In person', hint: 'Address / place' },
+  { v: 'PHONE', label: 'Phone call', hint: 'Phone number (optional)' },
+];
+
+const MEETING_PURPOSES: { v: string; label: string }[] = [
+  { v: 'discovery', label: 'Discovery' },
+  { v: 'kickoff', label: 'Kickoff' },
+  { v: 'demo_review', label: 'Demo review' },
+  { v: 'closing', label: 'Closing' },
+  { v: 'maintenance', label: 'Maintenance' },
+  { v: 'other', label: 'Other' },
 ];
 
 export default function ProjectDetail() {
@@ -131,8 +151,87 @@ export default function ProjectDetail() {
     await refresh();
   }
 
-  async function respondMeeting(meeting: any, status: 'ACCEPTED' | 'DECLINED') {
-    await updateMeeting({ id: meeting.id, status });
+  // Notify the customer of a meeting response when we have their email; skip
+  // otherwise (per FEAT-001 TODO — the Notification.type enum has no meeting
+  // value, so there is no in-app fallback row and we do NOT widen the schema).
+  async function notifyMeetingResponse(
+    status: string,
+    responseNote: string,
+    confirmedAt: string,
+  ) {
+    if (!client?.email) return;
+    await sendMeetingResponseNotification({
+      customerEmail: client.email,
+      projectName: project?.name || 'your project',
+      status,
+      responseNote,
+      confirmedAt,
+    });
+  }
+
+  async function acceptMeeting(m: any) {
+    const confirmedAt = new Date().toISOString();
+    await updateMeeting({ id: m.id, status: 'ACCEPTED', confirmedAt });
+    await notifyMeetingResponse('accepted', '', confirmedAt);
+    await logProjectEvent(id!, 'admin', 'accepted meeting');
+    await refresh();
+  }
+
+  async function declineMeeting(m: any) {
+    const responseNote = window.prompt('Reason / note for declining (optional):') || '';
+    await updateMeeting({ id: m.id, status: 'DECLINED', responseNote });
+    await notifyMeetingResponse('declined', responseNote, '');
+    await logProjectEvent(id!, 'admin', 'declined meeting');
+    await refresh();
+  }
+
+  async function rescheduleMeeting(m: any) {
+    const whenRaw = window.prompt('Propose a new time (YYYY-MM-DD HH:MM):') || '';
+    if (!whenRaw.trim()) return;
+    const parsed = new Date(whenRaw);
+    if (isNaN(parsed.getTime())) {
+      window.alert('Could not parse that date/time. Please try again.');
+      return;
+    }
+    const proposedAt = parsed.toISOString();
+    const responseNote = window.prompt('Note for the customer (optional):') || '';
+    await updateMeeting({ id: m.id, status: 'RESCHEDULE', proposedAt, responseNote });
+    await notifyMeetingResponse('reschedule', responseNote, proposedAt);
+    await logProjectEvent(id!, 'admin', 'proposed a new meeting time');
+    await refresh();
+  }
+
+  async function completeMeeting(m: any) {
+    await updateMeeting({ id: m.id, status: 'COMPLETED' });
+    await logProjectEvent(id!, 'admin', 'marked meeting completed');
+    await refresh();
+  }
+
+  // Admin proactively schedules a meeting with the customer.
+  async function scheduleMeeting(input: {
+    mode: 'ZOOM' | 'IN_PERSON' | 'PHONE';
+    when: string;
+    location: string;
+    agenda: string;
+    purpose: string;
+  }) {
+    if (!project || !id) return;
+    const session = await fetchAuthSession();
+    const sub = (session.tokens?.accessToken?.payload?.['sub'] as string) || '';
+    const proposedAt = input.when ? new Date(input.when).toISOString() : '';
+    await createMeeting({
+      projectId: id,
+      clientId: project.clientId,
+      requestedBySub: sub,
+      mode: input.mode,
+      proposedAt,
+      location: input.location,
+      agenda: input.agenda,
+      purpose: input.purpose,
+      status: 'REQUESTED',
+    });
+    await notifyMeetingResponse('reschedule', input.agenda, proposedAt);
+    await logProjectEvent(id, 'admin', `scheduled a ${input.purpose} meeting (${input.mode})`);
     await refresh();
   }
 
@@ -331,40 +430,71 @@ export default function ProjectDetail() {
             <h3 className="font-semibold mb-3 flex items-center gap-2">
               <CalendarClock size={16} className="text-ace-cyan" /> Meetings
             </h3>
-            {meetings.length === 0 ? (
-              <p className="text-sm text-ace-muted">No meetings requested.</p>
-            ) : (
-              <div className="space-y-3">
-                {meetings.map((m) => (
-                  <div key={m.id} className="bg-[#0e0e0e] rounded-lg p-3">
-                    <div className="flex items-center justify-between gap-2">
-                      <span className="text-sm font-medium">{m.purpose || 'Meeting'}</span>
-                      <span className="badge bg-white/5 text-ace-muted">{m.status}</span>
-                    </div>
-                    <div className="text-xs text-ace-muted mt-1">
-                      {m.proposedAt ? fmtWhen(m.proposedAt) : 'Time TBD'} · {m.mode || 'virtual'}
-                    </div>
-                    {m.agenda && <div className="text-xs mt-1">{m.agenda}</div>}
-                    {m.status === 'REQUESTED' && (
-                      <div className="flex gap-2 mt-2">
-                        <button
-                          onClick={() => respondMeeting(m, 'ACCEPTED')}
-                          className="text-xs px-3 py-1 rounded-lg bg-green-500/15 text-green-400 border border-green-500/20"
-                        >
-                          Confirm
-                        </button>
-                        <button
-                          onClick={() => respondMeeting(m, 'DECLINED')}
-                          className="text-xs px-3 py-1 rounded-lg bg-red-500/15 text-red-400 border border-red-500/20"
-                        >
-                          Decline
-                        </button>
+
+            <ScheduleMeetingForm onSubmit={scheduleMeeting} />
+
+            <div className="mt-3">
+              {meetings.length === 0 ? (
+                <p className="text-sm text-ace-muted">No meetings requested.</p>
+              ) : (
+                <div className="space-y-3">
+                  {meetings.map((m) => (
+                    <div key={m.id} className="bg-[#0e0e0e] rounded-lg p-3">
+                      <div className="flex items-center justify-between gap-2">
+                        <span className="text-sm font-medium">{m.purpose || 'Meeting'}</span>
+                        <span className="badge bg-white/5 text-ace-muted">{m.status}</span>
                       </div>
-                    )}
-                  </div>
-                ))}
-              </div>
-            )}
+                      <div className="text-xs text-ace-muted mt-1">
+                        {m.proposedAt ? fmtWhen(m.proposedAt) : 'Time TBD'} · {m.mode || 'virtual'}
+                      </div>
+                      {m.confirmedAt && (
+                        <div className="text-xs text-green-400 mt-1">
+                          Confirmed for {fmtWhen(m.confirmedAt)}
+                        </div>
+                      )}
+                      {m.agenda && <div className="text-xs mt-1">{m.agenda}</div>}
+                      {m.responseNote && (
+                        <div className="text-xs text-ace-muted mt-2 whitespace-pre-wrap">
+                          <span className="text-white/70">Reply:</span> {m.responseNote}
+                        </div>
+                      )}
+                      {m.status === 'REQUESTED' && (
+                        <div className="flex gap-2 mt-2 flex-wrap">
+                          <button
+                            onClick={() => acceptMeeting(m)}
+                            className="text-xs px-3 py-1 rounded-lg bg-green-500/15 text-green-400 border border-green-500/20"
+                          >
+                            Confirm
+                          </button>
+                          <button
+                            onClick={() => declineMeeting(m)}
+                            className="text-xs px-3 py-1 rounded-lg bg-red-500/15 text-red-400 border border-red-500/20"
+                          >
+                            Decline
+                          </button>
+                          <button
+                            onClick={() => rescheduleMeeting(m)}
+                            className="text-xs px-3 py-1 rounded-lg bg-white/5 text-ace-muted border border-[rgba(255,255,255,0.06)] hover:text-white"
+                          >
+                            Propose new time
+                          </button>
+                        </div>
+                      )}
+                      {m.status === 'ACCEPTED' && (
+                        <div className="flex gap-2 mt-2">
+                          <button
+                            onClick={() => completeMeeting(m)}
+                            className="text-xs px-3 py-1 rounded-lg bg-ace-purple/15 text-ace-purple border border-ace-purple/20"
+                          >
+                            Mark completed
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
 
           {/* Contract */}
@@ -414,6 +544,138 @@ export default function ProjectDetail() {
             )}
           </div>
         </div>
+      </div>
+    </div>
+  );
+}
+
+function ScheduleMeetingForm({
+  onSubmit,
+}: {
+  onSubmit: (input: {
+    mode: 'ZOOM' | 'IN_PERSON' | 'PHONE';
+    when: string;
+    location: string;
+    agenda: string;
+    purpose: string;
+  }) => void | Promise<void>;
+}) {
+  const [open, setOpen] = useState(false);
+  const [mode, setMode] = useState<'ZOOM' | 'IN_PERSON' | 'PHONE'>('ZOOM');
+  const [when, setWhen] = useState('');
+  const [location, setLocation] = useState('');
+  const [agenda, setAgenda] = useState('');
+  const [purpose, setPurpose] = useState('discovery');
+  const [busy, setBusy] = useState(false);
+
+  const hint = APPT_MODES.find((m) => m.v === mode)!.hint;
+
+  async function submit() {
+    setBusy(true);
+    try {
+      await onSubmit({ mode, when, location, agenda, purpose });
+      setWhen('');
+      setLocation('');
+      setAgenda('');
+      setPurpose('discovery');
+      setMode('ZOOM');
+      setOpen(false);
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  if (!open) {
+    return (
+      <button
+        onClick={() => setOpen(true)}
+        className="text-xs px-3 py-1.5 rounded-lg bg-ace-cyan/15 text-ace-cyan border border-ace-cyan/20"
+      >
+        Schedule a meeting
+      </button>
+    );
+  }
+
+  return (
+    <div className="bg-[#0e0e0e] rounded-lg p-3 space-y-3 border border-[rgba(255,255,255,0.04)]">
+      <div className="flex gap-2 flex-wrap">
+        {APPT_MODES.map((m) => (
+          <button
+            key={m.v}
+            type="button"
+            onClick={() => setMode(m.v)}
+            className={`text-xs px-3 py-1 rounded-lg border ${
+              mode === m.v
+                ? 'border-ace-cyan bg-ace-cyan/15 text-white'
+                : 'border-[rgba(255,255,255,0.06)] text-ace-muted hover:text-white'
+            }`}
+          >
+            {m.label}
+          </button>
+        ))}
+      </div>
+
+      <div>
+        <label className="text-xs text-ace-muted mb-1 block">When</label>
+        <input
+          type="datetime-local"
+          className="input text-sm"
+          value={when}
+          onChange={(e) => setWhen(e.target.value)}
+        />
+      </div>
+
+      <div>
+        <label className="text-xs text-ace-muted mb-1 block">{hint}</label>
+        <input
+          type="text"
+          className="input text-sm"
+          placeholder={hint}
+          value={location}
+          onChange={(e) => setLocation(e.target.value)}
+        />
+      </div>
+
+      <div>
+        <label className="text-xs text-ace-muted mb-1 block">Purpose</label>
+        <select
+          className="input py-1.5 text-sm"
+          value={purpose}
+          onChange={(e) => setPurpose(e.target.value)}
+        >
+          {MEETING_PURPOSES.map((p) => (
+            <option key={p.v} value={p.v}>
+              {p.label}
+            </option>
+          ))}
+        </select>
+      </div>
+
+      <div>
+        <label className="text-xs text-ace-muted mb-1 block">Agenda</label>
+        <textarea
+          className="input min-h-[60px] resize-y text-sm"
+          placeholder="What should this meeting cover?"
+          value={agenda}
+          onChange={(e) => setAgenda(e.target.value)}
+        />
+      </div>
+
+      <div className="flex gap-2">
+        <button
+          onClick={submit}
+          disabled={busy || !when}
+          className="text-xs px-3 py-1.5 rounded-lg bg-ace-cyan/15 text-ace-cyan border border-ace-cyan/20 disabled:opacity-50"
+        >
+          {busy ? 'Scheduling…' : 'Schedule'}
+        </button>
+        <button
+          onClick={() => setOpen(false)}
+          disabled={busy}
+          className="text-xs px-3 py-1.5 rounded-lg border border-[rgba(255,255,255,0.06)] text-ace-muted hover:text-white"
+        >
+          Cancel
+        </button>
       </div>
     </div>
   );

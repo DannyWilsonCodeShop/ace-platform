@@ -34,6 +34,7 @@ import {
   updateProjectPage,
   listProjectNotes,
   listMeetings,
+  createMeeting,
   listDemos,
   updateDemo,
   getContract,
@@ -53,7 +54,27 @@ import {
   VoiceNotePlayer,
   NoteComposer,
 } from '../../projects/ui';
-import { sendProjectNoteNotification } from '../../utils/sendNotification';
+import {
+  sendProjectNoteNotification,
+  sendMeetingRequestNotification,
+} from '../../utils/sendNotification';
+import { logProjectEvent } from '../../projects/lifecycleEvents';
+
+/** Meeting modes mirror Green-Casting APPT_MODES (label + per-mode hint). */
+const APPT_MODES: { v: 'ZOOM' | 'IN_PERSON' | 'PHONE'; label: string; hint: string }[] = [
+  { v: 'ZOOM', label: 'Zoom', hint: 'Zoom link (optional)' },
+  { v: 'IN_PERSON', label: 'In person', hint: 'Address / place' },
+  { v: 'PHONE', label: 'Phone call', hint: 'Phone number (optional)' },
+];
+
+/** Purpose options the customer can request a meeting for. */
+const MEETING_PURPOSES: { v: string; label: string }[] = [
+  { v: 'discovery', label: 'Discovery' },
+  { v: 'kickoff', label: 'Kickoff' },
+  { v: 'demo_review', label: 'Demo review' },
+  { v: 'maintenance', label: 'Maintenance' },
+  { v: 'other', label: 'Other' },
+];
 
 const CATEGORIES: { key: Category; label: string; accent: string }[] = [
   { key: 'frontend', label: 'What you see', accent: 'bg-ace-cyan' },
@@ -77,6 +98,7 @@ function toStates(pages: any[]): Map<string, PageState> {
 
 export default function MyProject() {
   const [project, setProject] = useState<any>(null);
+  const [client, setClient] = useState<any>(null);
   const [pages, setPages] = useState<any[]>([]);
   const [notes, setNotes] = useState<any[]>([]);
   const [meetings, setMeetings] = useState<any[]>([]);
@@ -125,6 +147,8 @@ export default function MyProject() {
       setError('We could not find your project yet. Please contact your project manager.');
       return;
     }
+    // Keep the resolved client row so the meeting-request form can read client.id.
+    setClient(client);
 
     // Load the customer's project(s) scoped to their clientId (most recent).
     const allProjects = await listProjects();
@@ -206,6 +230,46 @@ export default function MyProject() {
   async function sendDemoFeedback(demo: any, feedback: string) {
     await updateDemo({ id: demo.id, clientFeedback: feedback });
     if (project) await loadProjectData(project.id);
+  }
+
+  // Customer requests a meeting: resolve the Cognito sub (same access-token
+  // payload pattern as notes.ts resolveAuthor), create a REQUESTED meeting
+  // scoped to this client/project, notify the owner, log the activity, reload.
+  async function requestMeeting(input: {
+    mode: 'ZOOM' | 'IN_PERSON' | 'PHONE';
+    when: string;
+    location: string;
+    agenda: string;
+    purpose: string;
+  }) {
+    if (!project || !client) return;
+    const session = await fetchAuthSession();
+    const sub = (session.tokens?.accessToken?.payload?.['sub'] as string) || '';
+    const proposedAt = input.when ? new Date(input.when).toISOString() : '';
+    await createMeeting({
+      projectId: project.id,
+      clientId: client.id,
+      requestedBySub: sub,
+      mode: input.mode,
+      proposedAt,
+      location: input.location,
+      agenda: input.agenda,
+      purpose: input.purpose,
+      status: 'REQUESTED',
+    });
+    await sendMeetingRequestNotification({
+      projectName: project.name || 'Your project',
+      proposedAt,
+      mode: input.mode,
+      agenda: input.agenda,
+      purpose: input.purpose,
+    });
+    await logProjectEvent(
+      project.id,
+      'customer',
+      `requested a ${input.purpose} meeting (${input.mode})`,
+    );
+    await loadProjectData(project.id);
   }
 
   if (loading) return <div className="text-ace-muted">Loading your project...</div>;
@@ -357,24 +421,39 @@ export default function MyProject() {
         <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
           <CalendarClock size={18} className="text-ace-cyan" /> Meetings
         </h2>
-        {meetings.length === 0 ? (
-          <p className="text-sm text-ace-muted">No meetings scheduled.</p>
-        ) : (
-          <div className="space-y-3">
-            {meetings.map((m) => (
-              <div key={m.id} className="bg-[#0e0e0e] rounded-lg p-3">
-                <div className="flex items-center justify-between gap-2">
-                  <span className="text-sm font-medium">{m.purpose || 'Meeting'}</span>
-                  <span className="badge bg-white/5 text-ace-muted">{m.status}</span>
+
+        <MeetingRequestForm onSubmit={requestMeeting} disabled={!client} />
+
+        <div className="mt-4">
+          {meetings.length === 0 ? (
+            <p className="text-sm text-ace-muted">No meetings scheduled.</p>
+          ) : (
+            <div className="space-y-3">
+              {meetings.map((m) => (
+                <div key={m.id} className="bg-[#0e0e0e] rounded-lg p-3">
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="text-sm font-medium">{m.purpose || 'Meeting'}</span>
+                    <span className="badge bg-white/5 text-ace-muted">{m.status}</span>
+                  </div>
+                  <div className="text-xs text-ace-muted mt-1">
+                    {m.proposedAt ? fmtWhen(m.proposedAt) : 'Time TBD'} · {m.mode || 'virtual'}
+                  </div>
+                  {m.confirmedAt && (
+                    <div className="text-xs text-green-400 mt-1">
+                      Confirmed for {fmtWhen(m.confirmedAt)}
+                    </div>
+                  )}
+                  {m.agenda && <div className="text-xs mt-1">{m.agenda}</div>}
+                  {m.responseNote && (
+                    <div className="text-xs text-ace-muted mt-2 whitespace-pre-wrap">
+                      <span className="text-white/70">Reply:</span> {m.responseNote}
+                    </div>
+                  )}
                 </div>
-                <div className="text-xs text-ace-muted mt-1">
-                  {m.proposedAt ? fmtWhen(m.proposedAt) : 'Time TBD'} · {m.mode || 'virtual'}
-                </div>
-                {m.agenda && <div className="text-xs mt-1">{m.agenda}</div>}
-              </div>
-            ))}
-          </div>
-        )}
+              ))}
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Contract */}
@@ -437,6 +516,141 @@ export default function MyProject() {
             ))}
           </div>
         )}
+      </div>
+    </div>
+  );
+}
+
+function MeetingRequestForm({
+  onSubmit,
+  disabled,
+}: {
+  onSubmit: (input: {
+    mode: 'ZOOM' | 'IN_PERSON' | 'PHONE';
+    when: string;
+    location: string;
+    agenda: string;
+    purpose: string;
+  }) => void | Promise<void>;
+  disabled?: boolean;
+}) {
+  const [open, setOpen] = useState(false);
+  const [mode, setMode] = useState<'ZOOM' | 'IN_PERSON' | 'PHONE'>('ZOOM');
+  const [when, setWhen] = useState('');
+  const [location, setLocation] = useState('');
+  const [agenda, setAgenda] = useState('');
+  const [purpose, setPurpose] = useState('discovery');
+  const [busy, setBusy] = useState(false);
+
+  const hint = APPT_MODES.find((m) => m.v === mode)!.hint;
+
+  async function submit() {
+    setBusy(true);
+    try {
+      await onSubmit({ mode, when, location, agenda, purpose });
+      setWhen('');
+      setLocation('');
+      setAgenda('');
+      setPurpose('discovery');
+      setMode('ZOOM');
+      setOpen(false);
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  if (!open) {
+    return (
+      <button
+        onClick={() => setOpen(true)}
+        disabled={disabled}
+        className="text-xs px-3 py-1.5 rounded-lg bg-ace-cyan/15 text-ace-cyan border border-ace-cyan/20 disabled:opacity-50"
+      >
+        Request a meeting
+      </button>
+    );
+  }
+
+  return (
+    <div className="bg-[#0e0e0e] rounded-lg p-3 space-y-3 border border-[rgba(255,255,255,0.04)]">
+      <div className="flex gap-2 flex-wrap">
+        {APPT_MODES.map((m) => (
+          <button
+            key={m.v}
+            type="button"
+            onClick={() => setMode(m.v)}
+            className={`text-xs px-3 py-1 rounded-lg border ${
+              mode === m.v
+                ? 'border-ace-cyan bg-ace-cyan/15 text-white'
+                : 'border-[rgba(255,255,255,0.06)] text-ace-muted hover:text-white'
+            }`}
+          >
+            {m.label}
+          </button>
+        ))}
+      </div>
+
+      <div>
+        <label className="text-xs text-ace-muted mb-1 block">When</label>
+        <input
+          type="datetime-local"
+          className="input text-sm"
+          value={when}
+          onChange={(e) => setWhen(e.target.value)}
+        />
+      </div>
+
+      <div>
+        <label className="text-xs text-ace-muted mb-1 block">{hint}</label>
+        <input
+          type="text"
+          className="input text-sm"
+          placeholder={hint}
+          value={location}
+          onChange={(e) => setLocation(e.target.value)}
+        />
+      </div>
+
+      <div>
+        <label className="text-xs text-ace-muted mb-1 block">Purpose</label>
+        <select
+          className="input py-1.5 text-sm"
+          value={purpose}
+          onChange={(e) => setPurpose(e.target.value)}
+        >
+          {MEETING_PURPOSES.map((p) => (
+            <option key={p.v} value={p.v}>
+              {p.label}
+            </option>
+          ))}
+        </select>
+      </div>
+
+      <div>
+        <label className="text-xs text-ace-muted mb-1 block">Agenda</label>
+        <textarea
+          className="input min-h-[60px] resize-y text-sm"
+          placeholder="What would you like to discuss?"
+          value={agenda}
+          onChange={(e) => setAgenda(e.target.value)}
+        />
+      </div>
+
+      <div className="flex gap-2">
+        <button
+          onClick={submit}
+          disabled={busy || disabled || !when}
+          className="text-xs px-3 py-1.5 rounded-lg bg-ace-cyan/15 text-ace-cyan border border-ace-cyan/20 disabled:opacity-50"
+        >
+          {busy ? 'Sending…' : 'Send request'}
+        </button>
+        <button
+          onClick={() => setOpen(false)}
+          disabled={busy}
+          className="text-xs px-3 py-1.5 rounded-lg border border-[rgba(255,255,255,0.06)] text-ace-muted hover:text-white"
+        >
+          Cancel
+        </button>
       </div>
     </div>
   );
