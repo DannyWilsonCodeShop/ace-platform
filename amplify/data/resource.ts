@@ -305,7 +305,10 @@ const schema = a.schema({
     allow.groups(['owner', 'manager']).to(['create', 'read', 'update', 'delete']),
     allow.groups(['developer']).to(['read', 'update']), // builders update project page status
     allow.groups(['customer']).to(['read']),            // own via promotion-stamped ownership
-    allow.owner().to(['read']),                         // requires owner stamped at create
+    // Promotion stamps owner = Cognito Username (email). identityClaim pins the
+    // owner match to cognito:username instead of the default sub::username, so
+    // the stamped value resolves at runtime. (true verification is at deploy.)
+    allow.owner().identityClaim('cognito:username').to(['read']),
   ]),
 
   // === ProjectPage (generalizes DashPageState) ===
@@ -329,7 +332,7 @@ const schema = a.schema({
     // customer write other fields — field scoping MUST be enforced in the
     // portal UI / a custom resolver (design doc §8 field-level-auth risk).
     allow.groups(['customer']).to(['read', 'update']),
-    allow.owner().to(['read']),              // requires owner stamped at create
+    allow.owner().identityClaim('cognito:username').to(['read']), // stamped at promotion
   ]),
 
   // === ProjectNote (generalizes DashNote) ===
@@ -347,7 +350,7 @@ const schema = a.schema({
     allow.groups(['owner', 'manager']).to(['create', 'read', 'update', 'delete']),
     allow.groups(['developer']).to(['create', 'read']),
     allow.groups(['customer']).to(['create', 'read']), // own project only via ownership
-    allow.owner().to(['read']),              // requires owner stamped at create
+    allow.owner().identityClaim('cognito:username').to(['read']), // stamped at promotion
   ]),
 
   // === ProjectEvent (the daily-log / activity feed) ===
@@ -361,7 +364,7 @@ const schema = a.schema({
     allow.groups(['owner', 'manager']).to(['create', 'read', 'update', 'delete']),
     allow.groups(['developer']).to(['create', 'read']),
     allow.groups(['customer']).to(['read']),           // read own project log
-    allow.owner().to(['read']),              // requires owner stamped at create
+    allow.owner().identityClaim('cognito:username').to(['read']), // stamped at promotion
   ]),
 
   // === Meeting (generalizes DashAppointment; stage 2 "the meeting") ===
@@ -382,7 +385,7 @@ const schema = a.schema({
   }).authorization((allow) => [
     allow.groups(['owner', 'manager']).to(['create', 'read', 'update', 'delete']),
     allow.groups(['customer']).to(['create', 'read']), // request + read own
-    allow.owner().to(['read']),              // requires owner stamped at create
+    allow.owner().identityClaim('cognito:username').to(['read']), // stamped at promotion
   ]),
 
   // === Demo (stage 3 "choice board / demo") ===
@@ -402,7 +405,7 @@ const schema = a.schema({
     // clientFeedback. Row-level group auth also permits other fields — enforce
     // field scoping in the UI / resolver (design doc §8).
     allow.groups(['customer']).to(['read', 'update']),
-    allow.owner().to(['read']),              // requires owner stamped at create
+    allow.owner().identityClaim('cognito:username').to(['read']), // stamped at promotion
   ]),
 
   // === Contract (stage 5 "contract signing") ===
@@ -424,7 +427,7 @@ const schema = a.schema({
   }).authorization((allow) => [
     allow.groups(['owner', 'manager']).to(['create', 'read', 'update', 'delete']),
     allow.groups(['customer']).to(['read']),           // read own
-    allow.owner().to(['read']),              // requires owner stamped at create
+    allow.owner().identityClaim('cognito:username').to(['read']), // stamped at promotion
   ]),
 
   // === MaintenancePlan (stage 7 recurring billing + booking) ===
@@ -446,7 +449,7 @@ const schema = a.schema({
   }).authorization((allow) => [
     allow.groups(['owner', 'manager']).to(['create', 'read', 'update', 'delete']),
     allow.groups(['customer']).to(['read']),           // read own
-    allow.owner().to(['read']),              // requires owner stamped at create
+    allow.owner().identityClaim('cognito:username').to(['read']), // stamped at promotion
   ]),
 
   // === MaintenanceWindow ("booking of maintenance windows") ===
@@ -464,7 +467,7 @@ const schema = a.schema({
     allow.groups(['owner', 'manager']).to(['create', 'read', 'update', 'delete']),
     allow.groups(['crew', 'developer']).to(['read', 'update']),
     allow.groups(['customer']).to(['create', 'read']), // book + read own
-    allow.owner().to(['read']),              // requires owner stamped at create
+    allow.owner().identityClaim('cognito:username').to(['read']), // stamped at promotion
   ]),
 
   // === Campaign (stage 9 lead gen / drip) ===
