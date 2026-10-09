@@ -210,19 +210,39 @@ export async function createEquipment(input: Record<string, any>) {
 }
 
 // === Invoice queries ===
+const INVOICE_FIELDS = `
+  id gigId projectId clientId status kind recurring maintenancePlanId stripeInvoiceId
+  sentAt dueDate paidAt lineItems subtotal discount discountReason tax total
+  depositRequired depositPaid balanceDue notes paymentLink createdAt updatedAt
+`;
+
 export async function listInvoices() {
   const data = await graphql(`
     query ListInvoices {
       listInvoices(limit: 100) {
-        items {
-          id gigId clientId status createdAt sentAt dueDate paidAt
-          lineItems subtotal discount discountReason total
-          depositRequired depositPaid balanceDue notes paymentLink
-        }
+        items { ${INVOICE_FIELDS} }
       }
     }
   `);
   return data?.listInvoices?.items || [];
+}
+
+export async function createInvoice(input: Record<string, any>) {
+  const data = await graphql(`
+    mutation CreateInvoice($input: CreateInvoiceInput!) {
+      createInvoice(input: $input) { ${INVOICE_FIELDS} }
+    }
+  `, { input });
+  return data?.createInvoice;
+}
+
+export async function updateInvoice(input: Record<string, any>) {
+  const data = await graphql(`
+    mutation UpdateInvoice($input: UpdateInvoiceInput!) {
+      updateInvoice(input: $input) { ${INVOICE_FIELDS} }
+    }
+  `, { input });
+  return data?.updateInvoice;
 }
 
 // === Crew queries ===
@@ -498,4 +518,162 @@ export async function updateContract(input: Record<string, any>) {
     }
   `, { input });
   return data?.updateContract;
+}
+
+// === MaintenancePlan queries ===
+const MAINTENANCE_PLAN_FIELDS = `
+  id projectId clientId status cadence amount stripeSubscriptionId
+  nextBillingDate includedHours startedAt cancelledAt owner createdAt updatedAt
+`;
+
+export async function createMaintenancePlan(input: Record<string, any>) {
+  const data = await graphql(`
+    mutation CreateMaintenancePlan($input: CreateMaintenancePlanInput!) {
+      createMaintenancePlan(input: $input) { ${MAINTENANCE_PLAN_FIELDS} }
+    }
+  `, { input });
+  return data?.createMaintenancePlan;
+}
+
+export async function getMaintenancePlan(id: string) {
+  const data = await graphql(`
+    query GetMaintenancePlan($id: ID!) {
+      getMaintenancePlan(id: $id) { ${MAINTENANCE_PLAN_FIELDS} }
+    }
+  `, { id });
+  return data?.getMaintenancePlan;
+}
+
+export async function listMaintenancePlansByProject(projectId: string) {
+  const data = await graphql(`
+    query ListMaintenancePlans($filter: ModelMaintenancePlanFilterInput) {
+      listMaintenancePlans(filter: $filter, limit: 200) {
+        items { ${MAINTENANCE_PLAN_FIELDS} }
+      }
+    }
+  `, { filter: { projectId: { eq: projectId } } });
+  return data?.listMaintenancePlans?.items || [];
+}
+
+export async function listMaintenancePlansByClient(clientId: string) {
+  const data = await graphql(`
+    query ListMaintenancePlans($filter: ModelMaintenancePlanFilterInput) {
+      listMaintenancePlans(filter: $filter, limit: 200) {
+        items { ${MAINTENANCE_PLAN_FIELDS} }
+      }
+    }
+  `, { filter: { clientId: { eq: clientId } } });
+  return data?.listMaintenancePlans?.items || [];
+}
+
+export async function updateMaintenancePlan(input: Record<string, any>) {
+  const data = await graphql(`
+    mutation UpdateMaintenancePlan($input: UpdateMaintenancePlanInput!) {
+      updateMaintenancePlan(input: $input) { ${MAINTENANCE_PLAN_FIELDS} }
+    }
+  `, { input });
+  return data?.updateMaintenancePlan;
+}
+
+// === MaintenanceWindow queries ===
+const MAINTENANCE_WINDOW_FIELDS = `
+  id planId requestedBySub scheduledFor durationMins description status
+  hoursUsed invoiceId createdAt updatedAt
+`;
+
+export async function createMaintenanceWindow(input: Record<string, any>) {
+  const data = await graphql(`
+    mutation CreateMaintenanceWindow($input: CreateMaintenanceWindowInput!) {
+      createMaintenanceWindow(input: $input) { ${MAINTENANCE_WINDOW_FIELDS} }
+    }
+  `, { input });
+  return data?.createMaintenanceWindow;
+}
+
+export async function listMaintenanceWindowsByPlan(planId: string) {
+  const data = await graphql(`
+    query ListMaintenanceWindows($filter: ModelMaintenanceWindowFilterInput) {
+      listMaintenanceWindows(filter: $filter, limit: 200) {
+        items { ${MAINTENANCE_WINDOW_FIELDS} }
+      }
+    }
+  `, { filter: { planId: { eq: planId } } });
+  return data?.listMaintenanceWindows?.items || [];
+}
+
+export async function updateMaintenanceWindow(input: Record<string, any>) {
+  const data = await graphql(`
+    mutation UpdateMaintenanceWindow($input: UpdateMaintenanceWindowInput!) {
+      updateMaintenanceWindow(input: $input) { ${MAINTENANCE_WINDOW_FIELDS} }
+    }
+  `, { input });
+  return data?.updateMaintenanceWindow;
+}
+
+// === Campaign queries ===
+const CAMPAIGN_FIELDS = `
+  id name trigger status createdAt updatedAt
+`;
+
+export async function createCampaign(input: Record<string, any>) {
+  const data = await graphql(`
+    mutation CreateCampaign($input: CreateCampaignInput!) {
+      createCampaign(input: $input) { ${CAMPAIGN_FIELDS} }
+    }
+  `, { input });
+  return data?.createCampaign;
+}
+
+export async function listCampaigns() {
+  const data = await graphql(`
+    query ListCampaigns {
+      listCampaigns(limit: 200) {
+        items { ${CAMPAIGN_FIELDS} }
+      }
+    }
+  `);
+  return data?.listCampaigns?.items || [];
+}
+
+export async function updateCampaign(input: Record<string, any>) {
+  const data = await graphql(`
+    mutation UpdateCampaign($input: UpdateCampaignInput!) {
+      updateCampaign(input: $input) { ${CAMPAIGN_FIELDS} }
+    }
+  `, { input });
+  return data?.updateCampaign;
+}
+
+// === CampaignStep queries ===
+const CAMPAIGN_STEP_FIELDS = `
+  id campaignId order delayDays channel subject bodyTemplate createdAt updatedAt
+`;
+
+export async function createCampaignStep(input: Record<string, any>) {
+  const data = await graphql(`
+    mutation CreateCampaignStep($input: CreateCampaignStepInput!) {
+      createCampaignStep(input: $input) { ${CAMPAIGN_STEP_FIELDS} }
+    }
+  `, { input });
+  return data?.createCampaignStep;
+}
+
+export async function listCampaignStepsByCampaign(campaignId: string) {
+  const data = await graphql(`
+    query ListCampaignSteps($filter: ModelCampaignStepFilterInput) {
+      listCampaignSteps(filter: $filter, limit: 200) {
+        items { ${CAMPAIGN_STEP_FIELDS} }
+      }
+    }
+  `, { filter: { campaignId: { eq: campaignId } } });
+  return data?.listCampaignSteps?.items || [];
+}
+
+export async function updateCampaignStep(input: Record<string, any>) {
+  const data = await graphql(`
+    mutation UpdateCampaignStep($input: UpdateCampaignStepInput!) {
+      updateCampaignStep(input: $input) { ${CAMPAIGN_STEP_FIELDS} }
+    }
+  `, { input });
+  return data?.updateCampaignStep;
 }
