@@ -9,7 +9,16 @@ const OWNER_EMAIL = 'wilson.danny@me.com';
 const FROM_EMAIL = 'info@atlantacreativeexchange.com';
 
 interface NotificationEvent {
-  type: 'new_quote' | 'quote_accepted' | 'payment_received' | 'gig_reminder' | 'message' | 'project_note';
+  type:
+    | 'new_quote'
+    | 'quote_accepted'
+    | 'payment_received'
+    | 'gig_reminder'
+    | 'message'
+    | 'project_note'
+    | 'meeting_requested'
+    | 'meeting_response'
+    | 'demo_feedback';
   data: Record<string, any>;
   channels: ('sms' | 'email' | 'in_app')[];
 }
@@ -48,6 +57,39 @@ export const handler = async (event: NotificationEvent) => {
       emailSubject = `[ACE] New ${noteKind} note on ${data.projectName}`;
       emailBody = `A new ${noteKind} note was added to project "${data.projectName}". Reference: ${data.noteRef || 'n/a'}. Open the admin portal to review.`;
       // project-note alerts go to the owner inbox regardless of data.email
+      data.email = OWNER_EMAIL;
+      break;
+    }
+    case 'meeting_requested': {
+      smsMessage = `📅 Meeting requested on ${data.projectName} — ${data.mode || 'TBD'} at ${data.proposedAt || 'TBD'}.`;
+      emailSubject = `[ACE] Meeting requested on ${data.projectName}`;
+      emailBody = `A meeting was requested on project "${data.projectName}".<br/>`
+        + `Proposed time: ${data.proposedAt || 'TBD'}<br/>`
+        + `Mode: ${data.mode || 'TBD'}<br/>`
+        + `Purpose: ${data.purpose || 'n/a'}<br/>`
+        + `Agenda: ${data.agenda || 'n/a'}<br/>`
+        + `Open the admin portal to respond.`;
+      // meeting requests go to the owner inbox regardless of data.email
+      data.email = OWNER_EMAIL;
+      break;
+    }
+    case 'meeting_response': {
+      smsMessage = `📅 Meeting ${data.status || 'update'} on ${data.projectName}.`;
+      emailSubject = `[ACE] Meeting ${data.status || 'update'}: ${data.projectName}`;
+      emailBody = `Your meeting on project "${data.projectName}" was ${data.status || 'updated'}.<br/>`
+        + `${data.confirmedAt ? `Confirmed time: ${data.confirmedAt}<br/>` : ''}`
+        + `${data.responseNote ? `Note: ${data.responseNote}<br/>` : ''}`;
+      // customer-facing: the caller supplies data.email (do NOT override)
+      break;
+    }
+    case 'demo_feedback': {
+      smsMessage = `🎬 Demo feedback on ${data.projectName} — "${data.demoTitle || 'demo'}".`;
+      emailSubject = `[ACE] Demo feedback on ${data.projectName}`;
+      emailBody = `New feedback on demo "${data.demoTitle || 'demo'}" for project "${data.projectName}".<br/>`
+        + `Selected option: ${data.selectedOption || 'n/a'}<br/>`
+        + `Feedback: ${data.clientFeedback || 'n/a'}<br/>`
+        + `Open the admin portal to review.`;
+      // demo-feedback alerts go to the owner inbox regardless of data.email
       data.email = OWNER_EMAIL;
       break;
     }
