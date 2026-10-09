@@ -16,16 +16,28 @@
 export interface CreateSubscriptionInput {
   /** The ACE MaintenancePlan.id (or plan descriptor) to subscribe. */
   plan: string;
+  /** Plan amount in major units (dollars); the backend converts to minor units. */
+  amount?: number;
+  /** Billing cadence; maps to a Stripe recurring interval on the backend. */
+  cadence?: 'monthly' | 'quarterly' | 'annual';
+  /** Customer email to prefill on the hosted Checkout. */
+  clientEmail?: string;
+  /** URL to return to after a successful checkout. */
+  successUrl?: string;
+  /** URL to return to if the customer cancels. */
+  cancelUrl?: string;
 }
 
 /** Result of a createSubscription call. */
 export interface CreateSubscriptionResult {
   /** False when the adapter is not configured (no secret) — caller stays in "billing not connected" state. */
   configured: boolean;
-  /** External Stripe subscription reference, if created. */
+  /** External Stripe subscription reference, if created (set later by the webhook). */
   subscriptionId?: string;
   /** ISO timestamp of the next billing date, if returned. */
   nextBillingDate?: string;
+  /** Hosted Stripe Checkout URL to redirect the customer to, when created. */
+  checkoutUrl?: string;
 }
 
 /** Input for cancelling an existing subscription. */
@@ -44,6 +56,16 @@ export interface CancelSubscriptionResult {
 export interface CreateOneOffPaymentLinkInput {
   /** The ACE Invoice.id (or invoice descriptor) to collect payment for. */
   invoice: string;
+  /** Amount in major units (dollars); the backend converts to minor units. */
+  amount?: number;
+  /** Customer email to prefill on the hosted Checkout. */
+  clientEmail?: string;
+  /** Human-readable description shown on the Checkout line item. */
+  description?: string;
+  /** URL to return to after a successful checkout. */
+  successUrl?: string;
+  /** URL to return to if the customer cancels. */
+  cancelUrl?: string;
 }
 
 /** Result of a createOneOffPaymentLink call. */

@@ -1,23 +1,18 @@
 /**
  * Stripe webhook event handler (FEAT-002).
  *
- * TODO(webhook-wiring): there is no HTTP endpoint we can wire cleanly in this
- * build. The repo's API Gateway (/notify) is external and NOT managed by
- * amplify/backend.ts, and the existing Lambda functions
- * (create-user, notification-handler) are not defined via defineFunction or
- * wired into defineBackend. Rather than fake an endpoint, this exposes the
- * Stripe event state transitions as a plain exported function. When a real
- * Stripe webhook (or a manual admin action) can be delivered, call
- * applyStripeEvent() with the event payload. The caller supplies the data
- * accessors (the existing api.ts CRUD helpers) so this stays side-effect-driven
- * through the existing api.ts CRUD and does not assume a runtime context.
+ * SUPERSEDED FOR LIVE DELIVERY: live Stripe webhook handling now lives in the
+ * ACE-QuoteHandler Lambda (infra/lambda/quoteHandler.mjs → handleStripeWebhook
+ * / upsertInvoiceByStripeId). That Lambda receives Stripe events at
+ * POST /stripe/webhook, verifies the Stripe-Signature header, and writes the
+ * Invoice / MaintenancePlan DynamoDB rows directly — including the TD-4 upsert
+ * by stripeInvoiceId. Do NOT wire a second live delivery path here.
  *
- * On the four handled events this maps Stripe billing state onto the ACE
- * MaintenancePlan + Invoice records. Manual billing/admin flows remain fully
- * functional independent of this seam.
- *
- * Live webhook delivery, Stripe signature verification, and SDK calls are
- * NEEDS-MANUAL-VERIFICATION — not exercised by the build.
+ * applyStripeEvent() below remains ONLY for manual / admin-triggered state
+ * transitions (e.g. reconciling a record by hand). It applies the same TD-4
+ * upsert semantics on invoice.paid: look up the Invoice by stripeInvoiceId via
+ * the injected accessor and update it when found, creating a new row ONLY when
+ * none exists, so the two code paths stay consistent and never duplicate.
  */
 
 /** Payload describing a Stripe billing event, from a webhook or manual action. */
@@ -50,6 +45,15 @@ export interface StripeEventDeps {
   createInvoice: (input: Record<string, any>) => Promise<any>;
   updateInvoice: (input: Record<string, any>) => Promise<any>;
   listMaintenancePlansByProject?: (input: Record<string, any>) => Promise<any>;
+  /**
+   * TD-4 upsert support: look up an existing Invoice by its stripeInvoiceId so
+   * invoice.paid can UPDATE instead of blindly CREATE. May return the matching
+   * invoice (with an `id`) or undefined/null. When omitted, the invoice.paid
+   * branch falls back to listInvoices filtering if provided, else creates.
+   */
+  getInvoiceByStripeId?: (stripeInvoiceId: string) => Promise<any>;
+  /** Optional full list used to resolve an existing invoice when no direct lookup is given. */
+  listInvoices?: () => Promise<any[]>;
 }
 
 /** Map a Stripe subscription status onto an ACE MaintenancePlan status. */
@@ -82,15 +86,38 @@ export async function applyStripeEvent(
     case 'invoice.paid': {
       let invoice: any;
       if (event.stripeInvoiceId) {
-        invoice = await deps.createInvoice({
-          kind: 'maintenance',
-          recurring: true,
-          stripeInvoiceId: event.stripeInvoiceId,
-          ...(event.maintenancePlanId ? { maintenancePlanId: event.maintenancePlanId } : {}),
-          ...(event.clientId ? { clientId: event.clientId } : {}),
-          ...(event.projectId ? { projectId: event.projectId } : {}),
-          ...(typeof event.amount === 'number' ? { amount: event.amount } : {}),
-        });
+        // TD-4 upsert: find an existing Invoice carrying this stripeInvoiceId
+        // and UPDATE it; create a new row ONLY when none exists. This removes
+        // the prior always-create behavior that risked duplicate rows.
+        let existing: any;
+        if (deps.getInvoiceByStripeId) {
+          existing = await deps.getInvoiceByStripeId(event.stripeInvoiceId);
+        } else if (deps.listInvoices) {
+          const all = await deps.listInvoices();
+          existing = (all || []).find(
+            (inv: any) => inv.stripeInvoiceId === event.stripeInvoiceId,
+          );
+        }
+
+        const paidFields: Record<string, any> = {
+          status: 'paid',
+          paidAt: occurredAt,
+          ...(typeof event.amount === 'number' ? { total: event.amount } : {}),
+        };
+
+        if (existing?.id) {
+          invoice = await deps.updateInvoice({ id: existing.id, ...paidFields });
+        } else {
+          invoice = await deps.createInvoice({
+            kind: 'maintenance',
+            recurring: true,
+            stripeInvoiceId: event.stripeInvoiceId,
+            ...paidFields,
+            ...(event.maintenancePlanId ? { maintenancePlanId: event.maintenancePlanId } : {}),
+            ...(event.clientId ? { clientId: event.clientId } : {}),
+            ...(event.projectId ? { projectId: event.projectId } : {}),
+          });
+        }
       }
 
       let plan: any;

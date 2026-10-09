@@ -50,6 +50,8 @@ import {
   listMaintenanceWindowsByPlan,
   updateMaintenanceWindow,
   createInvoice,
+  listInvoices,
+  updateInvoice,
   listCampaigns,
   listCampaignStepsByCampaign,
 } from '../utils/api';
@@ -151,6 +153,7 @@ export default function ProjectDetail() {
   const [demos, setDemos] = useState<any[]>([]);
   const [contracts, setContracts] = useState<any[]>([]);
   const [plans, setPlans] = useState<any[]>([]);
+  const [invoices, setInvoices] = useState<any[]>([]);
   // Maintenance windows keyed by planId, loaded alongside the plans.
   const [windowsByPlan, setWindowsByPlan] = useState<Record<string, any[]>>({});
   const [loading, setLoading] = useState(true);
@@ -175,6 +178,14 @@ export default function ProjectDetail() {
     setDemos(dm);
     setContracts(ct);
     setPlans(pl);
+    // Load invoices for this project so the admin can mint a Checkout payment
+    // link (listInvoices has no by-project query, so filter client-side).
+    try {
+      const allInvoices = await listInvoices();
+      setInvoices((allInvoices || []).filter((inv: any) => inv.projectId === id));
+    } catch (err) {
+      console.error('Failed to load invoices', err);
+    }
     // Load each plan's windows so the admin can manage them inline.
     try {
       const entries = await Promise.all(
@@ -499,11 +510,20 @@ export default function ProjectDetail() {
       status: 'active',
       startedAt: new Date().toISOString().slice(0, 10),
     };
-    const res = await stripe.createSubscription({ plan: plan.id });
+    const res = await stripe.createSubscription({
+      plan: plan.id,
+      amount: Number(plan.amount),
+      cadence: plan.cadence,
+      clientEmail: client?.email,
+      successUrl: window.location.href,
+      cancelUrl: window.location.href,
+    });
     if (res.configured) {
       if (res.subscriptionId) patch.stripeSubscriptionId = res.subscriptionId;
       if (res.nextBillingDate) patch.nextBillingDate = res.nextBillingDate;
     }
+    // Activate the DB record first (no-charge fallback / source of truth); the
+    // webhook stamps stripeSubscriptionId + status on return from Checkout.
     await updateMaintenancePlan(patch);
     await logProjectEvent(
       id,
@@ -513,6 +533,31 @@ export default function ProjectDetail() {
         : 'activated the maintenance plan (billing not connected)',
     );
     await refresh();
+    // Redirect the user to the Stripe-hosted Checkout to collect the payment
+    // method when the backend returned a Checkout URL.
+    if (res.configured && res.checkoutUrl) {
+      window.location.assign(res.checkoutUrl);
+    }
+  }
+
+  // Admin mints a Stripe Checkout URL for a one-off/deposit/balance invoice and
+  // stores it on invoice.paymentLink, which the customer pages surface as a
+  // "Pay now" link.
+  async function generatePaymentLink(invoice: any) {
+    if (!id) return;
+    const res = await stripe.createOneOffPaymentLink({
+      invoice: invoice.id,
+      amount: Number(invoice.total),
+      clientEmail: client?.email,
+      description: `${project?.name || 'ACE'} — ${invoice.kind || 'invoice'} invoice`,
+      successUrl: window.location.href,
+      cancelUrl: window.location.href,
+    });
+    if (res.configured && res.paymentLink) {
+      await updateInvoice({ id: invoice.id, paymentLink: res.paymentLink });
+      await logProjectEvent(id, 'admin', 'generated a Stripe payment link for an invoice');
+      await refresh();
+    }
   }
 
   // Pause an active plan (no billing side effect in this build).
@@ -1048,6 +1093,57 @@ export default function ProjectDetail() {
                     onStart={(win) => startWindow(p, win)}
                     onComplete={(win, hours) => completeWindow(p, win, hours)}
                   />
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Invoices — mint a Stripe Checkout payment link for one-off /
+              deposit / balance invoices. The customer portal surfaces the
+              resulting paymentLink as a "Pay now" link. */}
+          <div className="card">
+            <h3 className="font-semibold mb-3 flex items-center gap-2">
+              <FileSignature size={16} className="text-ace-magenta" /> Invoices
+            </h3>
+            {invoices.length === 0 ? (
+              <p className="text-sm text-ace-muted">No invoices yet.</p>
+            ) : (
+              <div className="space-y-2">
+                {invoices.map((inv) => (
+                  <div
+                    key={inv.id}
+                    className="bg-[#0e0e0e] rounded-lg p-3 border border-[rgba(255,255,255,0.04)]"
+                  >
+                    <div className="flex items-center justify-between gap-2">
+                      <div className="min-w-0">
+                        <div className="text-sm font-semibold">
+                          {inv.kind || 'invoice'} · ${Number(inv.total || 0).toLocaleString()}
+                        </div>
+                        <div className="text-xs text-ace-muted">
+                          {(inv.status || 'draft').replace(/_/g, ' ')}
+                        </div>
+                      </div>
+                      {inv.paymentLink ? (
+                        <a
+                          href={inv.paymentLink}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="text-xs px-3 py-1.5 rounded-lg bg-ace-cyan/15 text-ace-cyan border border-ace-cyan/20 flex-shrink-0"
+                        >
+                          Open link
+                        </a>
+                      ) : (
+                        inv.status !== 'paid' && (
+                          <button
+                            onClick={() => generatePaymentLink(inv)}
+                            className="text-xs px-3 py-1.5 rounded-lg bg-ace-magenta/15 text-ace-magenta border border-ace-magenta/20 flex-shrink-0"
+                          >
+                            Generate payment link
+                          </button>
+                        )
+                      )}
+                    </div>
+                  </div>
                 ))}
               </div>
             )}
