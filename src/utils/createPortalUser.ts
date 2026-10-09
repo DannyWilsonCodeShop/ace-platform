@@ -20,6 +20,10 @@ interface CreateUserResult {
   success: boolean;
   message: string;
   error?: string;
+  /** Cognito Username of the created/existing portal account (email-based). */
+  userId?: string;
+  email?: string;
+  group?: string;
 }
 
 export async function createPortalUser(params: CreateUserParams): Promise<CreateUserResult> {
@@ -39,7 +43,13 @@ export async function createPortalUser(params: CreateUserParams): Promise<Create
       return { success: false, message: data.error || 'Failed to create user', error: data.error };
     }
 
-    return { success: true, message: data.message };
+    return {
+      success: true,
+      message: data.message,
+      userId: data.userId,
+      email: data.email,
+      group: data.group,
+    };
   } catch (err: any) {
     return { success: false, message: err.message || 'Network error', error: err.message };
   }

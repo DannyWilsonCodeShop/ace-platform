@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { getQuote, updateQuote } from '../utils/api';
+import { promoteQuote } from '../projects/promoteQuote';
 import { ArrowLeft, MapPin, Music, Mic, Users, DollarSign, Brain, CheckCircle, XCircle, Calendar, Clock } from 'lucide-react';
 import { format, parseISO } from 'date-fns';
 
@@ -45,6 +46,25 @@ export default function QuoteDetail() {
     try { await updateQuote({ id, status }); setQuote({ ...quote, status }); }
     catch (err) { console.error(err); }
     finally { setSaving(false); }
+  };
+
+  const handleAccept = async () => {
+    if (!quote) return;
+    if (quote.status === 'accepted') {
+      alert('This quote has already been accepted and promoted to a project.');
+      return;
+    }
+    setSaving(true);
+    try {
+      const { projectId } = await promoteQuote(quote);
+      setQuote({ ...quote, status: 'accepted' });
+      navigate('/projects/' + projectId);
+    } catch (err: any) {
+      console.error(err);
+      alert('Could not accept this quote: ' + (err?.message || 'Unknown error'));
+    } finally {
+      setSaving(false);
+    }
   };
 
   const handleSaveNotes = async () => {
@@ -267,9 +287,9 @@ export default function QuoteDetail() {
               className="w-full flex items-center gap-2 justify-center px-4 py-2.5 rounded-lg bg-ace-purple/15 text-ace-purple border border-ace-purple/20 text-sm">
               <DollarSign size={16}/> Send Quote to Client
             </button>
-            <button onClick={() => handleUpdateStatus('accepted')}
-              className="w-full flex items-center gap-2 justify-center px-4 py-2.5 rounded-lg bg-green-500/15 text-green-400 border border-green-500/20 text-sm">
-              <CheckCircle size={16}/> Accept
+            <button onClick={handleAccept} disabled={saving || quote.status === 'accepted'}
+              className="w-full flex items-center gap-2 justify-center px-4 py-2.5 rounded-lg bg-green-500/15 text-green-400 border border-green-500/20 text-sm disabled:opacity-50">
+              <CheckCircle size={16}/> {saving ? 'Accepting...' : 'Accept'}
             </button>
             <button onClick={() => handleUpdateStatus('declined')}
               className="w-full flex items-center gap-2 justify-center px-4 py-2.5 rounded-lg bg-red-500/15 text-red-400 border border-red-500/20 text-sm">

@@ -161,6 +161,30 @@ export async function createClient(input: Record<string, any>) {
   return data?.createClient;
 }
 
+export async function getClient(id: string) {
+  const data = await graphql(`
+    query GetClient($id: ID!) {
+      getClient(id: $id) {
+        id firstName lastName email phone organization
+        totalGigs totalProjects totalRevenue isRepeatClient
+        notes tags cognitoUserId createdAt
+      }
+    }
+  `, { id });
+  return data?.getClient;
+}
+
+export async function updateClient(input: Record<string, any>) {
+  const data = await graphql(`
+    mutation UpdateClient($input: UpdateClientInput!) {
+      updateClient(input: $input) {
+        id cognitoUserId totalProjects
+      }
+    }
+  `, { input });
+  return data?.updateClient;
+}
+
 // === Equipment queries ===
 export async function listEquipment() {
   const data = await graphql(`
@@ -236,4 +260,242 @@ export async function listSubscribers() {
     }
   `);
   return data?.listSubscribers?.items || [];
+}
+
+// === Project queries ===
+const PROJECT_FIELDS = `
+  id quoteId clientId name status templateKey
+  launchStart launchTarget backendCeiling
+  frontendProgress backendProgress middlewareProgress overallProgress trackStatus
+  contractId quotedAmount internalNotes clientNotes owner createdAt updatedAt
+`;
+
+export async function createProject(input: Record<string, any>) {
+  const data = await graphql(`
+    mutation CreateProject($input: CreateProjectInput!) {
+      createProject(input: $input) { ${PROJECT_FIELDS} }
+    }
+  `, { input });
+  return data?.createProject;
+}
+
+export async function getProject(id: string) {
+  const data = await graphql(`
+    query GetProject($id: ID!) {
+      getProject(id: $id) { ${PROJECT_FIELDS} }
+    }
+  `, { id });
+  return data?.getProject;
+}
+
+export async function listProjects() {
+  const data = await graphql(`
+    query ListProjects {
+      listProjects(limit: 200) {
+        items { ${PROJECT_FIELDS} }
+      }
+    }
+  `);
+  return data?.listProjects?.items || [];
+}
+
+export async function updateProject(input: Record<string, any>) {
+  const data = await graphql(`
+    mutation UpdateProject($input: UpdateProjectInput!) {
+      updateProject(input: $input) { ${PROJECT_FIELDS} }
+    }
+  `, { input });
+  return data?.updateProject;
+}
+
+// === ProjectPage queries ===
+const PROJECT_PAGE_FIELDS = `
+  id projectId pageKey label category devStatus
+  lookComplete featuresComplete clientApproval baseline href owner createdAt updatedAt
+`;
+
+export async function createProjectPage(input: Record<string, any>) {
+  const data = await graphql(`
+    mutation CreateProjectPage($input: CreateProjectPageInput!) {
+      createProjectPage(input: $input) { ${PROJECT_PAGE_FIELDS} }
+    }
+  `, { input });
+  return data?.createProjectPage;
+}
+
+export async function listProjectPages(projectId: string) {
+  const data = await graphql(`
+    query ListProjectPages($filter: ModelProjectPageFilterInput) {
+      listProjectPages(filter: $filter, limit: 200) {
+        items { ${PROJECT_PAGE_FIELDS} }
+      }
+    }
+  `, { filter: { projectId: { eq: projectId } } });
+  return data?.listProjectPages?.items || [];
+}
+
+export async function updateProjectPage(input: Record<string, any>) {
+  const data = await graphql(`
+    mutation UpdateProjectPage($input: UpdateProjectPageInput!) {
+      updateProjectPage(input: $input) { ${PROJECT_PAGE_FIELDS} }
+    }
+  `, { input });
+  return data?.updateProjectPage;
+}
+
+// === ProjectNote queries ===
+const PROJECT_NOTE_FIELDS = `
+  id projectId pageKey authorSub authorRole kind body audioKey readBy owner createdAt updatedAt
+`;
+
+export async function createProjectNote(input: Record<string, any>) {
+  const data = await graphql(`
+    mutation CreateProjectNote($input: CreateProjectNoteInput!) {
+      createProjectNote(input: $input) { ${PROJECT_NOTE_FIELDS} }
+    }
+  `, { input });
+  return data?.createProjectNote;
+}
+
+export async function listProjectNotes(projectId: string) {
+  const data = await graphql(`
+    query ListProjectNotes($filter: ModelProjectNoteFilterInput) {
+      listProjectNotes(filter: $filter, limit: 200) {
+        items { ${PROJECT_NOTE_FIELDS} }
+      }
+    }
+  `, { filter: { projectId: { eq: projectId } } });
+  return data?.listProjectNotes?.items || [];
+}
+
+// === ProjectEvent queries ===
+const PROJECT_EVENT_FIELDS = `
+  id projectId pageKey actor message owner createdAt updatedAt
+`;
+
+export async function createProjectEvent(input: Record<string, any>) {
+  const data = await graphql(`
+    mutation CreateProjectEvent($input: CreateProjectEventInput!) {
+      createProjectEvent(input: $input) { ${PROJECT_EVENT_FIELDS} }
+    }
+  `, { input });
+  return data?.createProjectEvent;
+}
+
+export async function listProjectEvents(projectId: string) {
+  const data = await graphql(`
+    query ListProjectEvents($filter: ModelProjectEventFilterInput) {
+      listProjectEvents(filter: $filter, limit: 200) {
+        items { ${PROJECT_EVENT_FIELDS} }
+      }
+    }
+  `, { filter: { projectId: { eq: projectId } } });
+  return data?.listProjectEvents?.items || [];
+}
+
+// === Meeting queries ===
+const MEETING_FIELDS = `
+  id projectId quoteId clientId requestedBySub mode
+  proposedAt confirmedAt location agenda status responseNote purpose
+  owner createdAt updatedAt
+`;
+
+export async function createMeeting(input: Record<string, any>) {
+  const data = await graphql(`
+    mutation CreateMeeting($input: CreateMeetingInput!) {
+      createMeeting(input: $input) { ${MEETING_FIELDS} }
+    }
+  `, { input });
+  return data?.createMeeting;
+}
+
+export async function listMeetings(projectId: string) {
+  const data = await graphql(`
+    query ListMeetings($filter: ModelMeetingFilterInput) {
+      listMeetings(filter: $filter, limit: 200) {
+        items { ${MEETING_FIELDS} }
+      }
+    }
+  `, { filter: { projectId: { eq: projectId } } });
+  return data?.listMeetings?.items || [];
+}
+
+export async function updateMeeting(input: Record<string, any>) {
+  const data = await graphql(`
+    mutation UpdateMeeting($input: UpdateMeetingInput!) {
+      updateMeeting(input: $input) { ${MEETING_FIELDS} }
+    }
+  `, { input });
+  return data?.updateMeeting;
+}
+
+// === Demo queries ===
+const DEMO_FIELDS = `
+  id projectId title kind options previewUrl status selectedOption clientFeedback
+  owner createdAt updatedAt
+`;
+
+export async function createDemo(input: Record<string, any>) {
+  const data = await graphql(`
+    mutation CreateDemo($input: CreateDemoInput!) {
+      createDemo(input: $input) { ${DEMO_FIELDS} }
+    }
+  `, { input });
+  return data?.createDemo;
+}
+
+export async function listDemos(projectId: string) {
+  const data = await graphql(`
+    query ListDemos($filter: ModelDemoFilterInput) {
+      listDemos(filter: $filter, limit: 200) {
+        items { ${DEMO_FIELDS} }
+      }
+    }
+  `, { filter: { projectId: { eq: projectId } } });
+  return data?.listDemos?.items || [];
+}
+
+export async function updateDemo(input: Record<string, any>) {
+  const data = await graphql(`
+    mutation UpdateDemo($input: UpdateDemoInput!) {
+      updateDemo(input: $input) { ${DEMO_FIELDS} }
+    }
+  `, { input });
+  return data?.updateDemo;
+}
+
+// === Contract queries ===
+const CONTRACT_FIELDS = `
+  id projectId clientId status provider
+  documentKey signedDocumentKey providerEnvelopeId
+  sentAt signedAt amount terms owner createdAt updatedAt
+`;
+
+export async function createContract(input: Record<string, any>) {
+  const data = await graphql(`
+    mutation CreateContract($input: CreateContractInput!) {
+      createContract(input: $input) { ${CONTRACT_FIELDS} }
+    }
+  `, { input });
+  return data?.createContract;
+}
+
+export async function getContract(projectId: string) {
+  const data = await graphql(`
+    query ListContracts($filter: ModelContractFilterInput) {
+      listContracts(filter: $filter, limit: 50) {
+        items { ${CONTRACT_FIELDS} }
+      }
+    }
+  `, { filter: { projectId: { eq: projectId } } });
+  return data?.listContracts?.items || [];
+}
+
+export async function updateContract(input: Record<string, any>) {
+  const data = await graphql(`
+    mutation UpdateContract($input: UpdateContractInput!) {
+      updateContract(input: $input) { ${CONTRACT_FIELDS} }
+    }
+  `, { input });
+  return data?.updateContract;
 }

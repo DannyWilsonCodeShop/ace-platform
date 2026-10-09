@@ -9,7 +9,7 @@ const OWNER_EMAIL = 'wilson.danny@me.com';
 const FROM_EMAIL = 'info@atlantacreativeexchange.com';
 
 interface NotificationEvent {
-  type: 'new_quote' | 'quote_accepted' | 'payment_received' | 'gig_reminder' | 'message';
+  type: 'new_quote' | 'quote_accepted' | 'payment_received' | 'gig_reminder' | 'message' | 'project_note';
   data: Record<string, any>;
   channels: ('sms' | 'email' | 'in_app')[];
 }
@@ -42,6 +42,15 @@ export const handler = async (event: NotificationEvent) => {
       emailSubject = `[ACE] Message from ${data.senderName}`;
       emailBody = `${data.senderName} sent a message: "${data.content}"`;
       break;
+    case 'project_note': {
+      const noteKind = (data.kind || '').toUpperCase() === 'VOICE' ? 'VOICE' : 'TEXT';
+      smsMessage = `📝 New ${noteKind} note on ${data.projectName}. Check the admin portal.`;
+      emailSubject = `[ACE] New ${noteKind} note on ${data.projectName}`;
+      emailBody = `A new ${noteKind} note was added to project "${data.projectName}". Reference: ${data.noteRef || 'n/a'}. Open the admin portal to review.`;
+      // project-note alerts go to the owner inbox regardless of data.email
+      data.email = OWNER_EMAIL;
+      break;
+    }
     default:
       smsMessage = `ACE notification: ${type}`;
       emailSubject = `[ACE] Notification`;
