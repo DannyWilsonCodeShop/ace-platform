@@ -16,6 +16,7 @@ import { format, parseISO } from 'date-fns';
 import {
   ArrowLeft,
   FileSignature,
+  Wrench,
   CalendarClock,
   ScrollText,
   MessageSquare,
@@ -42,10 +43,19 @@ import {
   updateContract,
   updateProject,
   getClient,
+  createMaintenancePlan,
+  listMaintenancePlansByProject,
+  updateMaintenancePlan,
+  createMaintenanceWindow,
+  listMaintenanceWindowsByPlan,
+  updateMaintenanceWindow,
+  createInvoice,
 } from '../utils/api';
 import { uploadDemoImage, slugify } from '../projects/demos';
 import { uploadContractPdf, contractUrl } from '../contracts/contracts';
 import { dropboxSign } from '../contracts/providers/dropboxSign';
+import { stripe } from '../billing/providers/stripe';
+import { billingConfigured } from '../billing/billing';
 import { fetchAuthSession } from 'aws-amplify/auth';
 import { logProjectEvent } from '../projects/lifecycleEvents';
 import {
@@ -137,19 +147,23 @@ export default function ProjectDetail() {
   const [meetings, setMeetings] = useState<any[]>([]);
   const [demos, setDemos] = useState<any[]>([]);
   const [contracts, setContracts] = useState<any[]>([]);
+  const [plans, setPlans] = useState<any[]>([]);
+  // Maintenance windows keyed by planId, loaded alongside the plans.
+  const [windowsByPlan, setWindowsByPlan] = useState<Record<string, any[]>>({});
   const [loading, setLoading] = useState(true);
 
   const refresh = useCallback(async () => {
     if (!id) return;
     const proj = await getProject(id);
     setProject(proj);
-    const [pg, ns, ev, mt, dm, ct] = await Promise.all([
+    const [pg, ns, ev, mt, dm, ct, pl] = await Promise.all([
       listProjectPages(id),
       listProjectNotes(id),
       listProjectEvents(id),
       listMeetings(id),
       listDemos(id),
       getContract(id),
+      listMaintenancePlansByProject(id),
     ]);
     setPages(pg);
     setNotes(ns);
@@ -157,6 +171,16 @@ export default function ProjectDetail() {
     setMeetings(mt);
     setDemos(dm);
     setContracts(ct);
+    setPlans(pl);
+    // Load each plan's windows so the admin can manage them inline.
+    try {
+      const entries = await Promise.all(
+        (pl || []).map(async (p: any) => [p.id, await listMaintenanceWindowsByPlan(p.id)] as const),
+      );
+      setWindowsByPlan(Object.fromEntries(entries));
+    } catch (err) {
+      console.error('Failed to load maintenance windows', err);
+    }
     if (proj?.clientId) {
       try {
         setClient(await getClient(proj.clientId));
@@ -390,6 +414,143 @@ export default function ProjectDetail() {
     if (!id) return;
     await updateContract({ id: c.id, status: 'countersigned' });
     await logProjectEvent(id, 'admin', 'countersigned the contract');
+    await refresh();
+  }
+
+  // --- Maintenance admin actions ---
+
+  // Create a maintenance plan as a draft (paused) DB record. Activation (and
+  // any Stripe subscription) is a separate explicit step.
+  async function createMaintenancePlanRecord(input: {
+    cadence: 'monthly' | 'quarterly' | 'annual';
+    amount: number;
+    includedHours: number;
+  }) {
+    if (!id || !project) return;
+    await createMaintenancePlan({
+      projectId: id,
+      clientId: project.clientId,
+      status: 'paused',
+      cadence: input.cadence,
+      amount: input.amount,
+      includedHours: input.includedHours,
+    });
+    await logProjectEvent(id, 'admin', `created a ${input.cadence} maintenance plan`);
+    await refresh();
+  }
+
+  // Activate a plan. Branch on the Stripe adapter: when configured, create the
+  // subscription and store the returned stripeSubscriptionId + nextBillingDate;
+  // when NOT configured, still activate as a DB record with NO charge attempted
+  // (the plan card renders a 'billing not connected' badge).
+  async function activatePlan(plan: any) {
+    if (!id) return;
+    const patch: Record<string, any> = {
+      id: plan.id,
+      status: 'active',
+      startedAt: new Date().toISOString().slice(0, 10),
+    };
+    const res = await stripe.createSubscription({ plan: plan.id });
+    if (res.configured) {
+      if (res.subscriptionId) patch.stripeSubscriptionId = res.subscriptionId;
+      if (res.nextBillingDate) patch.nextBillingDate = res.nextBillingDate;
+    }
+    await updateMaintenancePlan(patch);
+    await logProjectEvent(
+      id,
+      'admin',
+      res.configured
+        ? 'activated the maintenance plan'
+        : 'activated the maintenance plan (billing not connected)',
+    );
+    await refresh();
+  }
+
+  // Pause an active plan (no billing side effect in this build).
+  async function pausePlan(plan: any) {
+    if (!id) return;
+    await updateMaintenancePlan({ id: plan.id, status: 'paused' });
+    await logProjectEvent(id, 'admin', 'paused the maintenance plan');
+    await refresh();
+  }
+
+  // Cancel a plan. Cancel the Stripe subscription when the adapter is
+  // configured and a subscription exists; always set the DB record to cancelled.
+  async function cancelPlan(plan: any) {
+    if (!id) return;
+    if (plan.stripeSubscriptionId && stripe.configured()) {
+      await stripe.cancelSubscription({ subscriptionId: plan.stripeSubscriptionId });
+    }
+    await updateMaintenancePlan({
+      id: plan.id,
+      status: 'cancelled',
+      cancelledAt: new Date().toISOString().slice(0, 10),
+    });
+    await logProjectEvent(id, 'admin', 'cancelled the maintenance plan');
+    await refresh();
+  }
+
+  // Schedule a requested window for a concrete time.
+  async function scheduleWindow(plan: any, win: any, scheduledFor: string) {
+    if (!id) return;
+    await updateMaintenanceWindow({
+      id: win.id,
+      status: 'scheduled',
+      scheduledFor: scheduledFor ? new Date(scheduledFor).toISOString() : win.scheduledFor,
+    });
+    await logProjectEvent(id, 'admin', 'scheduled a maintenance window');
+    await refresh();
+  }
+
+  // Move a window to in_progress.
+  async function startWindow(plan: any, win: any) {
+    if (!id) return;
+    await updateMaintenanceWindow({ id: win.id, status: 'in_progress' });
+    await logProjectEvent(id, 'admin', 'started a maintenance window');
+    await refresh();
+  }
+
+  // Mark a window done and record hoursUsed. When hoursUsed exceeds the plan's
+  // includedHours, bill the overage as a kind='maintenance' draft Invoice and
+  // link it back on the window.
+  async function completeWindow(plan: any, win: any, hoursUsed: number) {
+    if (!id || !project) return;
+    const includedHours = Number(plan.includedHours) || 0;
+    const overage = hoursUsed - includedHours;
+    let invoiceId: string | undefined;
+    if (overage > 0) {
+      // Rate the overage against the plan amount prorated over included hours;
+      // fall back to the full plan amount per overage hour when no hours are
+      // included on the plan.
+      const perHour = includedHours > 0 ? Number(plan.amount) / includedHours : Number(plan.amount);
+      const subtotal = Math.round(perHour * overage * 100) / 100;
+      const dueDate = new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
+      const invoice = await createInvoice({
+        clientId: project.clientId,
+        projectId: id,
+        kind: 'maintenance',
+        recurring: false,
+        maintenancePlanId: plan.id,
+        status: 'draft',
+        subtotal,
+        total: subtotal,
+        dueDate,
+      });
+      invoiceId = invoice?.id;
+    }
+    await updateMaintenanceWindow({
+      id: win.id,
+      status: 'done',
+      hoursUsed,
+      ...(invoiceId ? { invoiceId } : {}),
+    });
+    await logProjectEvent(
+      id,
+      'admin',
+      overage > 0
+        ? `completed a maintenance window (${hoursUsed}h; billed ${overage}h overage)`
+        : `completed a maintenance window (${hoursUsed}h)`,
+    );
     await refresh();
   }
 
@@ -805,8 +966,370 @@ export default function ProjectDetail() {
               </div>
             )}
           </div>
+
+          {/* Maintenance */}
+          <div className="card">
+            <h3 className="font-semibold mb-3 flex items-center gap-2">
+              <Wrench size={16} className="text-ace-cyan" /> Maintenance
+            </h3>
+            <MaintenancePlanCreateForm onCreate={createMaintenancePlanRecord} />
+
+            {plans.length === 0 ? (
+              <p className="text-sm text-ace-muted mt-3">No maintenance plan yet.</p>
+            ) : (
+              <div className="space-y-3 mt-3">
+                {plans.map((p) => (
+                  <MaintenancePlanCard
+                    key={p.id}
+                    plan={p}
+                    windows={windowsByPlan[p.id] || []}
+                    onActivate={() => activatePlan(p)}
+                    onPause={() => pausePlan(p)}
+                    onCancel={() => cancelPlan(p)}
+                    onSchedule={(win, when) => scheduleWindow(p, win, when)}
+                    onStart={(win) => startWindow(p, win)}
+                    onComplete={(win, hours) => completeWindow(p, win, hours)}
+                  />
+                ))}
+              </div>
+            )}
+          </div>
         </div>
       </div>
+    </div>
+  );
+}
+
+/** Maintenance cadence options mirror the MaintenancePlan.cadence enum. */
+const MAINTENANCE_CADENCES: { v: 'monthly' | 'quarterly' | 'annual'; label: string }[] = [
+  { v: 'monthly', label: 'Monthly' },
+  { v: 'quarterly', label: 'Quarterly' },
+  { v: 'annual', label: 'Annual' },
+];
+
+function MaintenancePlanCreateForm({
+  onCreate,
+}: {
+  onCreate: (input: {
+    cadence: 'monthly' | 'quarterly' | 'annual';
+    amount: number;
+    includedHours: number;
+  }) => void | Promise<void>;
+}) {
+  const [open, setOpen] = useState(false);
+  const [cadence, setCadence] = useState<'monthly' | 'quarterly' | 'annual'>('monthly');
+  const [amount, setAmount] = useState('');
+  const [includedHours, setIncludedHours] = useState('');
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  function reset() {
+    setCadence('monthly');
+    setAmount('');
+    setIncludedHours('');
+    setError(null);
+  }
+
+  async function submit() {
+    const amt = Number(amount);
+    if (!amount.trim() || Number.isNaN(amt) || amt < 0) {
+      setError('Enter a valid amount.');
+      return;
+    }
+    const hrs = includedHours.trim() ? Number(includedHours) : 0;
+    if (Number.isNaN(hrs) || hrs < 0) {
+      setError('Enter valid included hours.');
+      return;
+    }
+    setBusy(true);
+    try {
+      await onCreate({ cadence, amount: amt, includedHours: hrs });
+      reset();
+      setOpen(false);
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  if (!open) {
+    return (
+      <button
+        onClick={() => setOpen(true)}
+        className="text-xs px-3 py-1.5 rounded-lg bg-ace-cyan/15 text-ace-cyan border border-ace-cyan/20"
+      >
+        New plan
+      </button>
+    );
+  }
+
+  return (
+    <div className="bg-[#0e0e0e] rounded-lg p-3 space-y-3 border border-[rgba(255,255,255,0.04)]">
+      {error && (
+        <div className="text-xs px-3 py-2 rounded-lg bg-red-500/10 text-red-400">{error}</div>
+      )}
+      <div>
+        <label className="text-xs text-ace-muted mb-1 block">Cadence</label>
+        <select
+          className="input py-1.5 text-sm"
+          value={cadence}
+          onChange={(e) => setCadence(e.target.value as typeof cadence)}
+        >
+          {MAINTENANCE_CADENCES.map((c) => (
+            <option key={c.v} value={c.v}>
+              {c.label}
+            </option>
+          ))}
+        </select>
+      </div>
+      <div>
+        <label className="text-xs text-ace-muted mb-1 block">Amount (USD / cycle)</label>
+        <input
+          type="number"
+          min="0"
+          className="input text-sm"
+          placeholder="e.g. 150"
+          value={amount}
+          onChange={(e) => setAmount(e.target.value)}
+        />
+      </div>
+      <div>
+        <label className="text-xs text-ace-muted mb-1 block">Included hours / cycle</label>
+        <input
+          type="number"
+          min="0"
+          className="input text-sm"
+          placeholder="e.g. 4"
+          value={includedHours}
+          onChange={(e) => setIncludedHours(e.target.value)}
+        />
+      </div>
+      <div className="flex gap-2">
+        <button
+          onClick={submit}
+          disabled={busy}
+          className="text-xs px-3 py-1.5 rounded-lg bg-ace-cyan/15 text-ace-cyan border border-ace-cyan/20 disabled:opacity-50"
+        >
+          {busy ? 'Creating…' : 'Create plan'}
+        </button>
+        <button
+          onClick={() => {
+            reset();
+            setOpen(false);
+          }}
+          disabled={busy}
+          className="text-xs px-3 py-1.5 rounded-lg border border-[rgba(255,255,255,0.06)] text-ace-muted hover:text-white"
+        >
+          Cancel
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function MaintenancePlanCard({
+  plan,
+  windows,
+  onActivate,
+  onPause,
+  onCancel,
+  onSchedule,
+  onStart,
+  onComplete,
+}: {
+  plan: any;
+  windows: any[];
+  onActivate: () => void | Promise<void>;
+  onPause: () => void | Promise<void>;
+  onCancel: () => void | Promise<void>;
+  onSchedule: (win: any, when: string) => void | Promise<void>;
+  onStart: (win: any) => void | Promise<void>;
+  onComplete: (win: any, hoursUsed: number) => void | Promise<void>;
+}) {
+  const [busy, setBusy] = useState(false);
+  // The frontend can only see the publishable key; the authoritative secret
+  // gate lives in the backend adapter. We surface the 'billing not connected'
+  // badge for an active plan that has no Stripe subscription recorded.
+  const billingConnected = billingConfigured();
+  const showNotConnected =
+    plan.status === 'active' && !plan.stripeSubscriptionId && !billingConnected;
+
+  async function run(fn: () => void | Promise<void>) {
+    setBusy(true);
+    try {
+      await fn();
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <div className="bg-[#0e0e0e] rounded-lg p-3">
+      <div className="flex items-center justify-between gap-2">
+        <span className="badge bg-white/5 text-ace-muted">{plan.status}</span>
+        <span className="text-xs text-ace-muted">{plan.cadence}</span>
+      </div>
+      <div className="text-sm mt-1">
+        ${Number(plan.amount || 0).toLocaleString()}
+        <span className="text-ace-muted"> / {plan.cadence}</span>
+        {plan.includedHours != null && (
+          <span className="text-ace-muted"> · {plan.includedHours}h included</span>
+        )}
+      </div>
+      {plan.nextBillingDate && (
+        <div className="text-xs text-ace-muted mt-1">Next billing: {plan.nextBillingDate}</div>
+      )}
+
+      {showNotConnected && (
+        <div className="text-xs text-yellow-400 mt-2">
+          Billing not connected — Stripe not configured.
+        </div>
+      )}
+
+      <div className="flex gap-2 mt-2 flex-wrap">
+        {(plan.status === 'paused' || plan.status === 'past_due') && (
+          <button
+            onClick={() => run(onActivate)}
+            disabled={busy}
+            className="text-xs px-3 py-1 rounded-lg bg-green-500/15 text-green-400 border border-green-500/20 disabled:opacity-50"
+          >
+            Activate
+          </button>
+        )}
+        {plan.status === 'active' && (
+          <button
+            onClick={() => run(onPause)}
+            disabled={busy}
+            className="text-xs px-3 py-1 rounded-lg bg-white/5 text-white border border-[rgba(255,255,255,0.06)] disabled:opacity-50"
+          >
+            Pause
+          </button>
+        )}
+        {plan.status !== 'cancelled' && (
+          <button
+            onClick={() => run(onCancel)}
+            disabled={busy}
+            className="text-xs px-3 py-1 rounded-lg bg-red-500/10 text-red-400 border border-red-500/20 disabled:opacity-50"
+          >
+            Cancel
+          </button>
+        )}
+      </div>
+
+      {/* Windows */}
+      <div className="mt-3 border-t border-[rgba(255,255,255,0.06)] pt-3">
+        <div className="text-xs text-ace-muted mb-2">Maintenance windows</div>
+        {windows.length === 0 ? (
+          <p className="text-xs text-ace-muted">No windows yet.</p>
+        ) : (
+          <div className="space-y-2">
+            {windows.map((w) => (
+              <MaintenanceWindowRow
+                key={w.id}
+                win={w}
+                onSchedule={(when) => onSchedule(w, when)}
+                onStart={() => onStart(w)}
+                onComplete={(hours) => onComplete(w, hours)}
+              />
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function MaintenanceWindowRow({
+  win,
+  onSchedule,
+  onStart,
+  onComplete,
+}: {
+  win: any;
+  onSchedule: (when: string) => void | Promise<void>;
+  onStart: () => void | Promise<void>;
+  onComplete: (hoursUsed: number) => void | Promise<void>;
+}) {
+  const [busy, setBusy] = useState(false);
+  const [when, setWhen] = useState('');
+  const [hours, setHours] = useState('');
+
+  async function run(fn: () => void | Promise<void>) {
+    setBusy(true);
+    try {
+      await fn();
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <div className="bg-[#141414] rounded-lg p-2">
+      <div className="flex items-center justify-between gap-2">
+        <span className="text-xs">{win.description || 'Window'}</span>
+        <span className="badge bg-white/5 text-ace-muted">{win.status}</span>
+      </div>
+      <div className="text-xs text-ace-muted mt-1">
+        {win.scheduledFor ? fmtWhen(win.scheduledFor) : 'Time TBD'}
+        {win.durationMins != null ? ` · ${win.durationMins} min` : ''}
+      </div>
+      {win.hoursUsed != null && (
+        <div className="text-xs text-ace-muted mt-1">{win.hoursUsed}h used</div>
+      )}
+      {win.invoiceId && (
+        <div className="text-xs text-ace-muted mt-1">Overage invoiced</div>
+      )}
+
+      {win.status === 'requested' && (
+        <div className="mt-2 flex items-end gap-2 flex-wrap">
+          <input
+            type="datetime-local"
+            className="input text-xs py-1"
+            value={when}
+            onChange={(e) => setWhen(e.target.value)}
+          />
+          <button
+            onClick={() => run(() => onSchedule(when))}
+            disabled={busy || !when}
+            className="text-xs px-3 py-1 rounded-lg bg-ace-cyan/15 text-ace-cyan border border-ace-cyan/20 disabled:opacity-50"
+          >
+            Schedule
+          </button>
+        </div>
+      )}
+      {win.status === 'scheduled' && (
+        <div className="mt-2">
+          <button
+            onClick={() => run(onStart)}
+            disabled={busy}
+            className="text-xs px-3 py-1 rounded-lg bg-white/5 text-white border border-[rgba(255,255,255,0.06)] disabled:opacity-50"
+          >
+            Start
+          </button>
+        </div>
+      )}
+      {win.status === 'in_progress' && (
+        <div className="mt-2 flex items-end gap-2 flex-wrap">
+          <div>
+            <label className="text-xs text-ace-muted mb-1 block">Hours used</label>
+            <input
+              type="number"
+              min="0"
+              step="0.25"
+              className="input text-xs py-1"
+              placeholder="e.g. 3"
+              value={hours}
+              onChange={(e) => setHours(e.target.value)}
+            />
+          </div>
+          <button
+            onClick={() => run(() => onComplete(Number(hours) || 0))}
+            disabled={busy || !hours.trim()}
+            className="text-xs px-3 py-1 rounded-lg bg-green-500/15 text-green-400 border border-green-500/20 disabled:opacity-50"
+          >
+            Mark done
+          </button>
+        </div>
+      )}
     </div>
   );
 }

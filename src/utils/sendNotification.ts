@@ -215,6 +215,46 @@ export async function sendContractSentNotification(
   }
 }
 
+interface MaintenanceWindowNotification {
+  projectName: string;
+  /** Requested maintenance window time (ISO or display string). */
+  scheduledFor: string;
+  /** Requested duration in minutes. */
+  durationMins: number;
+  description: string;
+}
+
+/**
+ * Notify the owner that a customer requested a maintenance window. POSTs
+ * { type:'maintenance_requested', data:{...}, channels:['email'] }. The handler
+ * routes this to the owner inbox (it overrides data.email with OWNER_EMAIL).
+ * Never throws; returns a success flag.
+ */
+export async function sendMaintenanceWindowNotification(
+  payload: MaintenanceWindowNotification,
+): Promise<{ success: boolean }> {
+  try {
+    const response = await fetch(`${API_ENDPOINT}/notify`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        type: 'maintenance_requested',
+        data: {
+          projectName: payload.projectName,
+          scheduledFor: payload.scheduledFor,
+          durationMins: payload.durationMins,
+          description: payload.description,
+        },
+        channels: ['email'],
+      }),
+    });
+    return { success: response.ok };
+  } catch (err) {
+    console.error('sendMaintenanceWindowNotification failed:', err);
+    return { success: false };
+  }
+}
+
 interface ContractSignedNotification {
   projectName: string;
   /** Display name of the person who signed. */

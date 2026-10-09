@@ -27,6 +27,7 @@ import {
   MessageSquare,
   MonitorPlay,
   Receipt,
+  Wrench,
 } from 'lucide-react';
 import {
   listClients,
@@ -41,6 +42,9 @@ import {
   getContract,
   updateContract,
   listInvoices,
+  listMaintenancePlansByProject,
+  createMaintenanceWindow,
+  listMaintenanceWindowsByPlan,
 } from '../../utils/api';
 import { getTemplate } from '../../projects/templates';
 import type { Category, TrackedItem } from '../../projects/templates/types';
@@ -62,6 +66,7 @@ import {
   sendMeetingRequestNotification,
   sendDemoFeedbackNotification,
   sendContractSignedNotification,
+  sendMaintenanceWindowNotification,
 } from '../../utils/sendNotification';
 import { logProjectEvent } from '../../projects/lifecycleEvents';
 import { contractUrl } from '../../contracts/contracts';
@@ -112,6 +117,8 @@ export default function MyProject() {
   const [demos, setDemos] = useState<any[]>([]);
   const [contracts, setContracts] = useState<any[]>([]);
   const [invoices, setInvoices] = useState<any[]>([]);
+  const [plan, setPlan] = useState<any | null>(null);
+  const [maintenanceWindows, setMaintenanceWindows] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -128,6 +135,33 @@ export default function MyProject() {
     setMeetings(mt);
     setDemos(dm);
     setContracts(ct);
+
+    // Maintenance plan + the customer's own windows. Plan reads may depend on
+    // the promotion owner-stamp resolving (same caveat as Project/Contract
+    // reads), so tolerate a failure with a graceful empty state rather than
+    // throwing — mirroring how the rest of this page handles missing data.
+    try {
+      const myPlans = await listMaintenancePlansByProject(projectId);
+      // Prefer an active plan; otherwise show the most recent one.
+      const active = (myPlans || []).find((p: any) => p.status === 'active');
+      const chosen = active
+        || (myPlans || []).sort(
+          (a: any, b: any) =>
+            new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime(),
+        )[0]
+        || null;
+      setPlan(chosen);
+      if (chosen) {
+        const wins = await listMaintenanceWindowsByPlan(chosen.id);
+        setMaintenanceWindows(wins || []);
+      } else {
+        setMaintenanceWindows([]);
+      }
+    } catch (err) {
+      console.error('Failed to load maintenance plan', err);
+      setPlan(null);
+      setMaintenanceWindows([]);
+    }
   }, []);
 
   const resolve = useCallback(async () => {
@@ -307,6 +341,38 @@ export default function MyProject() {
       'customer',
       `requested a ${input.purpose} meeting (${input.mode})`,
     );
+    await loadProjectData(project.id);
+  }
+
+  // Customer requests a maintenance window. Field-scope (TD-1/TD-3): the
+  // createMaintenanceWindow payload carries ONLY the request fields (planId,
+  // requestedBySub, scheduledFor, durationMins, description, status:'requested')
+  // — never plan status/amount; scoping is UI-enforced and schema auth is
+  // untouched. Then notify the owner (best-effort) and log the activity.
+  async function requestMaintenanceWindow(input: {
+    when: string;
+    durationMins: number;
+    description: string;
+  }) {
+    if (!project || !plan) return;
+    const session = await fetchAuthSession();
+    const sub = (session.tokens?.accessToken?.payload?.['sub'] as string) || '';
+    const scheduledFor = input.when ? new Date(input.when).toISOString() : '';
+    await createMaintenanceWindow({
+      planId: plan.id,
+      requestedBySub: sub,
+      scheduledFor,
+      durationMins: input.durationMins,
+      description: input.description,
+      status: 'requested',
+    });
+    await sendMaintenanceWindowNotification({
+      projectName: project.name || 'Your project',
+      scheduledFor,
+      durationMins: input.durationMins,
+      description: input.description,
+    });
+    await logProjectEvent(project.id, 'customer', 'requested a maintenance window');
     await loadProjectData(project.id);
   }
 
@@ -600,6 +666,66 @@ export default function MyProject() {
         )}
       </div>
 
+      {/* Maintenance */}
+      <div className="card">
+        <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
+          <Wrench size={18} className="text-ace-cyan" /> Maintenance
+        </h2>
+
+        {!plan || plan.status === 'cancelled' ? (
+          <p className="text-sm text-ace-muted">No maintenance plan.</p>
+        ) : (
+          <>
+            <div className="bg-[#0e0e0e] rounded-lg p-3">
+              <div className="flex items-center justify-between gap-2">
+                <span className="text-sm font-medium">
+                  ${Number(plan.amount || 0).toLocaleString()}
+                  <span className="text-ace-muted"> / {plan.cadence}</span>
+                </span>
+                <span className="badge bg-white/5 text-ace-muted">{plan.status}</span>
+              </div>
+              {plan.includedHours != null && (
+                <div className="text-xs text-ace-muted mt-1">
+                  {plan.includedHours}h included per cycle
+                </div>
+              )}
+              {plan.nextBillingDate && (
+                <div className="text-xs text-ace-muted mt-1">
+                  Next billing: {plan.nextBillingDate}
+                </div>
+              )}
+            </div>
+
+            {plan.status === 'active' && (
+              <div className="mt-4">
+                <MaintenanceWindowRequestForm onSubmit={requestMaintenanceWindow} />
+              </div>
+            )}
+
+            <div className="mt-4">
+              {maintenanceWindows.length === 0 ? (
+                <p className="text-sm text-ace-muted">No maintenance windows yet.</p>
+              ) : (
+                <div className="space-y-3">
+                  {maintenanceWindows.map((w) => (
+                    <div key={w.id} className="bg-[#0e0e0e] rounded-lg p-3">
+                      <div className="flex items-center justify-between gap-2">
+                        <span className="text-sm font-medium">{w.description || 'Window'}</span>
+                        <span className="badge bg-white/5 text-ace-muted">{w.status}</span>
+                      </div>
+                      <div className="text-xs text-ace-muted mt-1">
+                        {w.scheduledFor ? fmtWhen(w.scheduledFor) : 'Time TBD'}
+                        {w.durationMins != null ? ` · ${w.durationMins} min` : ''}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </>
+        )}
+      </div>
+
       {/* Invoices */}
       <div className="card">
         <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
@@ -765,6 +891,108 @@ function MeetingRequestForm({
         </button>
         <button
           onClick={() => setOpen(false)}
+          disabled={busy}
+          className="text-xs px-3 py-1.5 rounded-lg border border-[rgba(255,255,255,0.06)] text-ace-muted hover:text-white"
+        >
+          Cancel
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function MaintenanceWindowRequestForm({
+  onSubmit,
+}: {
+  onSubmit: (input: {
+    when: string;
+    durationMins: number;
+    description: string;
+  }) => void | Promise<void>;
+}) {
+  const [open, setOpen] = useState(false);
+  const [when, setWhen] = useState('');
+  const [durationMins, setDurationMins] = useState('60');
+  const [description, setDescription] = useState('');
+  const [busy, setBusy] = useState(false);
+
+  function reset() {
+    setWhen('');
+    setDurationMins('60');
+    setDescription('');
+  }
+
+  async function submit() {
+    setBusy(true);
+    try {
+      await onSubmit({
+        when,
+        durationMins: Number(durationMins) || 0,
+        description: description.trim(),
+      });
+      reset();
+      setOpen(false);
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  if (!open) {
+    return (
+      <button
+        onClick={() => setOpen(true)}
+        className="text-xs px-3 py-1.5 rounded-lg bg-ace-cyan/15 text-ace-cyan border border-ace-cyan/20"
+      >
+        Request a maintenance window
+      </button>
+    );
+  }
+
+  return (
+    <div className="bg-[#0e0e0e] rounded-lg p-3 space-y-3 border border-[rgba(255,255,255,0.04)]">
+      <div>
+        <label className="text-xs text-ace-muted mb-1 block">When</label>
+        <input
+          type="datetime-local"
+          className="input text-sm"
+          value={when}
+          onChange={(e) => setWhen(e.target.value)}
+        />
+      </div>
+      <div>
+        <label className="text-xs text-ace-muted mb-1 block">Duration (minutes)</label>
+        <input
+          type="number"
+          min="0"
+          step="15"
+          className="input text-sm"
+          placeholder="e.g. 60"
+          value={durationMins}
+          onChange={(e) => setDurationMins(e.target.value)}
+        />
+      </div>
+      <div>
+        <label className="text-xs text-ace-muted mb-1 block">What needs attention?</label>
+        <textarea
+          className="input min-h-[60px] resize-y text-sm"
+          placeholder="Describe the work you'd like done."
+          value={description}
+          onChange={(e) => setDescription(e.target.value)}
+        />
+      </div>
+      <div className="flex gap-2">
+        <button
+          onClick={submit}
+          disabled={busy || !when}
+          className="text-xs px-3 py-1.5 rounded-lg bg-ace-cyan/15 text-ace-cyan border border-ace-cyan/20 disabled:opacity-50"
+        >
+          {busy ? 'Sending…' : 'Send request'}
+        </button>
+        <button
+          onClick={() => {
+            reset();
+            setOpen(false);
+          }}
           disabled={busy}
           className="text-xs px-3 py-1.5 rounded-lg border border-[rgba(255,255,255,0.06)] text-ace-muted hover:text-white"
         >

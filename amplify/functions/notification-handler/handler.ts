@@ -20,7 +20,8 @@ interface NotificationEvent {
     | 'meeting_response'
     | 'demo_feedback'
     | 'contract_sent'
-    | 'contract_signed';
+    | 'contract_signed'
+    | 'maintenance_requested';
   data: Record<string, any>;
   channels: ('sms' | 'email' | 'in_app')[];
 }
@@ -111,6 +112,18 @@ export const handler = async (event: NotificationEvent) => {
       emailBody = `The contract on project "${data.projectName}" was signed by ${data.signerName || 'the customer'}.<br/>`
         + `Open the admin portal to review.`;
       // contract-signed alerts go to the owner inbox regardless of data.email
+      data.email = OWNER_EMAIL;
+      break;
+    }
+    case 'maintenance_requested': {
+      smsMessage = `🛠️ Maintenance window requested on ${data.projectName} — ${data.scheduledFor || 'TBD'}.`;
+      emailSubject = `[ACE] Maintenance window requested on ${data.projectName}`;
+      emailBody = `A maintenance window was requested on project "${data.projectName}".<br/>`
+        + `Requested time: ${data.scheduledFor || 'TBD'}<br/>`
+        + `Duration: ${data.durationMins != null ? `${data.durationMins} min` : 'TBD'}<br/>`
+        + `Description: ${data.description || 'n/a'}<br/>`
+        + `Open the admin portal to schedule it.`;
+      // maintenance requests go to the owner inbox regardless of data.email
       data.email = OWNER_EMAIL;
       break;
     }
