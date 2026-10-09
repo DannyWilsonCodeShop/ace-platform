@@ -18,7 +18,9 @@ interface NotificationEvent {
     | 'project_note'
     | 'meeting_requested'
     | 'meeting_response'
-    | 'demo_feedback';
+    | 'demo_feedback'
+    | 'contract_sent'
+    | 'contract_signed';
   data: Record<string, any>;
   channels: ('sms' | 'email' | 'in_app')[];
 }
@@ -90,6 +92,25 @@ export const handler = async (event: NotificationEvent) => {
         + `Feedback: ${data.clientFeedback || 'n/a'}<br/>`
         + `Open the admin portal to review.`;
       // demo-feedback alerts go to the owner inbox regardless of data.email
+      data.email = OWNER_EMAIL;
+      break;
+    }
+    case 'contract_sent': {
+      const amountLabel = data.amount != null ? `$${data.amount}` : 'the agreed amount';
+      smsMessage = `📄 Contract sent for ${data.projectName} — ${amountLabel}.`;
+      emailSubject = `[ACE] Your contract for ${data.projectName}`;
+      emailBody = `A contract for project "${data.projectName}" is ready for your review and signature.<br/>`
+        + `Amount: ${amountLabel}<br/>`
+        + `Sign in to your ACE portal to review and sign.`;
+      // customer-facing: the caller supplies data.email (do NOT override)
+      break;
+    }
+    case 'contract_signed': {
+      smsMessage = `✍️ Contract signed on ${data.projectName} by ${data.signerName || 'the customer'}.`;
+      emailSubject = `[ACE] Contract signed: ${data.projectName}`;
+      emailBody = `The contract on project "${data.projectName}" was signed by ${data.signerName || 'the customer'}.<br/>`
+        + `Open the admin portal to review.`;
+      // contract-signed alerts go to the owner inbox regardless of data.email
       data.email = OWNER_EMAIL;
       break;
     }

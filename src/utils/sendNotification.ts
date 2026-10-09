@@ -172,3 +172,80 @@ export async function sendDemoFeedbackNotification(
     return { success: false };
   }
 }
+
+interface ContractSentNotification {
+  /**
+   * Customer's email — set as data.email so the owner->customer email is
+   * delivered to them. If missing/empty, the handler falls back to OWNER_EMAIL
+   * and the customer is NOT notified.
+   */
+  customerEmail: string;
+  projectName: string;
+  /** Contract amount; surfaced in the email body. */
+  amount: number;
+}
+
+/**
+ * Notify the customer that a contract was sent for signature. POSTs
+ * { type:'contract_sent', data:{ email:customerEmail, projectName, amount },
+ * channels:['email'] }. Customer-facing: the handler does NOT override
+ * data.email. Never throws; returns a success flag.
+ */
+export async function sendContractSentNotification(
+  payload: ContractSentNotification,
+): Promise<{ success: boolean }> {
+  try {
+    const response = await fetch(`${API_ENDPOINT}/notify`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        type: 'contract_sent',
+        data: {
+          email: payload.customerEmail,
+          projectName: payload.projectName,
+          amount: payload.amount,
+        },
+        channels: ['email'],
+      }),
+    });
+    return { success: response.ok };
+  } catch (err) {
+    console.error('sendContractSentNotification failed:', err);
+    return { success: false };
+  }
+}
+
+interface ContractSignedNotification {
+  projectName: string;
+  /** Display name of the person who signed. */
+  signerName: string;
+}
+
+/**
+ * Notify the owner that a customer signed a contract. POSTs
+ * { type:'contract_signed', data:{ projectName, signerName }, channels:['email'] }.
+ * The handler routes this to the owner inbox (it overrides data.email with
+ * OWNER_EMAIL). Never throws; returns a success flag.
+ */
+export async function sendContractSignedNotification(
+  payload: ContractSignedNotification,
+): Promise<{ success: boolean }> {
+  try {
+    const response = await fetch(`${API_ENDPOINT}/notify`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        type: 'contract_signed',
+        data: {
+          projectName: payload.projectName,
+          signerName: payload.signerName,
+        },
+        channels: ['email'],
+      }),
+    });
+    return { success: response.ok };
+  } catch (err) {
+    console.error('sendContractSignedNotification failed:', err);
+    return { success: false };
+  }
+}
