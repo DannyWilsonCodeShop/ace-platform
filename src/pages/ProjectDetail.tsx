@@ -38,12 +38,20 @@ import {
   createDemo,
   updateDemo,
   getContract,
+  createContract,
+  updateContract,
+  updateProject,
   getClient,
 } from '../utils/api';
 import { uploadDemoImage, slugify } from '../projects/demos';
+import { uploadContractPdf, contractUrl } from '../contracts/contracts';
+import { dropboxSign } from '../contracts/providers/dropboxSign';
 import { fetchAuthSession } from 'aws-amplify/auth';
 import { logProjectEvent } from '../projects/lifecycleEvents';
-import { sendMeetingResponseNotification } from '../utils/sendNotification';
+import {
+  sendMeetingResponseNotification,
+  sendContractSentNotification,
+} from '../utils/sendNotification';
 import { getTemplate } from '../projects/templates';
 import type { Category, TrackedItem } from '../projects/templates/types';
 import {
@@ -313,6 +321,99 @@ export default function ProjectDetail() {
     await logProjectEvent(id!, 'admin', `marked demo "${d.title}" approved`);
     await refresh();
   }
+
+  // --- Contract admin actions ---
+
+  // Create a draft contract. terms is stored into Contract.terms (a.json()).
+  async function createContractRecord(input: {
+    amount: number;
+    terms: string;
+    provider: 'manual_upload' | 'dropbox_sign';
+  }) {
+    if (!id || !project) return;
+    await createContract({
+      projectId: id,
+      clientId: project.clientId,
+      status: 'draft',
+      provider: input.provider,
+      amount: input.amount,
+      terms: input.terms,
+    });
+    await logProjectEvent(id, 'admin', 'created a contract');
+    await refresh();
+  }
+
+  // Upload an unsigned contract PDF and persist its documentKey.
+  async function uploadContractDocument(c: any, file: File) {
+    if (!id || !project) return;
+    const documentKey = await uploadContractPdf(project.clientId, file, 'contract');
+    await updateContract({ id: c.id, documentKey });
+    await logProjectEvent(id, 'admin', 'uploaded the contract');
+    await refresh();
+  }
+
+  // Send a draft contract to the customer. For manual_upload we flip the status
+  // and notify the customer; for dropbox_sign we go through the adapter, which
+  // is a clean no-op when the secret is absent (handled in the UI).
+  async function sendContract(c: any) {
+    if (!id) return;
+    if (c.provider === 'dropbox_sign') {
+      if (!dropboxSign.configured()) return; // UI shows the 'not configured' notice
+      const res = await dropboxSign.createSignatureRequest({
+        contractId: c.id,
+        documentKey: c.documentKey,
+        signerName: clientName,
+        signerEmail: client?.email,
+      });
+      await updateContract({
+        id: c.id,
+        status: 'sent',
+        sentAt: new Date().toISOString(),
+        providerEnvelopeId: res.envelopeId,
+      });
+    } else {
+      await updateContract({ id: c.id, status: 'sent', sentAt: new Date().toISOString() });
+      if (client?.email) {
+        await sendContractSentNotification({
+          customerEmail: client.email,
+          projectName: project?.name || 'your project',
+          amount: c.amount,
+        });
+      }
+    }
+    await logProjectEvent(id, 'admin', 'sent the contract to the client');
+    await refresh();
+  }
+
+  // Countersign a client-signed contract.
+  async function countersignContract(c: any) {
+    if (!id) return;
+    await updateContract({ id: c.id, status: 'countersigned' });
+    await logProjectEvent(id, 'admin', 'countersigned the contract');
+    await refresh();
+  }
+
+  // When a contract is observed signed, activate the project exactly once.
+  const [activating, setActivating] = useState(false);
+  useEffect(() => {
+    if (!project || activating) return;
+    const hasSigned = contracts.some(
+      (c) => c.status === 'signed' || c.status === 'countersigned',
+    );
+    if (hasSigned && project.status === 'contract_pending') {
+      setActivating(true);
+      (async () => {
+        try {
+          await updateProject({ id: project.id, status: 'active' });
+          await logProjectEvent(project.id, 'system', 'activated the project on contract signing');
+          await refresh();
+        } catch (err) {
+          console.error('Failed to activate project', err);
+          setActivating(false);
+        }
+      })();
+    }
+  }, [contracts, project, activating, refresh]);
 
   if (loading) return <div className="text-ace-muted">Loading project...</div>;
   if (!project) return <div className="text-ace-muted">Project not found.</div>;
@@ -686,43 +787,20 @@ export default function ProjectDetail() {
             <h3 className="font-semibold mb-3 flex items-center gap-2">
               <FileSignature size={16} className="text-ace-magenta" /> Contract
             </h3>
+            <ContractCreateForm onCreate={createContractRecord} />
+
             {contracts.length === 0 ? (
-              <p className="text-sm text-ace-muted">No contract on file yet.</p>
+              <p className="text-sm text-ace-muted mt-3">No contract on file yet.</p>
             ) : (
-              <div className="space-y-3">
+              <div className="space-y-3 mt-3">
                 {contracts.map((c) => (
-                  <div key={c.id} className="bg-[#0e0e0e] rounded-lg p-3">
-                    <div className="flex items-center justify-between gap-2">
-                      <span className="badge bg-white/5 text-ace-muted">{c.status}</span>
-                      <span className="text-xs text-ace-muted">{c.provider || 'manual_upload'}</span>
-                    </div>
-                    {c.amount != null && (
-                      <div className="text-sm mt-1">
-                        ${Number(c.amount).toLocaleString()}
-                      </div>
-                    )}
-                    {/* Manual-upload view: the signed/unsigned document lives at
-                        clients/{clientId}/contracts/* in S3. */}
-                    {c.provider === 'manual_upload' || !c.provider ? (
-                      c.documentKey ? (
-                        <div className="text-xs text-ace-muted mt-1 break-all">
-                          Document: {c.documentKey}
-                        </div>
-                      ) : (
-                        <div className="text-xs text-ace-muted mt-1">
-                          Upload the signed agreement to clients/{project.clientId}/contracts/*.
-                        </div>
-                      )
-                    ) : (
-                      // TODO(e-sign-provider seam): wire DocuSign / Dropbox Sign /
-                      // eSignatures.io send+status based on Contract.provider. The
-                      // manual-upload path above works today; no live provider call
-                      // is made here.
-                      <div className="text-xs text-yellow-400 mt-1">
-                        {c.provider} e-sign integration pending.
-                      </div>
-                    )}
-                  </div>
+                  <ContractCard
+                    key={c.id}
+                    contract={c}
+                    onUpload={(file) => uploadContractDocument(c, file)}
+                    onSend={() => sendContract(c)}
+                    onCountersign={() => countersignContract(c)}
+                  />
                 ))}
               </div>
             )}
@@ -1096,6 +1174,246 @@ function ScheduleMeetingForm({
         >
           Cancel
         </button>
+      </div>
+    </div>
+  );
+}
+
+/** Resolve a signed GET URL for a stored contract PDF and render a link, with a
+ *  graceful fallback when the URL cannot be resolved (see the {entity_id}
+ *  caveat in contracts.ts). */
+function ContractDocLink({ docKey, label }: { docKey: string; label: string }) {
+  const [url, setUrl] = useState<string | null>(null);
+  const [resolved, setResolved] = useState(false);
+  useEffect(() => {
+    let active = true;
+    contractUrl(docKey)
+      .then((u) => {
+        if (active) setUrl(u);
+      })
+      .finally(() => {
+        if (active) setResolved(true);
+      });
+    return () => {
+      active = false;
+    };
+  }, [docKey]);
+
+  if (!resolved) {
+    return <div className="text-xs text-ace-muted mt-1">Loading {label}…</div>;
+  }
+  if (!url) {
+    return <div className="text-xs text-ace-muted mt-1">{label} unavailable.</div>;
+  }
+  return (
+    <a
+      href={url}
+      target="_blank"
+      rel="noreferrer"
+      className="inline-flex items-center gap-1 mt-1 text-xs text-ace-cyan hover:text-white"
+    >
+      <ExternalLink size={12} /> View {label}
+    </a>
+  );
+}
+
+function ContractCreateForm({
+  onCreate,
+}: {
+  onCreate: (input: {
+    amount: number;
+    terms: string;
+    provider: 'manual_upload' | 'dropbox_sign';
+  }) => void | Promise<void>;
+}) {
+  const [open, setOpen] = useState(false);
+  const [amount, setAmount] = useState('');
+  const [terms, setTerms] = useState('');
+  const [provider, setProvider] = useState<'manual_upload' | 'dropbox_sign'>('manual_upload');
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  function reset() {
+    setAmount('');
+    setTerms('');
+    setProvider('manual_upload');
+    setError(null);
+  }
+
+  async function submit() {
+    const amt = Number(amount);
+    if (!amount.trim() || Number.isNaN(amt) || amt < 0) {
+      setError('Enter a valid amount.');
+      return;
+    }
+    setBusy(true);
+    try {
+      await onCreate({ amount: amt, terms: terms.trim(), provider });
+      reset();
+      setOpen(false);
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  if (!open) {
+    return (
+      <button
+        onClick={() => setOpen(true)}
+        className="text-xs px-3 py-1.5 rounded-lg bg-ace-magenta/15 text-ace-magenta border border-ace-magenta/20"
+      >
+        New contract
+      </button>
+    );
+  }
+
+  return (
+    <div className="bg-[#0e0e0e] rounded-lg p-3 space-y-3 border border-[rgba(255,255,255,0.04)]">
+      {error && (
+        <div className="text-xs px-3 py-2 rounded-lg bg-red-500/10 text-red-400">{error}</div>
+      )}
+      <div>
+        <label className="text-xs text-ace-muted mb-1 block">Amount (USD)</label>
+        <input
+          type="number"
+          min="0"
+          className="input text-sm"
+          placeholder="e.g. 5000"
+          value={amount}
+          onChange={(e) => setAmount(e.target.value)}
+        />
+      </div>
+      <div>
+        <label className="text-xs text-ace-muted mb-1 block">Terms</label>
+        <textarea
+          className="input min-h-[60px] resize-y text-sm"
+          placeholder="Scope, payment schedule, milestones…"
+          value={terms}
+          onChange={(e) => setTerms(e.target.value)}
+        />
+      </div>
+      <div>
+        <label className="text-xs text-ace-muted mb-1 block">Signing method</label>
+        <select
+          className="input py-1.5 text-sm"
+          value={provider}
+          onChange={(e) => setProvider(e.target.value as typeof provider)}
+        >
+          <option value="manual_upload">Manual upload</option>
+          <option value="dropbox_sign">Dropbox Sign</option>
+        </select>
+      </div>
+      <div className="flex gap-2">
+        <button
+          onClick={submit}
+          disabled={busy}
+          className="text-xs px-3 py-1.5 rounded-lg bg-ace-magenta/15 text-ace-magenta border border-ace-magenta/20 disabled:opacity-50"
+        >
+          {busy ? 'Creating…' : 'Create contract'}
+        </button>
+        <button
+          onClick={() => {
+            reset();
+            setOpen(false);
+          }}
+          disabled={busy}
+          className="text-xs px-3 py-1.5 rounded-lg border border-[rgba(255,255,255,0.06)] text-ace-muted hover:text-white"
+        >
+          Cancel
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function ContractCard({
+  contract: c,
+  onUpload,
+  onSend,
+  onCountersign,
+}: {
+  contract: any;
+  onUpload: (file: File) => void | Promise<void>;
+  onSend: () => void | Promise<void>;
+  onCountersign: () => void | Promise<void>;
+}) {
+  const [file, setFile] = useState<File | null>(null);
+  const [busy, setBusy] = useState(false);
+  const isDropbox = c.provider === 'dropbox_sign';
+  const providerUnconfigured = isDropbox && !dropboxSign.configured();
+
+  async function run(fn: () => void | Promise<void>) {
+    setBusy(true);
+    try {
+      await fn();
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function doUpload() {
+    if (!file) return;
+    await run(() => onUpload(file));
+    setFile(null);
+  }
+
+  return (
+    <div className="bg-[#0e0e0e] rounded-lg p-3">
+      <div className="flex items-center justify-between gap-2">
+        <span className="badge bg-white/5 text-ace-muted">{c.status}</span>
+        <span className="text-xs text-ace-muted">{c.provider || 'manual_upload'}</span>
+      </div>
+      {c.amount != null && (
+        <div className="text-sm mt-1">${Number(c.amount).toLocaleString()}</div>
+      )}
+
+      {/* Document links */}
+      {c.documentKey && <ContractDocLink docKey={c.documentKey} label="unsigned PDF" />}
+      {c.signedDocumentKey && <ContractDocLink docKey={c.signedDocumentKey} label="signed PDF" />}
+
+      {/* Upload unsigned PDF */}
+      <div className="mt-2 space-y-2">
+        <input
+          type="file"
+          accept="application/pdf"
+          className="input text-xs py-1.5"
+          onChange={(e) => setFile(e.target.files?.[0] || null)}
+        />
+        <button
+          type="button"
+          onClick={doUpload}
+          disabled={busy || !file}
+          className="text-xs px-3 py-1 rounded-lg bg-white/5 text-white border border-[rgba(255,255,255,0.06)] disabled:opacity-50"
+        >
+          {busy ? 'Working…' : c.documentKey ? 'Replace PDF' : 'Upload PDF'}
+        </button>
+      </div>
+
+      {providerUnconfigured && (
+        <div className="text-xs text-yellow-400 mt-2">
+          Dropbox Sign provider not configured.
+        </div>
+      )}
+
+      <div className="flex gap-2 mt-2 flex-wrap">
+        {c.status === 'draft' && (
+          <button
+            onClick={() => run(onSend)}
+            disabled={busy || providerUnconfigured}
+            className="text-xs px-3 py-1 rounded-lg bg-ace-cyan/15 text-ace-cyan border border-ace-cyan/20 disabled:opacity-50"
+          >
+            Send to client
+          </button>
+        )}
+        {c.status === 'signed' && (
+          <button
+            onClick={() => run(onCountersign)}
+            disabled={busy}
+            className="text-xs px-3 py-1 rounded-lg bg-green-500/15 text-green-400 border border-green-500/20 disabled:opacity-50"
+          >
+            Countersign
+          </button>
+        )}
       </div>
     </div>
   );
