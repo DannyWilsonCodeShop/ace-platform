@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { getQuote, updateQuote } from '../utils/api';
+import { getQuote, updateQuote, listCampaigns, listCampaignStepsByCampaign } from '../utils/api';
 import { promoteQuote } from '../projects/promoteQuote';
+import { enrollClient, sendCampaignStep } from '../campaigns/campaigns';
 import { ArrowLeft, MapPin, Music, Mic, Users, DollarSign, Brain, CheckCircle, XCircle, Calendar, Clock } from 'lucide-react';
 import { format, parseISO } from 'date-fns';
 
@@ -46,6 +47,30 @@ export default function QuoteDetail() {
     try { await updateQuote({ id, status }); setQuote({ ...quote, status }); }
     catch (err) { console.error(err); }
     finally { setSaving(false); }
+  };
+
+  // Decline a quote and best-effort enroll the lead into an active
+  // trigger='quote_declined' drip campaign. Enrollment NEVER blocks the status
+  // change (try/catch, and the status update runs first).
+  const handleDecline = async () => {
+    await handleUpdateStatus('declined');
+    try {
+      if (!quote?.email) return;
+      const campaigns = await listCampaigns();
+      const campaign = (campaigns || []).find(
+        (c: any) => c.trigger === 'quote_declined' && c.status === 'active',
+      );
+      if (!campaign) return;
+      const name = `${quote.firstName || ''} ${quote.lastName || ''}`.trim();
+      await enrollClient({ campaign, email: quote.email, name });
+      const steps = await listCampaignStepsByCampaign(campaign.id);
+      const first = [...(steps || [])].sort((a: any, b: any) => (a.order ?? 0) - (b.order ?? 0))[0];
+      if (first) {
+        await sendCampaignStep({ step: first, recipientEmail: quote.email, recipientName: name });
+      }
+    } catch (err) {
+      console.error('quote_declined campaign enroll failed:', err);
+    }
   };
 
   const handleAccept = async () => {
@@ -291,7 +316,7 @@ export default function QuoteDetail() {
               className="w-full flex items-center gap-2 justify-center px-4 py-2.5 rounded-lg bg-green-500/15 text-green-400 border border-green-500/20 text-sm disabled:opacity-50">
               <CheckCircle size={16}/> {saving ? 'Accepting...' : 'Accept'}
             </button>
-            <button onClick={() => handleUpdateStatus('declined')}
+            <button onClick={handleDecline}
               className="w-full flex items-center gap-2 justify-center px-4 py-2.5 rounded-lg bg-red-500/15 text-red-400 border border-red-500/20 text-sm">
               <XCircle size={16}/> Decline
             </button>

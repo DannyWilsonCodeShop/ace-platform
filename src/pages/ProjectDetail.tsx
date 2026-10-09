@@ -50,7 +50,10 @@ import {
   listMaintenanceWindowsByPlan,
   updateMaintenanceWindow,
   createInvoice,
+  listCampaigns,
+  listCampaignStepsByCampaign,
 } from '../utils/api';
+import { enrollClient, sendCampaignStep } from '../campaigns/campaigns';
 import { uploadDemoImage, slugify } from '../projects/demos';
 import { uploadContractPdf, contractUrl } from '../contracts/contracts';
 import { dropboxSign } from '../contracts/providers/dropboxSign';
@@ -417,6 +420,52 @@ export default function ProjectDetail() {
     await refresh();
   }
 
+  // --- Lifecycle stage 8 → 9: close the project ---
+
+  // Mark the project closed, then best-effort enroll the client into an active
+  // trigger='project_closed' drip campaign and send its first step. Enrollment
+  // NEVER blocks the status change: the updateProject runs first and the
+  // campaign work is wrapped in try/catch.
+  const [closing, setClosing] = useState(false);
+  async function closeProject() {
+    if (!id || !project) return;
+    setClosing(true);
+    try {
+      await updateProject({ id, status: 'closed' });
+      setProject({ ...project, status: 'closed' });
+      await logProjectEvent(id, 'admin', 'closed the project');
+    } catch (err) {
+      console.error('closeProject failed:', err);
+      setClosing(false);
+      return;
+    }
+    try {
+      if (client?.email) {
+        const campaigns = await listCampaigns();
+        const campaign = (campaigns || []).find(
+          (c: any) => c.trigger === 'project_closed' && c.status === 'active',
+        );
+        if (campaign) {
+          await enrollClient({ campaign, email: client.email, name: clientName, projectId: id });
+          const steps = await listCampaignStepsByCampaign(campaign.id);
+          const first = [...(steps || [])].sort((a: any, b: any) => (a.order ?? 0) - (b.order ?? 0))[0];
+          if (first) {
+            await sendCampaignStep({
+              step: first,
+              recipientEmail: client.email,
+              recipientName: clientName,
+              projectName: project.name,
+            });
+          }
+        }
+      }
+    } catch (err) {
+      console.error('project_closed campaign enroll failed:', err);
+    } finally {
+      setClosing(false);
+    }
+  }
+
   // --- Maintenance admin actions ---
 
   // Create a maintenance plan as a draft (paused) DB record. Activation (and
@@ -595,6 +644,15 @@ export default function ProjectDetail() {
           </p>
         </div>
         <TrackBadge tone={track.tone} label={track.label} />
+        {project.status !== 'closed' && (
+          <button
+            onClick={closeProject}
+            disabled={closing}
+            className="text-xs px-3 py-1.5 rounded-lg bg-red-500/15 text-red-400 border border-red-500/20 flex-shrink-0 disabled:opacity-40"
+          >
+            {closing ? 'Closing...' : 'Close project'}
+          </button>
+        )}
       </div>
 
       {/* Category progress */}

@@ -21,7 +21,8 @@ interface NotificationEvent {
     | 'demo_feedback'
     | 'contract_sent'
     | 'contract_signed'
-    | 'maintenance_requested';
+    | 'maintenance_requested'
+    | 'campaign_step';
   data: Record<string, any>;
   channels: ('sms' | 'email' | 'in_app')[];
 }
@@ -125,6 +126,15 @@ export const handler = async (event: NotificationEvent) => {
         + `Open the admin portal to schedule it.`;
       // maintenance requests go to the owner inbox regardless of data.email
       data.email = OWNER_EMAIL;
+      break;
+    }
+    case 'campaign_step': {
+      // Customer-facing drip-campaign step. The caller (sendCampaignStep) has
+      // already rendered the {{name}}/{{projectName}} tokens, so use the
+      // provided subject/body directly. Do NOT override data.email.
+      smsMessage = data.subject || 'A note from Atlanta Creative Exchange';
+      emailSubject = data.subject || 'A note from Atlanta Creative Exchange';
+      emailBody = data.body || '';
       break;
     }
     default:

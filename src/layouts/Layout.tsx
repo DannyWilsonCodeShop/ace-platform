@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { NavLink } from 'react-router-dom';
 import {
   LayoutDashboard, FileText, Calendar, FolderKanban, Users, Package,
-  Receipt, UserCog, Mail, Settings, LogOut, Menu
+  Receipt, UserCog, Mail, Megaphone, Settings, LogOut, Menu
 } from 'lucide-react';
 
 const navigation = [
@@ -15,6 +15,7 @@ const navigation = [
   { name: 'Invoices', path: '/invoices', icon: Receipt },
   { name: 'Crew', path: '/crew', icon: UserCog },
   { name: 'Subscribers', path: '/subscribers', icon: Mail },
+  { name: 'Campaigns', path: '/campaigns', icon: Megaphone },
   { name: 'Settings', path: '/settings', icon: Settings },
 ];
 

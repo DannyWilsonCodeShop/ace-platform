@@ -255,6 +255,49 @@ export async function sendMaintenanceWindowNotification(
   }
 }
 
+interface CampaignStepNotification {
+  /**
+   * Recipient email — set as data.email. Customer-facing: the handler does NOT
+   * override data.email for the campaign_step type. If missing/empty, the
+   * handler falls back to OWNER_EMAIL.
+   */
+  recipientEmail: string;
+  /** Pre-rendered subject (tokens already substituted by campaigns.ts). */
+  subject: string;
+  /** Pre-rendered body (tokens already substituted by campaigns.ts). */
+  body: string;
+}
+
+/**
+ * Send one drip-campaign step to a recipient. POSTs
+ * { type:'campaign_step', data:{ email:recipientEmail, subject, body },
+ * channels:['email'] }. Customer-facing: the handler uses data.subject/data.body
+ * directly and does NOT override data.email. Never throws; returns a success flag.
+ */
+export async function sendCampaignStepNotification(
+  payload: CampaignStepNotification,
+): Promise<{ success: boolean }> {
+  try {
+    const response = await fetch(`${API_ENDPOINT}/notify`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        type: 'campaign_step',
+        data: {
+          email: payload.recipientEmail,
+          subject: payload.subject,
+          body: payload.body,
+        },
+        channels: ['email'],
+      }),
+    });
+    return { success: response.ok };
+  } catch (err) {
+    console.error('sendCampaignStepNotification failed:', err);
+    return { success: false };
+  }
+}
+
 interface ContractSignedNotification {
   projectName: string;
   /** Display name of the person who signed. */

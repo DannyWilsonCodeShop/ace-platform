@@ -19,6 +19,7 @@ import InvoiceDetail from './pages/InvoiceDetail';
 import InvoiceCreate from './pages/InvoiceCreate';
 import Crew from './pages/Crew';
 import Subscribers from './pages/Subscribers';
+import Campaigns from './pages/Campaigns';
 import Settings from './pages/Settings';
 
 // Customer portal pages
@@ -89,6 +90,7 @@ function AppContent({ signOut, user }: { signOut: (() => void) | undefined; user
         <Route path="/invoices/:id" element={<InvoiceDetail />} />
         <Route path="/crew" element={<Crew />} />
         <Route path="/subscribers" element={<Subscribers />} />
+        <Route path="/campaigns" element={<Campaigns />} />
         <Route path="/settings" element={<Settings />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
