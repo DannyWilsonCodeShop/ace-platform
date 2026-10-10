@@ -1,21 +1,23 @@
 import { useState } from 'react';
 import { NavLink } from 'react-router-dom';
 import {
-  LayoutDashboard, FileText, Calendar, FolderKanban, Users, Package,
-  Receipt, UserCog, Mail, Megaphone, Settings, LogOut, Menu
+  LayoutDashboard, FileText, FolderKanban, Users,
+  Receipt, Mail, Megaphone, Settings, LogOut, Menu
 } from 'lucide-react';
 
+// Gigs, Equipment, and Crew are intentionally hidden here: they are event-era
+// surfaces that no longer fit the app-development focus. Their pages, routes
+// (/gigs, /equipment, /crew in App.tsx), and underlying data are preserved —
+// only the sidebar entries are removed. Nav is ordered to the app-dev
+// lifecycle: Dashboard → Leads → Clients → Projects → Invoices → Campaigns → Subscribers → Settings.
 const navigation = [
   { name: 'Dashboard', path: '/', icon: LayoutDashboard },
-  { name: 'Quotes', path: '/quotes', icon: FileText },
-  { name: 'Gigs', path: '/gigs', icon: Calendar },
-  { name: 'Projects', path: '/projects', icon: FolderKanban },
+  { name: 'Leads', path: '/quotes', icon: FileText },
   { name: 'Clients', path: '/clients', icon: Users },
-  { name: 'Equipment', path: '/equipment', icon: Package },
+  { name: 'Projects', path: '/projects', icon: FolderKanban },
   { name: 'Invoices', path: '/invoices', icon: Receipt },
-  { name: 'Crew', path: '/crew', icon: UserCog },
-  { name: 'Subscribers', path: '/subscribers', icon: Mail },
   { name: 'Campaigns', path: '/campaigns', icon: Megaphone },
+  { name: 'Subscribers', path: '/subscribers', icon: Mail },
   { name: 'Settings', path: '/settings', icon: Settings },
 ];
 
