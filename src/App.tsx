@@ -13,6 +13,7 @@ import GigDetail from './pages/GigDetail';
 import Projects from './pages/Projects';
 import ProjectDetail from './pages/ProjectDetail';
 import Clients from './pages/Clients';
+import ClientWorkspace from './pages/ClientWorkspace';
 import Equipment from './pages/Equipment';
 import Invoices from './pages/Invoices';
 import InvoiceDetail from './pages/InvoiceDetail';
@@ -84,6 +85,8 @@ function AppContent({ signOut, user }: { signOut: (() => void) | undefined; user
         <Route path="/projects" element={<Projects />} />
         <Route path="/projects/:id" element={<ProjectDetail />} />
         <Route path="/clients" element={<Clients />} />
+        <Route path="/clients/:id" element={<ClientWorkspace />} />
+        <Route path="/clients/:id/:tab" element={<ClientWorkspace />} />
         <Route path="/equipment" element={<Equipment />} />
         <Route path="/invoices" element={<Invoices />} />
         <Route path="/invoices/create" element={<InvoiceCreate />} />

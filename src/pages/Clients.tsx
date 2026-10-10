@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { listClients, createClient } from '../utils/api';
 import { Users, Plus, Search, Mail, Phone } from 'lucide-react';
+import { coalesceStage, STAGE_LABELS } from './clientTabs/stageOrder';
 
 export default function Clients() {
   const [clients, setClients] = useState<any[]>([]);
@@ -38,7 +40,7 @@ export default function Clients() {
         </form>
       )}
       {filtered.length === 0 ? <div className="card text-center py-12"><Users size={40} className="text-ace-muted mx-auto mb-4"/><p className="text-ace-muted">No clients.</p></div> : (
-        <div className="space-y-3">{filtered.map((c: any) => (<div key={c.id} className="card"><h3 className="font-semibold">{c.firstName} {c.lastName}</h3><div className="flex gap-4 text-sm text-ace-muted mt-1"><span className="flex items-center gap-1"><Mail size={12}/>{c.email}</span><span className="flex items-center gap-1"><Phone size={12}/>{c.phone}</span></div></div>))}</div>
+        <div className="space-y-3">{filtered.map((c: any) => { const stage = coalesceStage(c.stage); return (<Link key={c.id} to={`/clients/${c.id}`} className="card block hover:border-ace-purple/40 transition-colors"><div className="flex items-start justify-between gap-3"><h3 className="font-semibold">{c.firstName} {c.lastName}</h3><span className="badge border border-ace-cyan/30 bg-ace-cyan/10 text-ace-cyan whitespace-nowrap">{STAGE_LABELS[stage]}</span></div><div className="flex gap-4 text-sm text-ace-muted mt-1"><span className="flex items-center gap-1"><Mail size={12}/>{c.email}</span><span className="flex items-center gap-1"><Phone size={12}/>{c.phone}</span></div></Link>); })}</div>
       )}
     </div>
   );
