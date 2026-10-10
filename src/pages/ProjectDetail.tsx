@@ -25,6 +25,7 @@ import {
   Plus,
   Trash2,
   Receipt,
+  ListChecks,
 } from 'lucide-react';
 import {
   getProject,
@@ -32,6 +33,9 @@ import {
   updateProjectPage,
   createProjectPage,
   deleteProjectPage,
+  createActionItem,
+  listActionItems,
+  updateActionItem,
   createProjectEvent,
   listProjectNotes,
   listProjectEvents,
@@ -77,7 +81,7 @@ import {
   sendContractSentNotification,
 } from '../utils/sendNotification';
 import { getTemplate } from '../projects/templates';
-import { cardsForCategory } from '../projects/pageCards';
+import { cardsForCategory, openTodos, doneTodos } from '../projects/pageCards';
 import type { Category } from '../projects/templates/types';
 import {
   categoryDisplayed,
@@ -143,6 +147,13 @@ const CATEGORIES: { key: Category; label: string; accent: string }[] = [
   { key: 'middleware', label: 'Setup / middleware', accent: 'bg-ace-magenta' },
 ];
 
+/** Human labels for ActionItem.owner_role (client -> together -> dev). */
+const OWNER_ROLE_LABEL: Record<string, string> = {
+  client: 'You (client)',
+  together: 'Together',
+  dev: 'Dev team',
+};
+
 /** Meeting modes mirror Green-Casting APPT_MODES (label + per-mode hint). */
 const APPT_MODES: { v: 'ZOOM' | 'IN_PERSON' | 'PHONE'; label: string; hint: string }[] = [
   { v: 'ZOOM', label: 'Zoom', hint: 'Zoom link (optional)' },
@@ -171,6 +182,7 @@ export default function ProjectDetail() {
   const [demos, setDemos] = useState<any[]>([]);
   const [contracts, setContracts] = useState<any[]>([]);
   const [plans, setPlans] = useState<any[]>([]);
+  const [actionItems, setActionItems] = useState<any[]>([]);
   const [invoices, setInvoices] = useState<any[]>([]);
   // Payment plans + each plan's items, loaded alongside the project.
   const [paymentPlans, setPaymentPlans] = useState<any[]>([]);
@@ -183,7 +195,7 @@ export default function ProjectDetail() {
     if (!id) return;
     const proj = await getProject(id);
     setProject(proj);
-    const [pg, ns, ev, mt, dm, ct, pl] = await Promise.all([
+    const [pg, ns, ev, mt, dm, ct, pl, ai] = await Promise.all([
       listProjectPages(id),
       listProjectNotes(id),
       listProjectEvents(id),
@@ -191,6 +203,7 @@ export default function ProjectDetail() {
       listDemos(id),
       getContract(id),
       listMaintenancePlansByProject(id),
+      listActionItems(id),
     ]);
     setPages(pg);
     setNotes(ns);
@@ -199,6 +212,7 @@ export default function ProjectDetail() {
     setDemos(dm);
     setContracts(ct);
     setPlans(pl);
+    setActionItems(ai);
     // Load invoices for this project so the admin can mint a Checkout payment
     // link (listInvoices has no by-project query, so filter client-side).
     try {
@@ -331,6 +345,70 @@ export default function ProjectDetail() {
       pageKey: row.pageKey,
       actor: 'admin',
       message: `removed page "${row.label || row.pageKey}"`,
+    });
+    await refresh();
+  }
+
+  // Tick / un-tick an action item. Ticking stamps done/completedAt and the
+  // signed-in admin's Cognito sub, logs a 'completed: <title>' ProjectEvent,
+  // and refetches. Un-ticking clears done/completedAt (no event logged).
+  async function toggleActionItem(it: any, next: boolean) {
+    if (!id || !it) return;
+    if (next) {
+      let sub = '';
+      try {
+        const session = await fetchAuthSession();
+        sub = (session.tokens?.accessToken?.payload?.['sub'] as string) || '';
+      } catch (err) {
+        console.error('Failed to read Cognito sub', err);
+      }
+      await updateActionItem({
+        id: it.id,
+        done: true,
+        completedAt: new Date().toISOString(),
+        completedBySub: sub,
+      });
+      await createProjectEvent({
+        projectId: id,
+        pageKey: it.pageKey || null,
+        actor: 'admin',
+        message: `completed: ${it.title}`,
+      });
+    } else {
+      await updateActionItem({ id: it.id, done: false, completedAt: null });
+    }
+    await refresh();
+  }
+
+  // Owner/manager-only: add an action item. Stamped owner=project.owner
+  // (TECH_DEBT #19) so the customer can read it; given a computed sortOrder.
+  async function addActionItem(input: {
+    title: string;
+    owner_role: 'client' | 'together' | 'dev';
+    priority: boolean;
+    pageKey: string;
+    dueDate: string;
+  }) {
+    if (!id || !project) return;
+    const title = input.title.trim();
+    if (!title) return;
+    const maxSort = actionItems.reduce((max, i) => Math.max(max, i.sortOrder ?? 0), 0);
+    await createActionItem({
+      projectId: id,
+      title,
+      owner_role: input.owner_role,
+      priority: input.priority,
+      pageKey: input.pageKey || null,
+      dueDate: input.dueDate || null,
+      done: false,
+      sortOrder: maxSort + 1,
+      owner: project.owner,
+    });
+    await createProjectEvent({
+      projectId: id,
+      pageKey: input.pageKey || null,
+      actor: 'admin',
+      message: `added to-do "${title}"`,
     });
     await refresh();
   }
@@ -1067,6 +1145,94 @@ export default function ProjectDetail() {
               </div>
             );
           })}
+
+          {/* To-do / action items — owner/manager-only add form; each open
+              item is a checkbox that stamps done/completedAt/completedBySub,
+              logs a ProjectEvent, and refetches. Done items collapse into a
+              <details>. Ordering: priority -> client -> together -> dev. */}
+          <div className="card">
+            <div className="flex flex-wrap items-start justify-between gap-2 mb-4">
+              <h2 className="text-lg font-semibold flex items-center gap-2">
+                <ListChecks size={18} className="text-ace-cyan" /> To-do / action items
+              </h2>
+              {isOwnerManager && (
+                <AddActionItemForm pages={pages} onAdd={addActionItem} />
+              )}
+            </div>
+            {(() => {
+              const open = openTodos(actionItems);
+              const done = doneTodos(actionItems);
+              return (
+                <>
+                  {open.length === 0 ? (
+                    <p className="text-sm text-ace-muted">No open action items.</p>
+                  ) : (
+                    <div className="space-y-2">
+                      {open.map((it) => (
+                        <label
+                          key={it.id}
+                          className="flex items-start gap-2 bg-[#0e0e0e] rounded-lg p-3 border border-[rgba(255,255,255,0.04)] cursor-pointer"
+                        >
+                          <input
+                            type="checkbox"
+                            className="mt-0.5"
+                            checked={false}
+                            onChange={(e) => toggleActionItem(it, e.target.checked)}
+                          />
+                          <div className="min-w-0 flex-1">
+                            <div className="flex items-center gap-2 flex-wrap">
+                              <span className="text-sm font-medium">{it.title}</span>
+                              <span className="badge bg-white/5 text-ace-muted">
+                                {OWNER_ROLE_LABEL[it.owner_role as string] || it.owner_role}
+                              </span>
+                              {it.priority && (
+                                <span className="badge bg-red-500/15 text-red-400">⚠ priority</span>
+                              )}
+                              {it.pageKey && (
+                                <span className="badge bg-white/5 text-ace-muted">{it.pageKey}</span>
+                              )}
+                            </div>
+                            {it.dueDate && (
+                              <div className="text-xs text-ace-muted mt-1">Due {it.dueDate}</div>
+                            )}
+                          </div>
+                        </label>
+                      ))}
+                    </div>
+                  )}
+
+                  {done.length > 0 && (
+                    <details className="mt-3">
+                      <summary className="text-sm text-ace-muted cursor-pointer">
+                        Done ({done.length})
+                      </summary>
+                      <div className="space-y-2 mt-2">
+                        {done.map((it) => (
+                          <label
+                            key={it.id}
+                            className="flex items-start gap-2 bg-[#0e0e0e] rounded-lg p-3 border border-[rgba(255,255,255,0.04)] cursor-pointer"
+                          >
+                            <input
+                              type="checkbox"
+                              className="mt-0.5"
+                              checked={true}
+                              onChange={(e) => toggleActionItem(it, e.target.checked)}
+                            />
+                            <div className="min-w-0 flex-1">
+                              <span className="text-sm text-ace-muted line-through">{it.title}</span>
+                              <span className="ml-2 badge bg-white/5 text-ace-muted">
+                                {OWNER_ROLE_LABEL[it.owner_role as string] || it.owner_role}
+                              </span>
+                            </div>
+                          </label>
+                        ))}
+                      </div>
+                    </details>
+                  )}
+                </>
+              );
+            })()}
+          </div>
 
           {/* Notes */}
           <div className="card">
@@ -2379,6 +2545,143 @@ function AddPageForm({
           type="button"
           onClick={submit}
           disabled={!label.trim() || busy}
+          className="text-xs px-3 py-1.5 rounded-lg bg-ace-cyan/15 text-ace-cyan border border-ace-cyan/20 disabled:opacity-40"
+        >
+          {busy ? 'Adding...' : 'Add'}
+        </button>
+        <button
+          type="button"
+          onClick={() => {
+            reset();
+            setOpen(false);
+          }}
+          className="text-xs px-3 py-1.5 rounded-lg bg-white/5 text-ace-muted hover:text-white"
+        >
+          Cancel
+        </button>
+      </div>
+    </div>
+  );
+}
+
+/**
+ * Owner/manager-only add-item form for the To-do / action items card. Fields:
+ * title (required), owner_role (client/together/dev), priority, optional
+ * pageKey (populated from the fetched pages), and dueDate. The parent handler
+ * stamps owner=project.owner, computes sortOrder, and logs a ProjectEvent.
+ */
+function AddActionItemForm({
+  pages,
+  onAdd,
+}: {
+  pages: any[];
+  onAdd: (input: {
+    title: string;
+    owner_role: 'client' | 'together' | 'dev';
+    priority: boolean;
+    pageKey: string;
+    dueDate: string;
+  }) => void | Promise<void>;
+}) {
+  const [open, setOpen] = useState(false);
+  const [title, setTitle] = useState('');
+  const [ownerRole, setOwnerRole] = useState<'client' | 'together' | 'dev'>('client');
+  const [priority, setPriority] = useState(false);
+  const [pageKey, setPageKey] = useState('');
+  const [dueDate, setDueDate] = useState('');
+  const [busy, setBusy] = useState(false);
+
+  function reset() {
+    setTitle('');
+    setOwnerRole('client');
+    setPriority(false);
+    setPageKey('');
+    setDueDate('');
+  }
+
+  async function submit() {
+    if (!title.trim() || busy) return;
+    setBusy(true);
+    try {
+      await onAdd({ title: title.trim(), owner_role: ownerRole, priority, pageKey, dueDate });
+      reset();
+      setOpen(false);
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  if (!open) {
+    return (
+      <button
+        type="button"
+        onClick={() => setOpen(true)}
+        className="text-xs px-2.5 py-1.5 rounded-lg bg-white/5 text-ace-muted hover:text-white flex items-center gap-1.5"
+      >
+        <Plus size={14} /> Add to-do
+      </button>
+    );
+  }
+
+  return (
+    <div className="w-full mt-2 bg-[#0e0e0e] rounded-lg p-3 border border-[rgba(255,255,255,0.06)] space-y-2">
+      <input
+        className="input py-1.5 text-xs"
+        placeholder="To-do title (required)"
+        value={title}
+        onChange={(e) => setTitle(e.target.value)}
+      />
+      <div className="grid grid-cols-2 gap-2">
+        <label className="block text-xs text-ace-muted">
+          Owner
+          <select
+            className="input py-1.5 text-xs mt-1"
+            value={ownerRole}
+            onChange={(e) => setOwnerRole(e.target.value as 'client' | 'together' | 'dev')}
+          >
+            <option value="client">You (client)</option>
+            <option value="together">Together</option>
+            <option value="dev">Dev team</option>
+          </select>
+        </label>
+        <label className="block text-xs text-ace-muted">
+          Page (optional)
+          <select
+            className="input py-1.5 text-xs mt-1"
+            value={pageKey}
+            onChange={(e) => setPageKey(e.target.value)}
+          >
+            <option value="">— none —</option>
+            {pages.map((p) => (
+              <option key={p.id} value={p.pageKey}>
+                {p.label || p.pageKey}
+              </option>
+            ))}
+          </select>
+        </label>
+      </div>
+      <label className="block text-xs text-ace-muted">
+        Due date (optional)
+        <input
+          type="date"
+          className="input py-1.5 text-xs mt-1"
+          value={dueDate}
+          onChange={(e) => setDueDate(e.target.value)}
+        />
+      </label>
+      <label className="flex items-center gap-1.5 text-xs cursor-pointer">
+        <input
+          type="checkbox"
+          checked={priority}
+          onChange={(e) => setPriority(e.target.checked)}
+        />
+        Priority (holds up other work)
+      </label>
+      <div className="flex gap-2">
+        <button
+          type="button"
+          onClick={submit}
+          disabled={!title.trim() || busy}
           className="text-xs px-3 py-1.5 rounded-lg bg-ace-cyan/15 text-ace-cyan border border-ace-cyan/20 disabled:opacity-40"
         >
           {busy ? 'Adding...' : 'Add'}

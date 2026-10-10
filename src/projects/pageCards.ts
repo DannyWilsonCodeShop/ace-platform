@@ -76,3 +76,77 @@ export function cardsForCategory(
       };
     });
 }
+
+/** A fetched ActionItem row (hand-written GraphQL shape from api.ts). */
+export interface ActionItemRow {
+  id: string;
+  projectId?: string;
+  pageKey?: string | null;
+  title: string;
+  detail?: string | null;
+  owner_role?: 'client' | 'together' | 'dev' | string | null;
+  priority?: boolean | null;
+  blocks?: string | null;
+  done?: boolean | null;
+  completedAt?: string | null;
+  completedBySub?: string | null;
+  assigneeSub?: string | null;
+  dueDate?: string | null;
+  sortOrder?: number | null;
+  owner?: string | null;
+  createdAt?: string | null;
+  [key: string]: any;
+}
+
+/** Rank an owner_role for ordering: client -> together -> dev (others last). */
+function ownerRoleRank(role: ActionItemRow['owner_role']): number {
+  if (role === 'client') return 0;
+  if (role === 'together') return 1;
+  if (role === 'dev') return 2;
+  return 3;
+}
+
+/**
+ * Open (not-done) action items ordered to mirror the Green-Casting reference:
+ * priority items first (priority===true before false), then by owner_role in
+ * the order client -> together -> dev, then by sortOrder, then by createdAt.
+ * Pure function.
+ */
+export function openTodos(items: ActionItemRow[]): ActionItemRow[] {
+  return (items || [])
+    .filter((i) => !i.done)
+    .slice()
+    .sort((a, b) => {
+      const pa = a.priority ? 0 : 1;
+      const pb = b.priority ? 0 : 1;
+      if (pa !== pb) return pa - pb;
+      const ra = ownerRoleRank(a.owner_role);
+      const rb = ownerRoleRank(b.owner_role);
+      if (ra !== rb) return ra - rb;
+      const soA = a.sortOrder ?? 0;
+      const soB = b.sortOrder ?? 0;
+      if (soA !== soB) return soA - soB;
+      const caA = a.createdAt || '';
+      const caB = b.createdAt || '';
+      if (caA < caB) return -1;
+      if (caA > caB) return 1;
+      return 0;
+    });
+}
+
+/**
+ * Done action items, most-recently completed first (completedAt descending).
+ * Pure function.
+ */
+export function doneTodos(items: ActionItemRow[]): ActionItemRow[] {
+  return (items || [])
+    .filter((i) => i.done)
+    .slice()
+    .sort((a, b) => {
+      const caA = a.completedAt || '';
+      const caB = b.completedAt || '';
+      if (caA < caB) return 1;
+      if (caA > caB) return -1;
+      return 0;
+    });
+}

@@ -24,6 +24,7 @@ import {
   CalendarClock,
   ExternalLink,
   FileSignature,
+  ListChecks,
   MessageSquare,
   MonitorPlay,
   Receipt,
@@ -34,6 +35,8 @@ import {
   listProjects,
   listProjectPages,
   updateProjectPage,
+  listActionItems,
+  updateActionItem,
   listProjectNotes,
   listMeetings,
   createMeeting,
@@ -49,7 +52,7 @@ import {
   listPaymentPlanItemsByPlan,
 } from '../../utils/api';
 import { getTemplate } from '../../projects/templates';
-import { cardsForCategory } from '../../projects/pageCards';
+import { cardsForCategory, openTodos, doneTodos } from '../../projects/pageCards';
 import type { Category } from '../../projects/templates/types';
 import {
   categoryDisplayed,
@@ -104,6 +107,13 @@ const CATEGORIES: { key: Category; label: string; accent: string }[] = [
   { key: 'middleware', label: 'Setup steps', accent: 'bg-ace-magenta' },
 ];
 
+/** Human labels for ActionItem.owner_role (client -> together -> dev). */
+const OWNER_ROLE_LABEL: Record<string, string> = {
+  client: 'You',
+  together: 'Together',
+  dev: 'Our team',
+};
+
 function toStates(pages: any[]): Map<string, PageState> {
   const map = new Map<string, PageState>();
   for (const p of pages || []) {
@@ -122,6 +132,7 @@ export default function MyProject() {
   const [project, setProject] = useState<any>(null);
   const [client, setClient] = useState<any>(null);
   const [pages, setPages] = useState<any[]>([]);
+  const [actionItems, setActionItems] = useState<any[]>([]);
   const [notes, setNotes] = useState<any[]>([]);
   const [meetings, setMeetings] = useState<any[]>([]);
   const [demos, setDemos] = useState<any[]>([]);
@@ -149,6 +160,15 @@ export default function MyProject() {
     setMeetings(mt);
     setDemos(dm);
     setContracts(ct);
+
+    // Action items (to-do list). Tolerate a failure with [] like the other
+    // portal reads — reads may depend on the promotion owner-stamp resolving.
+    try {
+      setActionItems(await listActionItems(projectId));
+    } catch (err) {
+      console.error('Failed to load action items', err);
+      setActionItems([]);
+    }
 
     // Maintenance plan + the customer's own windows. Plan reads may depend on
     // the promotion owner-stamp resolving (same caveat as Project/Contract
@@ -287,6 +307,23 @@ export default function MyProject() {
     if (!row) return;
     await updateProjectPage({ id: row.id, clientApproval: next });
     if (project) await loadProjectData(project.id);
+  }
+
+  // Customer ticks an action item they own (owner_role === 'client' ONLY;
+  // UI-enforced per TD-1). Field-scope: send ONLY done/completedAt/
+  // completedBySub. Logs a 'completed: <title>' event, then reloads.
+  async function completeActionItem(it: any) {
+    if (!project || !it || it.owner_role !== 'client' || it.done) return;
+    const session = await fetchAuthSession();
+    const sub = (session.tokens?.accessToken?.payload?.['sub'] as string) || '';
+    await updateActionItem({
+      id: it.id,
+      done: true,
+      completedAt: new Date().toISOString(),
+      completedBySub: sub,
+    });
+    await logProjectEvent(project.id, 'customer', `completed: ${it.title}`);
+    await loadProjectData(project.id);
   }
 
   // Persist the note (notes.ts), THEN fire the REQUIRED SES notification to the
@@ -540,6 +577,85 @@ export default function MyProject() {
           </div>
         );
       })}
+
+      {/* To-do / action items — read-mostly. The customer may tick ONLY items
+          they own (owner_role === 'client'); other items are shown disabled.
+          No add-item form here. Done items collapse into a <details>. */}
+      {(() => {
+        const open = openTodos(actionItems);
+        const done = doneTodos(actionItems);
+        if (open.length === 0 && done.length === 0) return null;
+        return (
+          <div className="card">
+            <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
+              <ListChecks size={18} className="text-ace-cyan" /> To-do list
+            </h2>
+            {open.length === 0 ? (
+              <p className="text-sm text-ace-muted">Nothing to do right now.</p>
+            ) : (
+              <div className="space-y-2">
+                {open.map((it) => {
+                  const mine = it.owner_role === 'client';
+                  return (
+                    <label
+                      key={it.id}
+                      className={`flex items-start gap-2 bg-[#0e0e0e] rounded-lg p-3 border border-[rgba(255,255,255,0.04)] ${
+                        mine ? 'cursor-pointer' : 'opacity-80'
+                      }`}
+                    >
+                      <input
+                        type="checkbox"
+                        className="mt-0.5"
+                        checked={false}
+                        disabled={!mine}
+                        onChange={() => completeActionItem(it)}
+                      />
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <span className="text-sm font-medium">{it.title}</span>
+                          <span className="badge bg-white/5 text-ace-muted">
+                            {OWNER_ROLE_LABEL[it.owner_role as string] || it.owner_role}
+                          </span>
+                          {it.priority && (
+                            <span className="badge bg-red-500/15 text-red-400">⚠ priority</span>
+                          )}
+                        </div>
+                        {it.dueDate && (
+                          <div className="text-xs text-ace-muted mt-1">Due {it.dueDate}</div>
+                        )}
+                      </div>
+                    </label>
+                  );
+                })}
+              </div>
+            )}
+
+            {done.length > 0 && (
+              <details className="mt-3">
+                <summary className="text-sm text-ace-muted cursor-pointer">
+                  Done ({done.length})
+                </summary>
+                <div className="space-y-2 mt-2">
+                  {done.map((it) => (
+                    <div
+                      key={it.id}
+                      className="flex items-start gap-2 bg-[#0e0e0e] rounded-lg p-3 border border-[rgba(255,255,255,0.04)]"
+                    >
+                      <span className="text-ace-muted mt-0.5">✓</span>
+                      <div className="min-w-0 flex-1">
+                        <span className="text-sm text-ace-muted line-through">{it.title}</span>
+                        <span className="ml-2 badge bg-white/5 text-ace-muted">
+                          {OWNER_ROLE_LABEL[it.owner_role as string] || it.owner_role}
+                        </span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </details>
+            )}
+          </div>
+        );
+      })()}
 
       {/* Notes composer (TEXT + VOICE) */}
       <div className="card">
