@@ -37,9 +37,17 @@ export interface MaterializeIds {
   clientId: string;
 }
 
+/** The kinds a materialized `PaymentPlanItem` row can carry (schema `kind` enum). */
+export type PaymentPlanItemKind =
+  | 'down_payment'
+  | 'installment'
+  | 'maintenance'
+  | 'buyout'
+  | 'lease';
+
 /** A `PaymentPlanItem` create input emitted by `materializePlan`. */
 export interface PaymentPlanItemInput {
-  kind: 'down_payment' | 'installment' | 'maintenance';
+  kind: PaymentPlanItemKind;
   sequence: number;
   label?: string;
   amount: number;
@@ -154,6 +162,78 @@ export function materializePlan(
   }
 
   return result;
+}
+
+// === Buyout + lease row builders (FEAT-006; design §7.2) ===
+
+/** Inputs for a single one-payment buyout row. */
+export interface BuyoutRowInput {
+  /** The buyout amount in major units. */
+  amount: number;
+  /** ISO date (YYYY-MM-DD) the buyout is due; optional. */
+  dueDate?: string;
+  /** Row label; defaults to 'Buyout'. */
+  label?: string;
+}
+
+/** Inputs for a lease-to-own recurring series row. */
+export interface LeaseRowInput {
+  /** The recurring monthly lease amount in major units. */
+  monthlyAmount: number;
+  /** Number of lease months (the term). */
+  termMonths: number;
+  /** The end-of-term purchase-option amount in major units; optional. */
+  purchaseOptionAmount?: number;
+  /** ISO date (YYYY-MM-DD) the lease series starts; optional. */
+  startDate?: string;
+  /** Day of the month the lease charge lands; optional (1..28). */
+  anchorDay?: number;
+  /** Row label; defaults to 'Lease to own'. */
+  label?: string;
+}
+
+/**
+ * Pure: build a single `buyout` `PaymentPlanItem` input. A buyout is one
+ * dated charge (no series). The sequence is caller-assigned so it can slot
+ * alongside dated down-payment rows (1..N).
+ */
+export function buildBuyoutItem(
+  input: BuyoutRowInput,
+  sequence: number,
+): PaymentPlanItemInput {
+  return {
+    kind: 'buyout',
+    sequence,
+    label: input.label ?? 'Buyout',
+    amount: input.amount,
+    dueDate: input.dueDate,
+    status: 'scheduled',
+  };
+}
+
+/**
+ * Pure: build a single `lease` series-descriptor `PaymentPlanItem` input. Like
+ * the installment descriptor it carries the recurring cadence (monthly) and a
+ * `count` (the lease term in months); the end-of-term purchase option is NOT a
+ * row (there is no backend route to automate it — TODO(stripe-lease-term)) and
+ * rides on the plan's `purchaseOptionAmount` field instead.
+ */
+export function buildLeaseItem(
+  input: LeaseRowInput,
+  sequence = 0,
+): PaymentPlanItemInput {
+  return {
+    kind: 'lease',
+    sequence,
+    label: input.label ?? 'Lease to own',
+    amount: input.monthlyAmount,
+    cadence: 'monthly',
+    intervalCount: 1,
+    startDate: input.startDate,
+    anchorDay: input.anchorDay,
+    count: input.termMonths,
+    status: 'scheduled',
+  };
 }
 
 // === Paid-vs-owed math (pure; used by the admin + portal UI in FEAT-005) ===
