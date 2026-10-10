@@ -677,3 +677,86 @@ export async function updateCampaignStep(input: Record<string, any>) {
   `, { input });
   return data?.updateCampaignStep;
 }
+
+// === PaymentPlan queries ===
+const PAYMENT_PLAN_FIELDS = `
+  id projectId clientId name totalAmount currency status
+  ownershipTransfersAtFullPayment minimumPaymentsOwed minimumAmountOwed
+  licenseEndsOnDefault stripeScheduleId stripeSubscriptionId
+  installmentCount installmentsPaidCount minimumMet defaulted notes
+  owner createdAt updatedAt
+`;
+
+export async function createPaymentPlan(input: Record<string, any>) {
+  const data = await graphql(`
+    mutation CreatePaymentPlan($input: CreatePaymentPlanInput!) {
+      createPaymentPlan(input: $input) { ${PAYMENT_PLAN_FIELDS} }
+    }
+  `, { input });
+  return data?.createPaymentPlan;
+}
+
+export async function getPaymentPlan(id: string) {
+  const data = await graphql(`
+    query GetPaymentPlan($id: ID!) {
+      getPaymentPlan(id: $id) { ${PAYMENT_PLAN_FIELDS} }
+    }
+  `, { id });
+  return data?.getPaymentPlan;
+}
+
+export async function listPaymentPlansByProject(projectId: string) {
+  const data = await graphql(`
+    query ListPaymentPlans($filter: ModelPaymentPlanFilterInput) {
+      listPaymentPlans(filter: $filter, limit: 200) {
+        items { ${PAYMENT_PLAN_FIELDS} }
+      }
+    }
+  `, { filter: { projectId: { eq: projectId } } });
+  return data?.listPaymentPlans?.items || [];
+}
+
+export async function updatePaymentPlan(input: Record<string, any>) {
+  const data = await graphql(`
+    mutation UpdatePaymentPlan($input: UpdatePaymentPlanInput!) {
+      updatePaymentPlan(input: $input) { ${PAYMENT_PLAN_FIELDS} }
+    }
+  `, { input });
+  return data?.updatePaymentPlan;
+}
+
+// === PaymentPlanItem queries ===
+const PAYMENT_PLAN_ITEM_FIELDS = `
+  id planId kind sequence label amount dueDate
+  cadence intervalCount startDate anchorDay count status
+  stripeInvoiceId stripePaymentIntentId paidAt owner createdAt updatedAt
+`;
+
+export async function createPaymentPlanItem(input: Record<string, any>) {
+  const data = await graphql(`
+    mutation CreatePaymentPlanItem($input: CreatePaymentPlanItemInput!) {
+      createPaymentPlanItem(input: $input) { ${PAYMENT_PLAN_ITEM_FIELDS} }
+    }
+  `, { input });
+  return data?.createPaymentPlanItem;
+}
+
+export async function listPaymentPlanItemsByPlan(planId: string) {
+  const data = await graphql(`
+    query ListPaymentPlanItems($filter: ModelPaymentPlanItemFilterInput) {
+      listPaymentPlanItems(filter: $filter, limit: 200) {
+        items { ${PAYMENT_PLAN_ITEM_FIELDS} }
+      }
+    }
+  `, { filter: { planId: { eq: planId } } });
+  return data?.listPaymentPlanItems?.items || [];
+}
+
+export async function updatePaymentPlanItem(input: Record<string, any>) {
+  const data = await graphql(`
+    mutation UpdatePaymentPlanItem($input: UpdatePaymentPlanItemInput!) {
+      updatePaymentPlanItem(input: $input) { ${PAYMENT_PLAN_ITEM_FIELDS} }
+    }
+  `, { input });
+  return data?.updatePaymentPlanItem;
+}

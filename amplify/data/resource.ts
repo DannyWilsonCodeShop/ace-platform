@@ -143,6 +143,7 @@ const schema = a.schema({
     invoices: a.hasMany('Invoice', 'clientId'),
     projects: a.hasMany('Project', 'clientId'), // software-build lifecycle
     maintenancePlans: a.hasMany('MaintenancePlan', 'clientId'),
+    paymentPlans: a.hasMany('PaymentPlan', 'clientId'),
   }).authorization((allow) => [
     allow.groups(['owner', 'manager']).to(['create', 'read', 'update', 'delete']),
     allow.groups(['crew']).to(['read']),
@@ -301,6 +302,7 @@ const schema = a.schema({
     meetings: a.hasMany('Meeting', 'projectId'),
     demos: a.hasMany('Demo', 'projectId'),
     contracts: a.hasMany('Contract', 'projectId'),
+    paymentPlans: a.hasMany('PaymentPlan', 'projectId'),
   }).authorization((allow) => [
     allow.groups(['owner', 'manager']).to(['create', 'read', 'update', 'delete']),
     allow.groups(['developer']).to(['read', 'update']), // builders update project page status
@@ -468,6 +470,62 @@ const schema = a.schema({
     allow.groups(['crew', 'developer']).to(['read', 'update']),
     allow.groups(['customer']).to(['create', 'read']), // book + read own
     allow.owner().identityClaim('cognito:username').to(['read']), // stamped at promotion
+  ]),
+
+  // === PaymentPlan (custom payment-plan system — additive, design §A) ===
+  PaymentPlan: a.model({
+    projectId: a.string().required(),
+    clientId: a.string().required(),
+    name: a.string().required(),                 // e.g. "Agency Build & Purchase"
+    totalAmount: a.float().required(),           // the "to own" total; maintenance excluded
+    currency: a.string().default('usd'),
+    status: a.enum(['draft', 'active', 'completed', 'defaulted', 'cancelled']),
+    ownershipTransfersAtFullPayment: a.boolean().default(true),
+    minimumPaymentsOwed: a.integer().default(0),  // installment count floor
+    minimumAmountOwed: a.float().default(0),      // dollar floor owed
+    licenseEndsOnDefault: a.boolean().default(true),
+    stripeScheduleId: a.string(),                 // Stripe subscription_schedule id (installments)
+    stripeSubscriptionId: a.string(),             // the subscription the schedule RELEASES (HIGH-2)
+    installmentCount: a.integer().default(0),     // total installments; webhook's ONLY source of truth for completion. 0 = "not configured" => NEVER complete (NIT-4)
+    installmentsPaidCount: a.integer().default(0),
+    minimumMet: a.boolean().default(false),
+    defaulted: a.boolean().default(false),
+    notes: a.string(),
+    // relationships
+    client: a.belongsTo('Client', 'clientId'),
+    project: a.belongsTo('Project', 'projectId'),
+    items: a.hasMany('PaymentPlanItem', 'planId'),
+  }).authorization((allow) => [
+    allow.groups(['owner', 'manager']).to(['create', 'read', 'update', 'delete']),
+    allow.groups(['customer']).to(['read']),
+    allow.owner().identityClaim('cognito:username').to(['read']),
+  ]),
+
+  // === PaymentPlanItem (one row per concrete charge — design §A) ===
+  PaymentPlanItem: a.model({
+    planId: a.string().required(),
+    kind: a.enum(['down_payment', 'installment', 'maintenance']),
+    sequence: a.integer().required(),            // ordering within the plan
+    label: a.string(),                           // "Down payment 1 of 2", "Installment"
+    amount: a.float().required(),                // per-charge amount
+    dueDate: a.date(),                           // dated one-offs (down_payment)
+    // installment-series descriptor fields (used when sequence===0 && kind==='installment')
+    cadence: a.enum(['monthly', 'quarterly', 'annual']),
+    intervalCount: a.integer(),
+    startDate: a.date(),
+    anchorDay: a.integer(),                      // bill on the Nth
+    count: a.integer(),
+    // per-charge state
+    status: a.enum(['scheduled', 'invoiced', 'paid', 'failed', 'skipped', 'cancelled']),
+    stripeInvoiceId: a.string(),
+    stripePaymentIntentId: a.string(),
+    paidAt: a.datetime(),
+    // relationship
+    plan: a.belongsTo('PaymentPlan', 'planId'),
+  }).authorization((allow) => [
+    allow.groups(['owner', 'manager']).to(['create', 'read', 'update', 'delete']),
+    allow.groups(['customer']).to(['read']),
+    allow.owner().identityClaim('cognito:username').to(['read']),
   ]),
 
   // === Campaign (stage 9 lead gen / drip) ===
