@@ -171,8 +171,12 @@ const MEETING_PURPOSES: { v: string; label: string }[] = [
   { v: 'other', label: 'Other' },
 ];
 
-export default function ProjectDetail() {
-  const { id } = useParams();
+export default function ProjectDetail({ projectId }: { projectId?: string } = {}) {
+  const routeId = useParams().id;
+  // When embedded (Tab 6) the project id arrives as a prop; standalone at
+  // /projects/:id it comes from the route param. The query key stays
+  // ['project', id] either way so the embedded instance shares the same cache.
+  const id = projectId ?? routeId;
   const navigate = useNavigate();
   const [project, setProject] = useState<any>(null);
   const [client, setClient] = useState<any>(null);
@@ -1048,9 +1052,11 @@ export default function ProjectDetail() {
     <div className="max-w-5xl">
       {/* Header */}
       <div className="flex items-center gap-4 mb-6">
-        <button onClick={() => navigate('/projects')} className="text-ace-muted hover:text-white">
-          <ArrowLeft size={20} />
-        </button>
+        {!projectId && (
+          <button onClick={() => navigate('/projects')} className="text-ace-muted hover:text-white">
+            <ArrowLeft size={20} />
+          </button>
+        )}
         <div className="flex-1 min-w-0">
           <h1 className="text-2xl font-bold truncate">{project.name}</h1>
           <p className="text-ace-muted text-sm">
