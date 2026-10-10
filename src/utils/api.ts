@@ -331,7 +331,7 @@ export async function updateProject(input: Record<string, any>) {
 // === ProjectPage queries ===
 const PROJECT_PAGE_FIELDS = `
   id projectId pageKey label category devStatus
-  lookComplete featuresComplete clientApproval baseline href owner createdAt updatedAt
+  lookComplete featuresComplete clientApproval baseline href sortOrder isCustom owner createdAt updatedAt
 `;
 
 export async function createProjectPage(input: Record<string, any>) {
@@ -361,6 +361,15 @@ export async function updateProjectPage(input: Record<string, any>) {
     }
   `, { input });
   return data?.updateProjectPage;
+}
+
+export async function deleteProjectPage(id: string) {
+  const data = await graphql(`
+    mutation DeleteProjectPage($input: DeleteProjectPageInput!) {
+      deleteProjectPage(input: $input) { id }
+    }
+  `, { input: { id } });
+  return data?.deleteProjectPage;
 }
 
 // === ProjectNote queries ===
@@ -411,6 +420,50 @@ export async function listProjectEvents(projectId: string) {
     }
   `, { filter: { projectId: { eq: projectId } } });
   return data?.listProjectEvents?.items || [];
+}
+
+// === ActionItem queries ===
+const ACTION_ITEM_FIELDS = `
+  id projectId pageKey title detail owner_role priority blocks done
+  completedAt completedBySub assigneeSub dueDate sortOrder owner createdAt updatedAt
+`;
+
+export async function createActionItem(input: Record<string, any>) {
+  const data = await graphql(`
+    mutation CreateActionItem($input: CreateActionItemInput!) {
+      createActionItem(input: $input) { ${ACTION_ITEM_FIELDS} }
+    }
+  `, { input });
+  return data?.createActionItem;
+}
+
+export async function listActionItems(projectId: string) {
+  const data = await graphql(`
+    query ListActionItems($filter: ModelActionItemFilterInput) {
+      listActionItems(filter: $filter, limit: 200) {
+        items { ${ACTION_ITEM_FIELDS} }
+      }
+    }
+  `, { filter: { projectId: { eq: projectId } } });
+  return data?.listActionItems?.items || [];
+}
+
+export async function updateActionItem(input: Record<string, any>) {
+  const data = await graphql(`
+    mutation UpdateActionItem($input: UpdateActionItemInput!) {
+      updateActionItem(input: $input) { ${ACTION_ITEM_FIELDS} }
+    }
+  `, { input });
+  return data?.updateActionItem;
+}
+
+export async function deleteActionItem(id: string) {
+  const data = await graphql(`
+    mutation DeleteActionItem($input: DeleteActionItemInput!) {
+      deleteActionItem(input: $input) { id }
+    }
+  `, { input: { id } });
+  return data?.deleteActionItem;
 }
 
 // === Meeting queries ===

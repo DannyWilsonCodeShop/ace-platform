@@ -297,6 +297,7 @@ const schema = a.schema({
     // --- relationships ---
     client: a.belongsTo('Client', 'clientId'),
     pages: a.hasMany('ProjectPage', 'projectId'),
+    actionItems: a.hasMany('ActionItem', 'projectId'),
     notes: a.hasMany('ProjectNote', 'projectId'),
     events: a.hasMany('ProjectEvent', 'projectId'),
     meetings: a.hasMany('Meeting', 'projectId'),
@@ -325,6 +326,8 @@ const schema = a.schema({
     clientApproval: a.integer().default(0),  // 0-5 star rating
     baseline: a.integer().default(0),
     href: a.string(),
+    sortOrder: a.integer().default(0),
+    isCustom: a.boolean().default(false),
     project: a.belongsTo('Project', 'projectId'),
   }).authorization((allow) => [
     allow.groups(['owner', 'manager']).to(['create', 'read', 'update', 'delete']),
@@ -366,6 +369,33 @@ const schema = a.schema({
     allow.groups(['owner', 'manager']).to(['create', 'read', 'update', 'delete']),
     allow.groups(['developer']).to(['create', 'read']),
     allow.groups(['customer']).to(['read']),           // read own project log
+    allow.owner().identityClaim('cognito:username').to(['read']), // stamped at promotion
+  ]),
+
+  // === ActionItem (per-project to-do / task tracker) ===
+  ActionItem: a.model({
+    projectId: a.string().required(),
+    pageKey: a.string(),
+    title: a.string().required(),
+    detail: a.string(),
+    owner_role: a.enum(['client', 'together', 'dev']),
+    priority: a.boolean().default(false),
+    blocks: a.string(),
+    done: a.boolean().default(false),
+    completedAt: a.datetime(),
+    completedBySub: a.string(),
+    assigneeSub: a.string(),
+    dueDate: a.date(),
+    sortOrder: a.integer().default(0),
+    project: a.belongsTo('Project', 'projectId'),
+  }).authorization((allow) => [
+    allow.groups(['owner', 'manager']).to(['create', 'read', 'update', 'delete']),
+    allow.groups(['developer']).to(['create', 'read', 'update']),
+    // FIELD-SCOPE RISK: customer update is intended ONLY for done/completedAt on
+    // their own client-owned action items. Amplify group auth is row-level, so
+    // this also lets a customer write other fields — field scoping MUST be
+    // enforced in the portal UI (design doc §8 field-level-auth risk).
+    allow.groups(['customer']).to(['read', 'update']),
     allow.owner().identityClaim('cognito:username').to(['read']), // stamped at promotion
   ]),
 
