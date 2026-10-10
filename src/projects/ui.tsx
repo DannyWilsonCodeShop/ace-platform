@@ -11,8 +11,10 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { Mic, Square, Send } from 'lucide-react';
+import { addMonths, format, parseISO } from 'date-fns';
 import { createTextNote, createVoiceNote, voiceUrl } from './notes';
 import { demoImageUrl } from './demos';
+import { paid, owedToOwn, minimumRemaining } from './templates/payment-plans';
 
 const DEV_STATUSES = [
   { v: 'NOT_STARTED', label: 'Not started' },
@@ -308,6 +310,290 @@ export function NoteComposer({
           >
             <Square size={14} /> Stop &amp; send
           </button>
+        )}
+      </div>
+    </div>
+  );
+}
+
+/* ===================================================================== *
+ * Payment-plan shared render primitives (FEAT-005, design §C2/§C3).
+ *
+ * These are reused by the admin ProjectDetail panel and the read-only
+ * customer MyProject "Your plan" section so both surfaces share one look.
+ * The timeline expands the installment SERIES-DESCRIPTOR row (sequence 0,
+ * kind 'installment') into dated per-installment rows for display; it does
+ * NOT mutate any DB state. Dates render with date-fns.
+ * ===================================================================== */
+
+/** A PaymentPlanItem as it comes back from the API (loose). */
+export type PlanItem = {
+  id?: string;
+  kind?: string | null;
+  sequence?: number | null;
+  label?: string | null;
+  amount?: number | null;
+  dueDate?: string | null;
+  cadence?: string | null;
+  intervalCount?: number | null;
+  startDate?: string | null;
+  anchorDay?: number | null;
+  count?: number | null;
+  status?: string | null;
+  stripeInvoiceId?: string | null;
+  hostedInvoiceUrl?: string | null;
+};
+
+/** A single row in the rendered schedule timeline. */
+export type PlanTimelineRow = {
+  key: string;
+  kind: 'down_payment' | 'installment' | 'maintenance';
+  label: string;
+  amount: number;
+  date?: string | null;
+  status: string;
+  /** The source item, when a row maps 1:1 to a persisted PaymentPlanItem. */
+  item?: PlanItem;
+};
+
+const USD = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' });
+
+/** Format a major-unit amount as currency (USD display). */
+export function fmtAmount(amount?: number | null): string {
+  return USD.format(Number(amount || 0));
+}
+
+/** Format an ISO/date string with date-fns; falls back to the raw string. */
+export function fmtPlanDate(iso?: string | null): string {
+  if (!iso) return 'Date TBD';
+  try {
+    return format(parseISO(iso), 'MMM d, yyyy');
+  } catch {
+    return iso;
+  }
+}
+
+const ITEM_STATUS_TONE: Record<string, string> = {
+  scheduled: 'bg-white/5 text-ace-muted',
+  invoiced: 'bg-ace-cyan/15 text-ace-cyan',
+  paid: 'bg-green-500/15 text-green-400',
+  failed: 'bg-red-500/15 text-red-400',
+  skipped: 'bg-yellow-500/15 text-yellow-400',
+  cancelled: 'bg-white/5 text-ace-muted',
+};
+
+/** A status pill for a single schedule row. */
+export function PlanStatusPill({ status }: { status?: string | null }) {
+  const s = status || 'scheduled';
+  return <span className={`badge ${ITEM_STATUS_TONE[s] || ITEM_STATUS_TONE.scheduled}`}>{s}</span>;
+}
+
+/** Advance an ISO date (YYYY-MM-DD) by n months for installment display. */
+function addMonthsIso(iso: string, n: number): string {
+  try {
+    return format(addMonths(parseISO(iso), n), 'yyyy-MM-dd');
+  } catch {
+    return iso;
+  }
+}
+
+/**
+ * Pure: build the display timeline from the plan's items. The two dated
+ * down-payment rows map 1:1; the installment SERIES-DESCRIPTOR row (sequence 0,
+ * kind 'installment') is EXPANDED into `count` dated rows from `startDate`,
+ * stepping by the cadence (monthly/quarterly/annual × intervalCount). Any
+ * reconciled per-installment rows (sequence > 0) replace the materialized row
+ * at that index so paid state shows. A maintenance line is appended when a
+ * maintenance plan is present. No DB mutation.
+ */
+export function buildPlanTimeline(
+  items: PlanItem[],
+  maintenance?: { amount?: number | null; startedAt?: string | null; status?: string | null } | null,
+): PlanTimelineRow[] {
+  const rows: PlanTimelineRow[] = [];
+
+  const downPayments = (items || [])
+    .filter((it) => it.kind === 'down_payment')
+    .sort((a, b) => (a.sequence || 0) - (b.sequence || 0));
+  for (const dp of downPayments) {
+    rows.push({
+      key: dp.id || `dp-${dp.sequence}`,
+      kind: 'down_payment',
+      label: dp.label || `Down payment ${dp.sequence}`,
+      amount: Number(dp.amount || 0),
+      date: dp.dueDate,
+      status: dp.status || 'scheduled',
+      item: dp,
+    });
+  }
+
+  const descriptor = (items || []).find(
+    (it) => it.kind === 'installment' && (it.sequence || 0) === 0,
+  );
+  // Reconciled per-installment rows (sequence >= 1), keyed by sequence.
+  const reconciled = new Map<number, PlanItem>();
+  (items || [])
+    .filter((it) => it.kind === 'installment' && (it.sequence || 0) >= 1)
+    .forEach((it) => reconciled.set(it.sequence || 0, it));
+
+  if (descriptor) {
+    const count = Number(descriptor.count || 0);
+    const start = descriptor.startDate || '';
+    const step =
+      descriptor.cadence === 'annual'
+        ? 12
+        : descriptor.cadence === 'quarterly'
+          ? 3
+          : 1;
+    const interval = Number(descriptor.intervalCount || 1) * step;
+    for (let i = 0; i < count; i++) {
+      const seq = i + 1;
+      const recon = reconciled.get(seq);
+      const date = start ? addMonthsIso(start, i * interval) : null;
+      rows.push({
+        key: recon?.id || `inst-${seq}`,
+        kind: 'installment',
+        label: `Installment ${seq} of ${count}`,
+        amount: Number(recon?.amount ?? descriptor.amount ?? 0),
+        date: recon?.dueDate || date,
+        status: recon?.status || 'scheduled',
+        item: recon || descriptor,
+      });
+    }
+  }
+
+  if (maintenance) {
+    rows.push({
+      key: 'maintenance',
+      kind: 'maintenance',
+      label: 'Maintenance (separate)',
+      amount: Number(maintenance.amount || 0),
+      date: maintenance.startedAt,
+      status: maintenance.status || 'active',
+    });
+  }
+
+  return rows;
+}
+
+/**
+ * The schedule timeline table — down payments, each installment, and the
+ * maintenance line, each with a date, amount, kind and a status pill. When
+ * `onPayNow` is provided (customer surface), an unpaid down-payment row with a
+ * stored hosted invoice URL renders a "Pay now" link.
+ */
+export function PaymentPlanTimeline({
+  rows,
+  onPayNow,
+}: {
+  rows: PlanTimelineRow[];
+  onPayNow?: (row: PlanTimelineRow) => void | Promise<void>;
+}) {
+  if (rows.length === 0) {
+    return <p className="text-sm text-ace-muted">No schedule rows yet.</p>;
+  }
+  return (
+    <div className="space-y-2">
+      {rows.map((r) => {
+        const payable =
+          onPayNow &&
+          r.kind === 'down_payment' &&
+          r.status !== 'paid' &&
+          r.status !== 'cancelled' &&
+          !!r.item?.hostedInvoiceUrl;
+        return (
+          <div
+            key={r.key}
+            className="bg-[#0e0e0e] rounded-lg p-3 border border-[rgba(255,255,255,0.04)]"
+          >
+            <div className="flex items-center justify-between gap-2">
+              <div className="min-w-0">
+                <div className="text-sm font-medium truncate">{r.label}</div>
+                <div className="text-xs text-ace-muted">
+                  {fmtPlanDate(r.date)} · {r.kind.replace(/_/g, ' ')}
+                </div>
+              </div>
+              <div className="flex items-center gap-3 flex-shrink-0">
+                <span className="text-sm font-semibold">{fmtAmount(r.amount)}</span>
+                <PlanStatusPill status={r.status} />
+              </div>
+            </div>
+            {payable && (
+              <div className="mt-2">
+                <a
+                  href={r.item!.hostedInvoiceUrl!}
+                  target="_blank"
+                  rel="noreferrer"
+                  onClick={() => onPayNow?.(r)}
+                  className="inline-block text-xs px-3 py-1.5 rounded-lg bg-green-500/15 text-green-400 border border-green-500/20"
+                >
+                  Pay now
+                </a>
+              </div>
+            )}
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+/**
+ * Paid-vs-owed totals + the minimum-met and default badges for a payment plan.
+ * Maintenance is excluded from these totals (it is shown on its own timeline
+ * line). The paid amount is derived from the paid rows via the FEAT-004 math
+ * helpers; `installmentsPaidCount`/`minimumPaymentsOwed`/`defaulted` come off
+ * the plan row (the webhook is the source of truth for paid state).
+ */
+export function PaymentPlanSummary({ plan, rows }: { plan: any; rows: PlanTimelineRow[] }) {
+  // Only down_payment + installment rows count toward the "to own" totals;
+  // maintenance is excluded.
+  const owedRows = rows.filter((r) => r.kind !== 'maintenance');
+  const paidAmount = paid(owedRows.map((r) => ({ amount: r.amount, status: r.status })));
+  const total = Number(plan?.totalAmount || 0);
+  const owed = owedToOwn(total, paidAmount);
+  const minOwed = Number(plan?.minimumAmountOwed || 0);
+  const minRemaining = minimumRemaining(minOwed, paidAmount);
+
+  const paidCount = Number(plan?.installmentsPaidCount || 0);
+  const minPayments = Number(plan?.minimumPaymentsOwed || 0);
+  const minMet = Boolean(plan?.minimumMet);
+
+  return (
+    <div className="space-y-3">
+      <div className="grid grid-cols-3 gap-3">
+        <div className="bg-[#0e0e0e] rounded-lg p-3 border border-[rgba(255,255,255,0.04)]">
+          <div className="text-xs text-ace-muted">Paid</div>
+          <div className="text-sm font-semibold text-green-400">{fmtAmount(paidAmount)}</div>
+        </div>
+        <div className="bg-[#0e0e0e] rounded-lg p-3 border border-[rgba(255,255,255,0.04)]">
+          <div className="text-xs text-ace-muted">Owed to own</div>
+          <div className="text-sm font-semibold">{fmtAmount(owed)}</div>
+        </div>
+        <div className="bg-[#0e0e0e] rounded-lg p-3 border border-[rgba(255,255,255,0.04)]">
+          <div className="text-xs text-ace-muted">Total to own</div>
+          <div className="text-sm font-semibold">{fmtAmount(total)}</div>
+        </div>
+      </div>
+
+      <ProgressBar label="Toward full ownership" value={total > 0 ? (paidAmount / total) * 100 : 0} />
+
+      <div className="flex items-center gap-2 flex-wrap">
+        <span
+          className={`badge ${
+            minMet ? 'bg-green-500/15 text-green-400' : 'bg-yellow-500/15 text-yellow-400'
+          }`}
+        >
+          {paidCount} / {minPayments} —{' '}
+          {minMet ? 'minimum met' : 'minimum not yet met'}
+        </span>
+        {minRemaining > 0 && (
+          <span className="text-xs text-ace-muted">
+            {fmtAmount(minRemaining)} remaining of the minimum commitment
+          </span>
+        )}
+        {plan?.defaulted && (
+          <span className="badge bg-red-500/15 text-red-400">Defaulted</span>
         )}
       </div>
     </div>

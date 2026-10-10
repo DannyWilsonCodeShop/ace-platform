@@ -729,7 +729,7 @@ export async function updatePaymentPlan(input: Record<string, any>) {
 const PAYMENT_PLAN_ITEM_FIELDS = `
   id planId kind sequence label amount dueDate
   cadence intervalCount startDate anchorDay count status
-  stripeInvoiceId stripePaymentIntentId paidAt owner createdAt updatedAt
+  stripeInvoiceId hostedInvoiceUrl stripePaymentIntentId paidAt owner createdAt updatedAt
 `;
 
 export async function createPaymentPlanItem(input: Record<string, any>) {

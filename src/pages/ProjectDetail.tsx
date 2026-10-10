@@ -24,6 +24,7 @@ import {
   ExternalLink,
   Plus,
   Trash2,
+  Receipt,
 } from 'lucide-react';
 import {
   getProject,
@@ -54,6 +55,12 @@ import {
   updateInvoice,
   listCampaigns,
   listCampaignStepsByCampaign,
+  createPaymentPlan,
+  listPaymentPlansByProject,
+  updatePaymentPlan,
+  createPaymentPlanItem,
+  listPaymentPlanItemsByPlan,
+  updatePaymentPlanItem,
 } from '../utils/api';
 import { enrollClient, sendCampaignStep } from '../campaigns/campaigns';
 import { uploadDemoImage, slugify } from '../projects/demos';
@@ -84,7 +91,15 @@ import {
   VoiceNotePlayer,
   NoteComposer,
   DemoImage,
+  buildPlanTimeline,
+  PaymentPlanTimeline,
+  PaymentPlanSummary,
 } from '../projects/ui';
+import {
+  listPaymentPlanTemplates,
+  getPaymentPlanTemplate,
+  materializePlan,
+} from '../projects/templates/payment-plans';
 import { toStates } from './Projects';
 
 /** Demo kinds mirror the Demo model enum. */
@@ -154,6 +169,9 @@ export default function ProjectDetail() {
   const [contracts, setContracts] = useState<any[]>([]);
   const [plans, setPlans] = useState<any[]>([]);
   const [invoices, setInvoices] = useState<any[]>([]);
+  // Payment plans + each plan's items, loaded alongside the project.
+  const [paymentPlans, setPaymentPlans] = useState<any[]>([]);
+  const [itemsByPlan, setItemsByPlan] = useState<Record<string, any[]>>({});
   // Maintenance windows keyed by planId, loaded alongside the plans.
   const [windowsByPlan, setWindowsByPlan] = useState<Record<string, any[]>>({});
   const [loading, setLoading] = useState(true);
@@ -194,6 +212,18 @@ export default function ProjectDetail() {
       setWindowsByPlan(Object.fromEntries(entries));
     } catch (err) {
       console.error('Failed to load maintenance windows', err);
+    }
+    // Load payment plans + each plan's items so the admin can render the
+    // schedule timeline and paid-vs-owed totals.
+    try {
+      const pp = await listPaymentPlansByProject(id);
+      setPaymentPlans(pp || []);
+      const itemEntries = await Promise.all(
+        (pp || []).map(async (p: any) => [p.id, await listPaymentPlanItemsByPlan(p.id)] as const),
+      );
+      setItemsByPlan(Object.fromEntries(itemEntries));
+    } catch (err) {
+      console.error('Failed to load payment plans', err);
     }
     if (proj?.clientId) {
       try {
@@ -475,6 +505,145 @@ export default function ProjectDetail() {
     } finally {
       setClosing(false);
     }
+  }
+
+  // --- Payment plan admin actions ---
+
+  // Create a custom payment plan and, when billing is connected, provision the
+  // Stripe objects. The flow is idempotent: each Stripe create is gated on an
+  // empty stripeInvoiceId/stripeScheduleId, so a retry never duplicates a
+  // Stripe object. When billingConfigured() is false the draft + items persist
+  // and the Stripe calls are skipped (the panel shows an inline note).
+  //
+  // The caller (PaymentPlanCreateForm) guarantees `plan.installmentCount` was
+  // stamped from the series `count` and refuses a plan that would leave it at 0
+  // when an installment series is attached (NIT-4).
+  async function createPaymentPlanRecord(input: {
+    plan: Record<string, any>;
+    items: Array<Record<string, any>>;
+    maintenance?: Record<string, any>;
+  }) {
+    if (!id || !project) return;
+
+    // (1) Persist the plan (draft) then each item row.
+    const created = await createPaymentPlan({
+      ...input.plan,
+      projectId: id,
+      clientId: project.clientId,
+      status: 'draft',
+    });
+    const planId = created?.id;
+    if (!planId) {
+      await logProjectEvent(id, 'admin', 'failed to create a payment plan');
+      await refresh();
+      return;
+    }
+
+    const createdItems: any[] = [];
+    for (const it of input.items) {
+      const row = await createPaymentPlanItem({ ...it, planId, status: 'scheduled' });
+      if (row) createdItems.push(row);
+    }
+
+    const connected = billingConfigured();
+    if (!connected) {
+      // Billing not connected: keep the draft + items, skip Stripe entirely.
+      await logProjectEvent(
+        id,
+        'admin',
+        'created a payment plan (billing not connected — Stripe skipped)',
+      );
+      await refresh();
+      return;
+    }
+
+    // (2) For each down payment, create a hosted invoice ONLY when the item has
+    // no stripeInvoiceId yet (idempotent on retry), then stamp it.
+    for (const it of createdItems) {
+      if (it.kind !== 'down_payment') continue;
+      if (it.stripeInvoiceId) continue; // already provisioned — do not duplicate
+      const res = await stripe.createPlanInvoice({
+        planId,
+        planItemId: it.id,
+        amount: Number(it.amount),
+        currency: created.currency,
+        dueDate: it.dueDate,
+        clientEmail: client?.email || '',
+        description: `${created.name} — ${it.label || 'down payment'}`,
+      });
+      if (res.configured && res.invoiceId) {
+        await updatePaymentPlanItem({
+          id: it.id,
+          stripeInvoiceId: res.invoiceId,
+          hostedInvoiceUrl: res.hostedInvoiceUrl,
+          status: 'invoiced',
+        });
+      }
+    }
+
+    // (3) Create the installment subscription schedule ONLY when the plan has
+    // no stripeScheduleId yet (idempotent on retry). Flip the plan to active.
+    const descriptor = createdItems.find(
+      (it) => it.kind === 'installment' && (it.sequence || 0) === 0,
+    );
+    let scheduleId: string | undefined;
+    if (descriptor && !created.stripeScheduleId) {
+      const res = await stripe.createSubscriptionSchedule({
+        planId,
+        amount: Number(descriptor.amount),
+        currency: created.currency,
+        count: Number(descriptor.count || created.installmentCount || 0),
+        startDate: descriptor.startDate,
+        clientEmail: client?.email || '',
+      });
+      if (res.configured && res.scheduleId) scheduleId = res.scheduleId;
+    }
+    await updatePaymentPlan({
+      id: planId,
+      status: 'active',
+      ...(scheduleId ? { stripeScheduleId: scheduleId } : {}),
+    });
+
+    // (4) Optional separate maintenance subscription (NOT in totalAmount).
+    if (input.maintenance) {
+      const mp = await createMaintenancePlan({
+        projectId: id,
+        clientId: project.clientId,
+        status: 'paused',
+        cadence: input.maintenance.cadence || 'monthly',
+        amount: Number(input.maintenance.amount),
+        startedAt: input.maintenance.startedAt,
+      });
+      if (mp?.id) {
+        const res = await stripe.createSubscription({
+          plan: mp.id,
+          amount: Number(input.maintenance.amount),
+          cadence: 'monthly',
+          trialEnd: input.maintenance.startedAt,
+          clientEmail: client?.email,
+          successUrl: window.location.href,
+          cancelUrl: window.location.href,
+        });
+        if (res.configured && res.checkoutUrl) {
+          // Surface the Checkout for the owner to confirm the payment method.
+          window.open(res.checkoutUrl, '_blank', 'noopener');
+        }
+      }
+    }
+
+    await logProjectEvent(id, 'admin', 'created and provisioned a payment plan');
+    await refresh();
+  }
+
+  // "End run license" — a deliberate NO-OP (TODO(license-revocation)). It must
+  // NOT revoke anything: license revocation is a manual, flag-only decision in
+  // this build (mirrors the TODO(stripe-cancel-route) posture). We only log.
+  async function endRunLicense(plan: any) {
+    if (!id) return;
+    // TODO(license-revocation): wire actual license revocation here. For now
+    // this performs NO revocation and changes NO plan state.
+    console.warn('TODO(license-revocation): End run license requested for plan', plan?.id);
+    await logProjectEvent(id, 'admin', 'requested End run license (no-op — TODO(license-revocation))');
   }
 
   // --- Maintenance admin actions ---
@@ -1070,6 +1239,38 @@ export default function ProjectDetail() {
             )}
           </div>
 
+          {/* Payment plan */}
+          <div className="card">
+            <h3 className="font-semibold mb-3 flex items-center gap-2">
+              <Receipt size={16} className="text-green-400" /> Payment plan
+            </h3>
+            {!billingConfigured() && (
+              <div className="text-xs text-yellow-400 mb-3">
+                Billing not connected — plans are saved as drafts and Stripe
+                invoices/schedules are skipped.
+              </div>
+            )}
+            <PaymentPlanCreateForm onCreate={createPaymentPlanRecord} />
+
+            {paymentPlans.length === 0 ? (
+              <p className="text-sm text-ace-muted mt-3">No payment plan yet.</p>
+            ) : (
+              <div className="space-y-4 mt-3">
+                {paymentPlans.map((p) => (
+                  <PaymentPlanCard
+                    key={p.id}
+                    plan={p}
+                    items={itemsByPlan[p.id] || []}
+                    maintenancePlan={plans.find(
+                      (m: any) => m.clientId === p.clientId && m.status !== 'cancelled',
+                    )}
+                    onEndLicense={() => endRunLicense(p)}
+                  />
+                ))}
+              </div>
+            )}
+          </div>
+
           {/* Maintenance */}
           <div className="card">
             <h3 className="font-semibold mb-3 flex items-center gap-2">
@@ -1149,6 +1350,536 @@ export default function ProjectDetail() {
             )}
           </div>
         </div>
+      </div>
+    </div>
+  );
+}
+
+/**
+ * Read-only admin view of a single payment plan: the schedule timeline (down
+ * payments + each installment + the maintenance line), paid-vs-owed totals
+ * (maintenance excluded), the minimum-met badge, the default warning, and the
+ * no-op TODO(license-revocation) "End run license" owner button.
+ */
+function PaymentPlanCard({
+  plan,
+  items,
+  maintenancePlan,
+  onEndLicense,
+}: {
+  plan: any;
+  items: any[];
+  maintenancePlan?: any;
+  onEndLicense: () => void | Promise<void>;
+}) {
+  const [confirmEnd, setConfirmEnd] = useState(false);
+  const [busy, setBusy] = useState(false);
+  const rows = buildPlanTimeline(
+    items,
+    maintenancePlan
+      ? { amount: maintenancePlan.amount, startedAt: maintenancePlan.startedAt, status: maintenancePlan.status }
+      : null,
+  );
+
+  async function doEnd() {
+    setBusy(true);
+    try {
+      await onEndLicense();
+      setConfirmEnd(false);
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <div className="bg-[#0e0e0e] rounded-lg p-3 border border-[rgba(255,255,255,0.04)] space-y-3">
+      <div className="flex items-center justify-between gap-2">
+        <div className="min-w-0">
+          <div className="text-sm font-semibold truncate">{plan.name}</div>
+          <div className="text-xs text-ace-muted">{plan.status}</div>
+        </div>
+        <span className="badge bg-white/5 text-ace-muted">{plan.status}</span>
+      </div>
+
+      {plan.status === 'draft' && !plan.stripeScheduleId && (
+        <div className="text-xs text-yellow-400">
+          Draft — Stripe invoices/schedule not provisioned (billing not connected).
+        </div>
+      )}
+
+      <PaymentPlanSummary plan={plan} rows={rows} />
+      <PaymentPlanTimeline rows={rows} />
+
+      {/* Default handling + the deliberate license no-op. */}
+      <div className="border-t border-[rgba(255,255,255,0.06)] pt-3">
+        {plan.defaulted && (
+          <div className="text-xs text-red-400 mb-2">
+            This plan is in default. The owner may end the run license manually.
+          </div>
+        )}
+        {!confirmEnd ? (
+          <button
+            onClick={() => setConfirmEnd(true)}
+            className="text-xs px-3 py-1.5 rounded-lg bg-red-500/10 text-red-400 border border-red-500/20"
+          >
+            End run license
+          </button>
+        ) : (
+          <div className="flex items-center gap-2 flex-wrap">
+            <span className="text-xs text-ace-muted">
+              This does not revoke access yet (TODO(license-revocation)).
+            </span>
+            <button
+              onClick={doEnd}
+              disabled={busy}
+              className="text-xs px-3 py-1.5 rounded-lg bg-red-500/15 text-red-400 border border-red-500/20 disabled:opacity-50"
+            >
+              Confirm
+            </button>
+            <button
+              onClick={() => setConfirmEnd(false)}
+              disabled={busy}
+              className="text-xs px-3 py-1.5 rounded-lg bg-white/5 text-white border border-[rgba(255,255,255,0.06)] disabled:opacity-50"
+            >
+              Cancel
+            </button>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+/** A single dated down-payment row in the create form. */
+type DownPaymentDraft = { label: string; amount: string; dueDate: string };
+
+/**
+ * Admin create form — pick a code-defined template OR build a custom plan. On
+ * submit the form materializes a template (or assembles the custom inputs),
+ * STAMPS installmentCount from the installment series `count`, and refuses to
+ * create a plan with an attached series that would leave installmentCount at 0
+ * (NIT-4). The parent handler persists + provisions Stripe (idempotently).
+ */
+function PaymentPlanCreateForm({
+  onCreate,
+}: {
+  onCreate: (input: {
+    plan: Record<string, any>;
+    items: Array<Record<string, any>>;
+    maintenance?: Record<string, any>;
+  }) => void | Promise<void>;
+}) {
+  const templates = useMemo(() => listPaymentPlanTemplates(), []);
+  const [open, setOpen] = useState(false);
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  // Custom-plan fields.
+  const [name, setName] = useState('');
+  const [currency, setCurrency] = useState('usd');
+  const [total, setTotal] = useState('');
+  const [downPayments, setDownPayments] = useState<DownPaymentDraft[]>([
+    { label: 'Down payment', amount: '', dueDate: '' },
+  ]);
+  const [hasSeries, setHasSeries] = useState(true);
+  const [instAmount, setInstAmount] = useState('');
+  const [instCadence, setInstCadence] = useState<'monthly' | 'quarterly' | 'annual'>('monthly');
+  const [instInterval, setInstInterval] = useState('1');
+  const [instStart, setInstStart] = useState('');
+  const [instAnchor, setInstAnchor] = useState('1');
+  const [instCount, setInstCount] = useState('');
+  const [minPayments, setMinPayments] = useState('0');
+  const [minAmount, setMinAmount] = useState('0');
+  const [ownershipTransfers, setOwnershipTransfers] = useState(true);
+  const [licenseEndsOnDefault, setLicenseEndsOnDefault] = useState(true);
+  const [hasMaintenance, setHasMaintenance] = useState(false);
+  const [maintAmount, setMaintAmount] = useState('');
+  const [maintStart, setMaintStart] = useState('');
+
+  function reset() {
+    setName('');
+    setCurrency('usd');
+    setTotal('');
+    setDownPayments([{ label: 'Down payment', amount: '', dueDate: '' }]);
+    setHasSeries(true);
+    setInstAmount('');
+    setInstCadence('monthly');
+    setInstInterval('1');
+    setInstStart('');
+    setInstAnchor('1');
+    setInstCount('');
+    setMinPayments('0');
+    setMinAmount('0');
+    setOwnershipTransfers(true);
+    setLicenseEndsOnDefault(true);
+    setHasMaintenance(false);
+    setMaintAmount('');
+    setMaintStart('');
+    setError(null);
+  }
+
+  // Create from a code-defined template via the pure materializePlan helper.
+  async function submitTemplate(key: string) {
+    const template = getPaymentPlanTemplate(key);
+    if (!template) {
+      setError('Unknown template.');
+      return;
+    }
+    setBusy(true);
+    setError(null);
+    try {
+      // projectId/clientId are stamped by the parent handler; pass placeholders.
+      const m = materializePlan(template, { projectId: '', clientId: '' });
+      // NIT-4: a template with a series must stamp a non-zero installmentCount.
+      const seriesCount = template.installments?.count || 0;
+      if (seriesCount > 0 && m.plan.installmentCount <= 0) {
+        setError('Template has an installment series but installmentCount is 0.');
+        return;
+      }
+      await onCreate({ plan: m.plan, items: m.items, maintenance: m.maintenance });
+      reset();
+      setOpen(false);
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function submitCustom() {
+    setError(null);
+    const totalNum = Number(total);
+    if (!name.trim()) {
+      setError('Enter a plan name.');
+      return;
+    }
+    if (!total.trim() || Number.isNaN(totalNum) || totalNum <= 0) {
+      setError('Enter a valid total amount.');
+      return;
+    }
+
+    // Assemble down-payment rows.
+    const dpRows = downPayments.filter((d) => d.amount.trim() || d.dueDate.trim());
+    for (const d of dpRows) {
+      const amt = Number(d.amount);
+      if (Number.isNaN(amt) || amt <= 0 || !d.dueDate.trim()) {
+        setError('Each down payment needs a positive amount and a due date.');
+        return;
+      }
+    }
+
+    // Resolve the installment series + the stamped installmentCount (NIT-4).
+    let installmentCount = 0;
+    let seriesItem: Record<string, any> | null = null;
+    if (hasSeries) {
+      const amt = Number(instAmount);
+      const cnt = Number(instCount);
+      const interval = Number(instInterval);
+      const anchor = Number(instAnchor);
+      if (Number.isNaN(amt) || amt <= 0) {
+        setError('Enter a valid installment amount.');
+        return;
+      }
+      if (Number.isNaN(cnt) || cnt <= 0) {
+        // NIT-4: an attached series may not leave installmentCount at 0.
+        setError('An installment series must have a count greater than 0.');
+        return;
+      }
+      if (!instStart.trim()) {
+        setError('Enter the installment series start date.');
+        return;
+      }
+      installmentCount = cnt;
+      seriesItem = {
+        kind: 'installment',
+        sequence: 0,
+        amount: amt,
+        cadence: instCadence,
+        intervalCount: Number.isNaN(interval) ? 1 : interval,
+        startDate: instStart,
+        anchorDay: Number.isNaN(anchor) ? 1 : anchor,
+        count: cnt,
+      };
+    }
+
+    let maintenance: Record<string, any> | undefined;
+    if (hasMaintenance) {
+      const amt = Number(maintAmount);
+      if (Number.isNaN(amt) || amt <= 0 || !maintStart.trim()) {
+        setError('Maintenance needs a positive amount and a start date.');
+        return;
+      }
+      maintenance = { cadence: 'monthly', amount: amt, startedAt: maintStart };
+    }
+
+    const items: Array<Record<string, any>> = [];
+    dpRows.forEach((d, i) => {
+      items.push({
+        kind: 'down_payment',
+        sequence: i + 1,
+        label: d.label || `Down payment ${i + 1}`,
+        amount: Number(d.amount),
+        dueDate: d.dueDate,
+      });
+    });
+    if (seriesItem) items.push(seriesItem);
+
+    const plan: Record<string, any> = {
+      name: name.trim(),
+      totalAmount: totalNum,
+      currency: currency.trim() || 'usd',
+      ownershipTransfersAtFullPayment: ownershipTransfers,
+      minimumPaymentsOwed: Number(minPayments) || 0,
+      minimumAmountOwed: Number(minAmount) || 0,
+      licenseEndsOnDefault,
+      // STAMP installmentCount from the series count (NIT-4).
+      installmentCount,
+    };
+
+    setBusy(true);
+    try {
+      await onCreate({ plan, items, maintenance });
+      reset();
+      setOpen(false);
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  if (!open) {
+    return (
+      <button
+        onClick={() => setOpen(true)}
+        className="text-xs px-3 py-1.5 rounded-lg bg-green-500/15 text-green-400 border border-green-500/20"
+      >
+        New payment plan
+      </button>
+    );
+  }
+
+  return (
+    <div className="bg-[#0e0e0e] rounded-lg p-3 space-y-3 border border-[rgba(255,255,255,0.04)]">
+      {/* Templates */}
+      {templates.length > 0 && (
+        <div>
+          <div className="text-xs text-ace-muted mb-1">Start from a template</div>
+          <div className="flex flex-wrap gap-2">
+            {templates.map((t) => (
+              <button
+                key={t.key}
+                onClick={() => submitTemplate(t.key)}
+                disabled={busy}
+                className="text-xs px-3 py-1.5 rounded-lg bg-ace-purple/15 text-ace-purple border border-ace-purple/20 disabled:opacity-50"
+              >
+                {t.name}
+              </button>
+            ))}
+          </div>
+          <div className="text-xs text-ace-muted mt-2">— or build a custom plan —</div>
+        </div>
+      )}
+
+      {/* Custom plan */}
+      <div className="grid sm:grid-cols-2 gap-2">
+        <input
+          className="input text-xs py-1"
+          placeholder="Plan name"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+        />
+        <input
+          className="input text-xs py-1"
+          placeholder="Total to own (e.g. 50000)"
+          value={total}
+          onChange={(e) => setTotal(e.target.value)}
+        />
+        <input
+          className="input text-xs py-1"
+          placeholder="Currency (usd)"
+          value={currency}
+          onChange={(e) => setCurrency(e.target.value)}
+        />
+      </div>
+
+      {/* Down payments */}
+      <div className="space-y-2">
+        <div className="text-xs text-ace-muted">Down payments</div>
+        {downPayments.map((d, i) => (
+          <div key={i} className="flex items-center gap-2 flex-wrap">
+            <input
+              className="input text-xs py-1 flex-1 min-w-[120px]"
+              placeholder="Label"
+              value={d.label}
+              onChange={(e) =>
+                setDownPayments((rows) =>
+                  rows.map((r, j) => (j === i ? { ...r, label: e.target.value } : r)),
+                )
+              }
+            />
+            <input
+              className="input text-xs py-1 w-24"
+              placeholder="Amount"
+              value={d.amount}
+              onChange={(e) =>
+                setDownPayments((rows) =>
+                  rows.map((r, j) => (j === i ? { ...r, amount: e.target.value } : r)),
+                )
+              }
+            />
+            <input
+              type="date"
+              className="input text-xs py-1 w-36"
+              value={d.dueDate}
+              onChange={(e) =>
+                setDownPayments((rows) =>
+                  rows.map((r, j) => (j === i ? { ...r, dueDate: e.target.value } : r)),
+                )
+              }
+            />
+            <button
+              onClick={() => setDownPayments((rows) => rows.filter((_, j) => j !== i))}
+              className="text-ace-muted hover:text-red-400"
+              title="Remove"
+            >
+              <Trash2 size={14} />
+            </button>
+          </div>
+        ))}
+        <button
+          onClick={() =>
+            setDownPayments((rows) => [...rows, { label: `Down payment ${rows.length + 1}`, amount: '', dueDate: '' }])
+          }
+          className="text-xs px-2 py-1 rounded-lg bg-white/5 text-white border border-[rgba(255,255,255,0.06)] flex items-center gap-1"
+        >
+          <Plus size={12} /> Add down payment
+        </button>
+      </div>
+
+      {/* Installment series */}
+      <div className="space-y-2 border-t border-[rgba(255,255,255,0.06)] pt-3">
+        <label className="flex items-center gap-2 text-xs cursor-pointer">
+          <input type="checkbox" checked={hasSeries} onChange={(e) => setHasSeries(e.target.checked)} />
+          Installment series
+        </label>
+        {hasSeries && (
+          <div className="grid sm:grid-cols-3 gap-2">
+            <input
+              className="input text-xs py-1"
+              placeholder="Amount (e.g. 1250)"
+              value={instAmount}
+              onChange={(e) => setInstAmount(e.target.value)}
+            />
+            <select
+              className="input text-xs py-1"
+              value={instCadence}
+              onChange={(e) => setInstCadence(e.target.value as 'monthly' | 'quarterly' | 'annual')}
+            >
+              <option value="monthly">Monthly</option>
+              <option value="quarterly">Quarterly</option>
+              <option value="annual">Annual</option>
+            </select>
+            <input
+              className="input text-xs py-1"
+              placeholder="Interval count (1)"
+              value={instInterval}
+              onChange={(e) => setInstInterval(e.target.value)}
+            />
+            <input
+              type="date"
+              className="input text-xs py-1"
+              value={instStart}
+              onChange={(e) => setInstStart(e.target.value)}
+            />
+            <input
+              className="input text-xs py-1"
+              placeholder="Anchor day (1)"
+              value={instAnchor}
+              onChange={(e) => setInstAnchor(e.target.value)}
+            />
+            <input
+              className="input text-xs py-1"
+              placeholder="Count (e.g. 36)"
+              value={instCount}
+              onChange={(e) => setInstCount(e.target.value)}
+            />
+          </div>
+        )}
+      </div>
+
+      {/* Minimum + toggles */}
+      <div className="grid sm:grid-cols-2 gap-2 border-t border-[rgba(255,255,255,0.06)] pt-3">
+        <input
+          className="input text-xs py-1"
+          placeholder="Minimum payments owed"
+          value={minPayments}
+          onChange={(e) => setMinPayments(e.target.value)}
+        />
+        <input
+          className="input text-xs py-1"
+          placeholder="Minimum amount owed"
+          value={minAmount}
+          onChange={(e) => setMinAmount(e.target.value)}
+        />
+        <label className="flex items-center gap-2 text-xs cursor-pointer">
+          <input
+            type="checkbox"
+            checked={ownershipTransfers}
+            onChange={(e) => setOwnershipTransfers(e.target.checked)}
+          />
+          Ownership transfers at full payment
+        </label>
+        <label className="flex items-center gap-2 text-xs cursor-pointer">
+          <input
+            type="checkbox"
+            checked={licenseEndsOnDefault}
+            onChange={(e) => setLicenseEndsOnDefault(e.target.checked)}
+          />
+          License ends on default
+        </label>
+      </div>
+
+      {/* Maintenance (separate — not summed into the total) */}
+      <div className="space-y-2 border-t border-[rgba(255,255,255,0.06)] pt-3">
+        <label className="flex items-center gap-2 text-xs cursor-pointer">
+          <input type="checkbox" checked={hasMaintenance} onChange={(e) => setHasMaintenance(e.target.checked)} />
+          Separate maintenance subscription
+        </label>
+        {hasMaintenance && (
+          <div className="grid sm:grid-cols-2 gap-2">
+            <input
+              className="input text-xs py-1"
+              placeholder="Amount (e.g. 500)"
+              value={maintAmount}
+              onChange={(e) => setMaintAmount(e.target.value)}
+            />
+            <input
+              type="date"
+              className="input text-xs py-1"
+              value={maintStart}
+              onChange={(e) => setMaintStart(e.target.value)}
+            />
+          </div>
+        )}
+      </div>
+
+      {error && <div className="text-xs text-red-400">{error}</div>}
+
+      <div className="flex gap-2">
+        <button
+          onClick={submitCustom}
+          disabled={busy}
+          className="text-xs px-3 py-1.5 rounded-lg bg-green-500/15 text-green-400 border border-green-500/20 disabled:opacity-50"
+        >
+          {busy ? 'Creating…' : 'Create plan'}
+        </button>
+        <button
+          onClick={() => {
+            reset();
+            setOpen(false);
+          }}
+          disabled={busy}
+          className="text-xs px-3 py-1.5 rounded-lg bg-white/5 text-white border border-[rgba(255,255,255,0.06)] disabled:opacity-50"
+        >
+          Cancel
+        </button>
       </div>
     </div>
   );

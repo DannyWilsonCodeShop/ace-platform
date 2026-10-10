@@ -45,6 +45,8 @@ import {
   listMaintenancePlansByProject,
   createMaintenanceWindow,
   listMaintenanceWindowsByPlan,
+  listPaymentPlansByProject,
+  listPaymentPlanItemsByPlan,
 } from '../../utils/api';
 import { getTemplate } from '../../projects/templates';
 import type { Category, TrackedItem } from '../../projects/templates/types';
@@ -60,7 +62,14 @@ import {
   VoiceNotePlayer,
   NoteComposer,
   DemoImage,
+  buildPlanTimeline,
+  PaymentPlanTimeline,
+  PaymentPlanSummary,
+  fmtAmount,
+  type PlanTimelineRow,
 } from '../../projects/ui';
+import { stripe } from '../../billing/providers/stripe';
+import { billingConfigured } from '../../billing/billing';
 import {
   sendProjectNoteNotification,
   sendMeetingRequestNotification,
@@ -119,6 +128,10 @@ export default function MyProject() {
   const [invoices, setInvoices] = useState<any[]>([]);
   const [plan, setPlan] = useState<any | null>(null);
   const [maintenanceWindows, setMaintenanceWindows] = useState<any[]>([]);
+  // Read-only payment plan + its items (the customer surface issues ZERO
+  // updatePaymentPlan/updatePaymentPlanItem mutations — TD-1).
+  const [paymentPlan, setPaymentPlan] = useState<any | null>(null);
+  const [paymentPlanItems, setPaymentPlanItems] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -161,6 +174,30 @@ export default function MyProject() {
       console.error('Failed to load maintenance plan', err);
       setPlan(null);
       setMaintenanceWindows([]);
+    }
+
+    // Read-only payment plan: prefer an active plan, else the most recent one,
+    // and load its items for the schedule timeline. No writes here (TD-1).
+    try {
+      const myPlans = await listPaymentPlansByProject(projectId);
+      const active = (myPlans || []).find((p: any) => p.status === 'active');
+      const chosen = active
+        || (myPlans || []).sort(
+          (a: any, b: any) =>
+            new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime(),
+        )[0]
+        || null;
+      setPaymentPlan(chosen);
+      if (chosen) {
+        const its = await listPaymentPlanItemsByPlan(chosen.id);
+        setPaymentPlanItems(its || []);
+      } else {
+        setPaymentPlanItems([]);
+      }
+    } catch (err) {
+      console.error('Failed to load payment plan', err);
+      setPaymentPlan(null);
+      setPaymentPlanItems([]);
     }
   }, []);
 
@@ -420,6 +457,25 @@ export default function MyProject() {
     if (project) {
       await logProjectEvent(project.id, 'customer', `signed the contract as ${signerName}`);
       await loadProjectData(project.id);
+    }
+  }
+
+  // Early payoff / top-up: mint a Stripe Checkout link and redirect. This is a
+  // pure redirect to Stripe-hosted UI — the customer surface issues NO
+  // updatePaymentPlan/updatePaymentPlanItem mutations (TD-1). Paid state only
+  // ever changes via the server webhook.
+  async function payEarly(amount: number) {
+    if (!paymentPlan) return;
+    const res = await stripe.createOneOffPaymentLink({
+      invoice: paymentPlan.id,
+      amount,
+      clientEmail: client?.email,
+      description: `${paymentPlan.name || 'Payment plan'} — early payoff / top-up`,
+      successUrl: window.location.href,
+      cancelUrl: window.location.href,
+    });
+    if (res.configured && res.paymentLink) {
+      window.location.assign(res.paymentLink);
     }
   }
 
@@ -725,6 +781,16 @@ export default function MyProject() {
           </>
         )}
       </div>
+
+      {/* Your plan — read-only payment plan (TD-1: no plan mutations here). */}
+      {paymentPlan && paymentPlan.status !== 'cancelled' && (
+        <YourPlanSection
+          plan={paymentPlan}
+          items={paymentPlanItems}
+          maintenancePlan={plan}
+          onPayEarly={payEarly}
+        />
+      )}
 
       {/* Invoices */}
       <div className="card">
@@ -1286,6 +1352,83 @@ function ManualSignForm({
       >
         {busy ? 'Signing…' : 'Sign contract'}
       </button>
+    </div>
+  );
+}
+
+/**
+ * Read-only "Your plan" section (design §C3). Shares the timeline/table,
+ * paid-vs-owed totals, and the minimum/default badges with the admin panel.
+ * Pay-now for an unpaid down payment redirects to the stored hosted invoice
+ * URL; early payoff mints a Stripe Checkout link via createOneOffPaymentLink.
+ * It issues ZERO updatePaymentPlan/updatePaymentPlanItem mutations (TD-1) —
+ * paid state only ever changes via the server webhook.
+ */
+function YourPlanSection({
+  plan,
+  items,
+  maintenancePlan,
+  onPayEarly,
+}: {
+  plan: any;
+  items: any[];
+  maintenancePlan?: any;
+  onPayEarly: (amount: number) => void | Promise<void>;
+}) {
+  const [payoffAmount, setPayoffAmount] = useState('');
+  const rows: PlanTimelineRow[] = buildPlanTimeline(
+    items,
+    maintenancePlan && maintenancePlan.status !== 'cancelled'
+      ? { amount: maintenancePlan.amount, startedAt: maintenancePlan.startedAt, status: maintenancePlan.status }
+      : null,
+  );
+
+  // "Owed to own" for the default early-payoff suggestion (maintenance excluded).
+  const owedRows = rows.filter((r) => r.kind !== 'maintenance');
+  const paidAmount = owedRows.reduce((s, r) => (r.status === 'paid' ? s + r.amount : s), 0);
+  const owed = Math.max(0, Number(plan.totalAmount || 0) - paidAmount);
+
+  async function submitPayoff() {
+    const amt = payoffAmount.trim() ? Number(payoffAmount) : owed;
+    if (Number.isNaN(amt) || amt <= 0) return;
+    await onPayEarly(amt);
+  }
+
+  return (
+    <div className="card">
+      <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
+        <Receipt size={18} className="text-green-400" /> Your plan
+      </h2>
+
+      <div className="space-y-4">
+        <PaymentPlanSummary plan={plan} rows={rows} />
+
+        {/* Pay-now on unpaid down payments links to the hosted invoice. */}
+        <PaymentPlanTimeline rows={rows} onPayNow={() => undefined} />
+
+        {/* Early payoff / top-up — redirect to Stripe Checkout. */}
+        {billingConfigured() && owed > 0 && (
+          <div className="border-t border-[rgba(255,255,255,0.06)] pt-3">
+            <div className="text-xs text-ace-muted mb-2">
+              Pay ahead or pay off early — you owe {fmtAmount(owed)} to fully own your app.
+            </div>
+            <div className="flex items-end gap-2 flex-wrap">
+              <input
+                className="input text-xs py-1 w-32"
+                placeholder={`${owed}`}
+                value={payoffAmount}
+                onChange={(e) => setPayoffAmount(e.target.value)}
+              />
+              <button
+                onClick={submitPayoff}
+                className="text-xs px-3 py-1.5 rounded-lg bg-green-500/15 text-green-400 border border-green-500/20"
+              >
+                Pay now
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
     </div>
   );
 }

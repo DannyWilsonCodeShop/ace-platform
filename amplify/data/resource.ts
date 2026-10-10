@@ -518,6 +518,7 @@ const schema = a.schema({
     // per-charge state
     status: a.enum(['scheduled', 'invoiced', 'paid', 'failed', 'skipped', 'cancelled']),
     stripeInvoiceId: a.string(),
+    hostedInvoiceUrl: a.string(),                // Stripe hosted-invoice pay page (down payments)
     stripePaymentIntentId: a.string(),
     paidAt: a.datetime(),
     // relationship
