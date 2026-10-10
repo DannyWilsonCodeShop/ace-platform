@@ -49,7 +49,8 @@ import {
   listPaymentPlanItemsByPlan,
 } from '../../utils/api';
 import { getTemplate } from '../../projects/templates';
-import type { Category, TrackedItem } from '../../projects/templates/types';
+import { cardsForCategory } from '../../projects/pageCards';
+import type { Category } from '../../projects/templates/types';
 import {
   categoryDisplayed,
   overallDisplayed,
@@ -273,11 +274,6 @@ export default function MyProject() {
   }, [project]);
 
   const states = useMemo<Map<string, PageState>>(() => toStates(pages), [pages]);
-  const pageByKey = useMemo(() => {
-    const m = new Map<string, any>();
-    pages.forEach((p) => m.set(p.pageKey, p));
-    return m;
-  }, [pages]);
 
   // Never show DRAFT demos to the customer — only SHARED/FEEDBACK/APPROVED.
   const visibleDemos = useMemo(
@@ -287,8 +283,7 @@ export default function MyProject() {
 
   // Customer rating writes ONLY clientApproval (field-scope enforced in UI;
   // the schema also limits the customer to read+update on ProjectPage).
-  async function rate(item: TrackedItem, next: number) {
-    const row = pageByKey.get(item.key);
+  async function rate(row: any, next: number) {
     if (!row) return;
     await updateProjectPage({ id: row.id, clientApproval: next });
     if (project) await loadProjectData(project.id);
@@ -507,24 +502,26 @@ export default function MyProject() {
         <ProgressBar label="Overall" value={overallDisplayed(template, states)} />
       </div>
 
-      {/* Page cards with settable rating */}
+      {/* Page cards with settable rating — row-driven (Decision B): iterate the
+          FETCHED ProjectPage rows grouped by category/sortOrder via the shared
+          helper, enriched with template blurb by pageKey. Custom rows (not in
+          the template) render with their row.label and a blank blurb. */}
       {CATEGORIES.map((c) => {
-        const items = template[c.key];
-        if (!items.length) return null;
+        const cards = cardsForCategory(pages, template, c.key);
+        if (!cards.length) return null;
         return (
           <div key={c.key} className="card">
             <h2 className="text-lg font-semibold mb-4">{c.label}</h2>
             <div className="grid sm:grid-cols-2 gap-3">
-              {items.map((item) => {
-                const row = pageByKey.get(item.key);
+              {cards.map(({ row, label, blurb }) => {
                 const approval = row?.clientApproval ?? 0;
                 return (
                   <div
-                    key={item.key}
+                    key={row.id}
                     className="bg-[#0e0e0e] rounded-lg p-3 border border-[rgba(255,255,255,0.04)] space-y-2"
                   >
-                    <div className="font-semibold text-sm">{item.label}</div>
-                    <div className="text-xs text-ace-muted leading-snug">{item.blurb}</div>
+                    <div className="font-semibold text-sm">{label}</div>
+                    <div className="text-xs text-ace-muted leading-snug">{blurb}</div>
                     <div className="flex items-center justify-between gap-2">
                       <DevStatusBadge value={row?.devStatus} />
                     </div>
@@ -533,7 +530,7 @@ export default function MyProject() {
                       <StarRating
                         value={approval}
                         editable={!!row}
-                        onChange={(next) => rate(item, next)}
+                        onChange={(next) => rate(row, next)}
                       />
                     </div>
                   </div>

@@ -30,6 +30,8 @@ import {
   getProject,
   listProjectPages,
   updateProjectPage,
+  createProjectPage,
+  deleteProjectPage,
   createProjectEvent,
   listProjectNotes,
   listProjectEvents,
@@ -75,7 +77,8 @@ import {
   sendContractSentNotification,
 } from '../utils/sendNotification';
 import { getTemplate } from '../projects/templates';
-import type { Category, TrackedItem } from '../projects/templates/types';
+import { cardsForCategory } from '../projects/pageCards';
+import type { Category } from '../projects/templates/types';
 import {
   categoryDisplayed,
   overallDisplayed,
@@ -247,25 +250,87 @@ export default function ProjectDetail() {
   }, [project]);
 
   const states = useMemo<Map<string, PageState>>(() => toStates(pages), [pages]);
-  const pageByKey = useMemo(() => {
-    const m = new Map<string, any>();
-    pages.forEach((p) => m.set(p.pageKey, p));
-    return m;
-  }, [pages]);
+
+  // Owner/manager gate for the add/remove page controls. Read once from the
+  // signed-in user's Cognito access-token `cognito:groups` claim.
+  const [isOwnerManager, setIsOwnerManager] = useState(false);
+  useEffect(() => {
+    (async () => {
+      try {
+        const session = await fetchAuthSession();
+        const groups = (session.tokens?.accessToken?.payload?.['cognito:groups'] as
+          | string[]
+          | undefined) || [];
+        setIsOwnerManager(groups.includes('owner') || groups.includes('manager'));
+      } catch (err) {
+        console.error('Failed to read Cognito groups', err);
+        setIsOwnerManager(false);
+      }
+    })();
+  }, []);
 
   const clientName = client
     ? `${client.firstName || ''} ${client.lastName || ''}`.trim() || client.organization || '—'
     : '—';
 
-  async function editPage(item: TrackedItem, patch: Record<string, any>, logMsg: string) {
-    const row = pageByKey.get(item.key);
+  // Row-driven page edit (Decision B): operate on the fetched ProjectPage row
+  // directly, then log a ProjectEvent and refetch.
+  async function editPageRow(row: any, patch: Record<string, any>, logMsg: string) {
     if (!row) return;
     await updateProjectPage({ id: row.id, ...patch });
     await createProjectEvent({
       projectId: id,
-      pageKey: item.key,
+      pageKey: row.pageKey,
       actor: 'admin',
       message: logMsg,
+    });
+    await refresh();
+  }
+
+  // Owner/manager-only: add a custom ProjectPage to a category. The new row is
+  // stamped owner=project.owner (TECH_DEBT #19) so the customer can read it,
+  // flagged isCustom, and given a unique pageKey + computed sortOrder.
+  async function addPage(
+    category: Category,
+    input: { label: string; href: string; baseline: number },
+  ) {
+    if (!id || !project) return;
+    const label = input.label.trim();
+    if (!label) return;
+    const pageKey = `custom-${slugify(label)}-${Date.now()}`;
+    const maxSort = pages
+      .filter((p) => p.category === category)
+      .reduce((max, p) => Math.max(max, p.sortOrder ?? 0), 0);
+    await createProjectPage({
+      projectId: id,
+      pageKey,
+      label,
+      category,
+      baseline: input.baseline,
+      href: input.href || null,
+      sortOrder: maxSort + 1,
+      isCustom: true,
+      owner: project.owner,
+    });
+    await createProjectEvent({
+      projectId: id,
+      pageKey,
+      actor: 'admin',
+      message: `added page "${label}"`,
+    });
+    await refresh();
+  }
+
+  // Owner/manager-only: remove a custom ProjectPage (isCustom rows only).
+  async function removePage(row: any) {
+    if (!id || !row) return;
+    if (!window.confirm(`Remove page "${row.label || row.pageKey}"?`)) return;
+    await deleteProjectPage(row.id);
+    await createProjectEvent({
+      projectId: id,
+      pageKey: row.pageKey,
+      actor: 'admin',
+      message: `removed page "${row.label || row.pageKey}"`,
     });
     await refresh();
   }
@@ -886,38 +951,60 @@ export default function ProjectDetail() {
 
       <div className="grid lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2 space-y-6">
-          {/* Page cards grouped by category */}
+          {/* Page cards grouped by category — row-driven (Decision B): iterate
+              the FETCHED ProjectPage rows via the shared helper (grouped by
+              category, ordered by sortOrder then createdAt), enriched with the
+              template blurb/metadata by pageKey. Custom rows (not in the
+              template) render with their row.label and a blank blurb. */}
           {CATEGORIES.map((c) => {
-            const items = template[c.key];
-            if (!items.length) return null;
+            const cards = cardsForCategory(pages, template, c.key);
+            // Render the section when there are rows OR when an owner/manager
+            // can add the first one.
+            if (!cards.length && !isOwnerManager) return null;
             return (
               <div key={c.key} className="card">
-                <h2 className="text-lg font-semibold mb-4">{c.label}</h2>
+                <div className="flex flex-wrap items-start justify-between gap-2 mb-4">
+                  <h2 className="text-lg font-semibold">{c.label}</h2>
+                  {isOwnerManager && (
+                    <AddPageForm onAdd={(input) => addPage(c.key, input)} />
+                  )}
+                </div>
                 <div className="grid sm:grid-cols-2 gap-3">
-                  {items.map((item) => {
-                    const row = pageByKey.get(item.key);
+                  {cards.map(({ row, label, blurb, href }) => {
                     const approval = row?.clientApproval ?? 0;
                     return (
                       <div
-                        key={item.key}
+                        key={row.id}
                         className="bg-[#0e0e0e] rounded-lg p-3 border border-[rgba(255,255,255,0.04)] space-y-2"
                       >
                         <div className="flex items-start justify-between gap-2">
                           <div className="min-w-0">
-                            <div className="font-semibold text-sm">{item.label}</div>
-                            <div className="text-xs text-ace-muted leading-snug">{item.blurb}</div>
+                            <div className="font-semibold text-sm">{label}</div>
+                            <div className="text-xs text-ace-muted leading-snug">{blurb}</div>
                           </div>
-                          {item.href && (
-                            <a
-                              href={item.href}
-                              target="_blank"
-                              rel="noreferrer"
-                              className="text-ace-cyan hover:text-white flex-shrink-0"
-                              title="Open preview"
-                            >
-                              <ExternalLink size={14} />
-                            </a>
-                          )}
+                          <div className="flex items-center gap-2 flex-shrink-0">
+                            {href && (
+                              <a
+                                href={href}
+                                target="_blank"
+                                rel="noreferrer"
+                                className="text-ace-cyan hover:text-white"
+                                title="Open preview"
+                              >
+                                <ExternalLink size={14} />
+                              </a>
+                            )}
+                            {isOwnerManager && row.isCustom && (
+                              <button
+                                type="button"
+                                onClick={() => removePage(row)}
+                                className="text-red-400 hover:text-red-300"
+                                title="Remove page"
+                              >
+                                <Trash2 size={14} />
+                              </button>
+                            )}
+                          </div>
                         </div>
 
                         <div className="flex items-center justify-between gap-2">
@@ -929,10 +1016,10 @@ export default function ProjectDetail() {
                           className="input py-1.5 text-xs"
                           value={row?.devStatus || 'NOT_STARTED'}
                           onChange={(e) =>
-                            editPage(
-                              item,
+                            editPageRow(
+                              row,
                               { devStatus: e.target.value },
-                              `set "${item.label}" to ${e.target.value.replace(/_/g, ' ').toLowerCase()}`,
+                              `set "${label}" to ${e.target.value.replace(/_/g, ' ').toLowerCase()}`,
                             )
                           }
                         >
@@ -949,10 +1036,10 @@ export default function ProjectDetail() {
                               type="checkbox"
                               checked={!!row?.lookComplete}
                               onChange={(e) =>
-                                editPage(
-                                  item,
+                                editPageRow(
+                                  row,
                                   { lookComplete: e.target.checked },
-                                  `marked look ${e.target.checked ? 'complete' : 'incomplete'} on "${item.label}"`,
+                                  `marked look ${e.target.checked ? 'complete' : 'incomplete'} on "${label}"`,
                                 )
                               }
                             />
@@ -963,10 +1050,10 @@ export default function ProjectDetail() {
                               type="checkbox"
                               checked={!!row?.featuresComplete}
                               onChange={(e) =>
-                                editPage(
-                                  item,
+                                editPageRow(
+                                  row,
                                   { featuresComplete: e.target.checked },
-                                  `marked features ${e.target.checked ? 'complete' : 'incomplete'} on "${item.label}"`,
+                                  `marked features ${e.target.checked ? 'complete' : 'incomplete'} on "${label}"`,
                                 )
                               }
                             />
@@ -2215,6 +2302,98 @@ function MaintenanceWindowRow({
           </button>
         </div>
       )}
+    </div>
+  );
+}
+
+// Owner/manager-only inline form to add a custom page to a category section.
+// Collects a required label, optional href, and a baseline (0-100, default 0).
+function AddPageForm({
+  onAdd,
+}: {
+  onAdd: (input: { label: string; href: string; baseline: number }) => void | Promise<void>;
+}) {
+  const [open, setOpen] = useState(false);
+  const [label, setLabel] = useState('');
+  const [href, setHref] = useState('');
+  const [baseline, setBaseline] = useState(0);
+  const [busy, setBusy] = useState(false);
+
+  function reset() {
+    setLabel('');
+    setHref('');
+    setBaseline(0);
+  }
+
+  async function submit() {
+    if (!label.trim() || busy) return;
+    setBusy(true);
+    try {
+      await onAdd({ label: label.trim(), href: href.trim(), baseline });
+      reset();
+      setOpen(false);
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  if (!open) {
+    return (
+      <button
+        type="button"
+        onClick={() => setOpen(true)}
+        className="text-xs px-2.5 py-1.5 rounded-lg bg-white/5 text-ace-muted hover:text-white flex items-center gap-1.5"
+      >
+        <Plus size={14} /> Add page
+      </button>
+    );
+  }
+
+  return (
+    <div className="w-full mt-2 bg-[#0e0e0e] rounded-lg p-3 border border-[rgba(255,255,255,0.06)] space-y-2">
+      <input
+        className="input py-1.5 text-xs"
+        placeholder="Page label (required)"
+        value={label}
+        onChange={(e) => setLabel(e.target.value)}
+      />
+      <input
+        className="input py-1.5 text-xs"
+        placeholder="Link / preview URL (optional)"
+        value={href}
+        onChange={(e) => setHref(e.target.value)}
+      />
+      <label className="block text-xs text-ace-muted">
+        Baseline (0-100)
+        <input
+          type="number"
+          min={0}
+          max={100}
+          className="input py-1.5 text-xs mt-1"
+          value={baseline}
+          onChange={(e) => setBaseline(Number(e.target.value) || 0)}
+        />
+      </label>
+      <div className="flex gap-2">
+        <button
+          type="button"
+          onClick={submit}
+          disabled={!label.trim() || busy}
+          className="text-xs px-3 py-1.5 rounded-lg bg-ace-cyan/15 text-ace-cyan border border-ace-cyan/20 disabled:opacity-40"
+        >
+          {busy ? 'Adding...' : 'Add'}
+        </button>
+        <button
+          type="button"
+          onClick={() => {
+            reset();
+            setOpen(false);
+          }}
+          className="text-xs px-3 py-1.5 rounded-lg bg-white/5 text-ace-muted hover:text-white"
+        >
+          Cancel
+        </button>
+      </div>
     </div>
   );
 }
