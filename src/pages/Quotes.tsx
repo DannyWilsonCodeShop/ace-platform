@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { listQuotes } from '../utils/api';
-import { FileText, Clock, ChevronRight } from 'lucide-react';
+import { openQuoteAsDeal } from '../projects/promoteQuote';
+import { FileText, Clock, ChevronRight, Briefcase } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 
 const statusBadge: Record<string, string> = {
@@ -14,9 +15,28 @@ const statusBadge: Record<string, string> = {
 };
 
 export default function Quotes() {
+  const navigate = useNavigate();
   const [quotes, setQuotes] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState('all');
+  const [opening, setOpening] = useState<string | null>(null);
+
+  // "Open as deal": find-or-create the client, link Quote.clientId, and route
+  // to the Tab-1 client workspace. Creates no Project (design §2).
+  const handleOpenAsDeal = async (e: React.MouseEvent, quote: any) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setOpening(quote.id);
+    try {
+      const { clientId } = await openQuoteAsDeal(quote);
+      navigate('/clients/' + clientId);
+    } catch (err: any) {
+      console.error(err);
+      alert('Could not open this quote as a deal: ' + (err?.message || 'Unknown error'));
+    } finally {
+      setOpening(null);
+    }
+  };
 
   useEffect(() => {
     async function load() {
@@ -81,7 +101,17 @@ export default function Quotes() {
                     )}
                   </div>
                 </div>
-                <ChevronRight size={18} className="text-ace-muted" />
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={(e) => handleOpenAsDeal(e, quote)}
+                    disabled={opening === quote.id}
+                    className="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-full bg-ace-cyan/15 text-ace-cyan border border-ace-cyan/20 hover:bg-ace-cyan/25 transition-colors disabled:opacity-50"
+                  >
+                    <Briefcase size={13} />
+                    {opening === quote.id ? 'Opening…' : 'Open as deal'}
+                  </button>
+                  <ChevronRight size={18} className="text-ace-muted" />
+                </div>
               </div>
             </Link>
           ))}

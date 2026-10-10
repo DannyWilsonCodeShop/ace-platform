@@ -1,9 +1,9 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { getQuote, updateQuote, listCampaigns, listCampaignStepsByCampaign } from '../utils/api';
-import { promoteQuote } from '../projects/promoteQuote';
+import { openQuoteAsDeal } from '../projects/promoteQuote';
 import { enrollClient, sendCampaignStep } from '../campaigns/campaigns';
-import { ArrowLeft, MapPin, Music, Mic, Users, DollarSign, Brain, CheckCircle, XCircle, Calendar, Clock } from 'lucide-react';
+import { ArrowLeft, MapPin, Music, Mic, Users, DollarSign, Brain, CheckCircle, XCircle, Calendar, Clock, Briefcase } from 'lucide-react';
 import { format, parseISO } from 'date-fns';
 
 const statusOptions = ['new', 'reviewed', 'quoted', 'accepted', 'declined', 'expired'];
@@ -73,20 +73,21 @@ export default function QuoteDetail() {
     }
   };
 
-  const handleAccept = async () => {
+  // "Open as deal" is the implicit-conversion spine (design §2): find-or-create
+  // the Client, link Quote.clientId, set stage='quote_requested', and route to
+  // the Tab-1 client workspace. It creates NO Project (that happens later in
+  // the workspace). Accept is wired to the same action — it is no longer the
+  // project-creating step.
+  const handleOpenAsDeal = async () => {
     if (!quote) return;
-    if (quote.status === 'accepted') {
-      alert('This quote has already been accepted and promoted to a project.');
-      return;
-    }
     setSaving(true);
     try {
-      const { projectId } = await promoteQuote(quote);
-      setQuote({ ...quote, status: 'accepted' });
-      navigate('/projects/' + projectId);
+      const { clientId } = await openQuoteAsDeal(quote);
+      setQuote({ ...quote, clientId });
+      navigate('/clients/' + clientId);
     } catch (err: any) {
       console.error(err);
-      alert('Could not accept this quote: ' + (err?.message || 'Unknown error'));
+      alert('Could not open this quote as a deal: ' + (err?.message || 'Unknown error'));
     } finally {
       setSaving(false);
     }
@@ -312,7 +313,11 @@ export default function QuoteDetail() {
               className="w-full flex items-center gap-2 justify-center px-4 py-2.5 rounded-lg bg-ace-purple/15 text-ace-purple border border-ace-purple/20 text-sm">
               <DollarSign size={16}/> Send Quote to Client
             </button>
-            <button onClick={handleAccept} disabled={saving || quote.status === 'accepted'}
+            <button onClick={handleOpenAsDeal} disabled={saving}
+              className="w-full flex items-center gap-2 justify-center px-4 py-2.5 rounded-lg bg-ace-cyan/15 text-ace-cyan border border-ace-cyan/20 text-sm disabled:opacity-50">
+              <Briefcase size={16}/> {saving ? 'Opening...' : 'Open as deal'}
+            </button>
+            <button onClick={handleOpenAsDeal} disabled={saving}
               className="w-full flex items-center gap-2 justify-center px-4 py-2.5 rounded-lg bg-green-500/15 text-green-400 border border-green-500/20 text-sm disabled:opacity-50">
               <CheckCircle size={16}/> {saving ? 'Accepting...' : 'Accept'}
             </button>
