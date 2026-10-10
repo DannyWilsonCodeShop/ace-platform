@@ -10,18 +10,16 @@
  *   3. link Client.cognitoUserId to the customer's Cognito identity and bump
  *      Client.totalProjects;
  *   4. create the Project (status 'contract_pending') from the 'app-build'
- *      template, STAMPING OWNERSHIP to the customer so allow.owner() resolves
- *      when the customer signs in, then seed one ProjectPage per template item;
+ *      template, then seed one ProjectPage per template item;
  *   5. set Quote.status = 'accepted'.
  *
- * OWNERSHIP (design doc §8 / Green-Casting TECH_DEBT #19): the new models use
- * Amplify Gen 2's DEFAULT implicit owner field named `owner`, stored as
- * '<sub>::<username>'. allow.owner() only matches when `owner` is STAMPED AT
- * CREATE. The admin running promotion is NOT the customer, so we must pass the
- * customer's Cognito identity as the `owner` on Project and each seeded
- * ProjectPage. The create-user Lambda returns the customer's Cognito Username
- * (email-based) as `userId`; we stamp that. If the deployed pool ever issues a
- * distinct sub/username pair, stamp '<sub>::<username>' here instead.
+ * OWNERSHIP (design doc §8 / Green-Casting TECH_DEBT #1): the `owner` field
+ * auto-populates to the admin mutation caller — do NOT pass `owner` into any
+ * CreateXInput (it is not a defined input field, and passing it is what broke
+ * quote Accept with 'field not defined for input object type
+ * CreateProjectInput'). Customer reads of their own project are carried by the
+ * `allow.groups(['customer']).to(['read'])` grant (TD-1), not by allow.owner()
+ * stamping at create.
  *
  * Guards against double-promotion: if the quote is already 'accepted' the
  * helper throws before mutating anything.
@@ -37,11 +35,55 @@ import {
 } from '../utils/api';
 import { createPortalUser } from '../utils/createPortalUser';
 import { getTemplate } from './templates';
-import type { TrackedItem } from './templates/types';
+import type { ProjectTemplate, TrackedItem } from './templates/types';
 
 interface PromoteResult {
   projectId: string;
   clientId: string;
+}
+
+/**
+ * Pure builder for the createProject input used by the promotion path.
+ * Extracted so it can be unit-tested without any network. MUST NOT include an
+ * `owner` key — `owner` is not a defined CreateProjectInput field (TD-1).
+ */
+export function buildProjectInput(args: {
+  quoteId: string;
+  clientId: string;
+  name: string;
+  template: ProjectTemplate;
+  quotedAmount: number | null;
+}): Record<string, any> {
+  const { quoteId, clientId, name, template, quotedAmount } = args;
+  return {
+    quoteId,
+    clientId,
+    name,
+    status: 'contract_pending',
+    templateKey: template.key,
+    launchStart: template.launch.start,
+    launchTarget: template.launch.target,
+    backendCeiling: template.backendCeiling,
+    quotedAmount: quotedAmount != null ? Number(quotedAmount) : null,
+  };
+}
+
+/**
+ * Pure builder for a single createProjectPage input seeded from a template
+ * item. Like buildProjectInput, it MUST NOT include an `owner` key (TD-1).
+ */
+export function buildProjectPageInput(
+  projectId: string,
+  item: TrackedItem,
+): Record<string, any> {
+  return {
+    projectId,
+    pageKey: item.key,
+    label: item.label,
+    category: item.category,
+    baseline: item.baseline,
+    href: item.href || null,
+  };
 }
 
 export async function promoteQuote(quote: any): Promise<PromoteResult> {
@@ -91,7 +133,8 @@ export async function promoteQuote(quote: any): Promise<PromoteResult> {
   }
 
   // The create-user Lambda returns the Cognito Username (email-based) as
-  // userId. This is the customer's identity we stamp as `owner`.
+  // userId. This links the Client to the portal account (step 3 below); it is
+  // NOT stamped as `owner` on any create input (TD-1).
   const cognitoUserId = portal.userId || email;
 
   // --- (3) link the Client to the portal account + bump totalProjects ---
@@ -101,52 +144,40 @@ export async function promoteQuote(quote: any): Promise<PromoteResult> {
     totalProjects: (client.totalProjects || 0) + 1,
   });
 
-  // --- (4) create the Project (contract_pending) with ownership stamped ---
+  // --- (4) create the Project (contract_pending) ---
   const template = getTemplate('app-build');
   const projectName =
     quote.organization ||
     quote.projectDescription ||
     `${contactName} project`;
 
-  const project = await createProject({
-    quoteId: quote.id,
-    clientId: client.id,
-    name: projectName,
-    status: 'contract_pending',
-    templateKey: template.key,
-    launchStart: template.launch.start,
-    launchTarget: template.launch.target,
-    backendCeiling: template.backendCeiling,
-    quotedAmount:
-      quote.quotedAmount != null ? Number(quote.quotedAmount) : null,
-    // STAMP OWNERSHIP — so the customer can read their own project (design §8).
-    owner: cognitoUserId,
-  });
+  const project = await createProject(
+    buildProjectInput({
+      quoteId: quote.id,
+      clientId: client.id,
+      name: projectName,
+      template,
+      quotedAmount: quote.quotedAmount != null ? Number(quote.quotedAmount) : null,
+    }),
+  );
   if (!project?.id) throw new Error('Failed to create the project record.');
 
-  // seed one ProjectPage per template item (frontend/backend/middleware)
+  // seed one ProjectPage per template item (frontend/backend/middleware).
+  // Customer reads are carried by the customer group-read grant (TD-1); no
+  // `owner` is stamped on these create inputs.
   const items: TrackedItem[] = [
     ...template.frontend,
     ...template.backend,
     ...template.middleware,
   ];
   for (const item of items) {
-    await createProjectPage({
-      projectId: project.id,
-      pageKey: item.key,
-      label: item.label,
-      category: item.category,
-      baseline: item.baseline,
-      href: item.href || null,
-      // stamp ownership on each customer-readable child too
-      owner: cognitoUserId,
-    });
+    await createProjectPage(buildProjectPageInput(project.id, item));
   }
 
   // TODO(P2): seed starter ActionItems at promotion. Map the template MIDDLEWARE
   // items that carry owner/priority/blocks into ActionItem rows (owner->owner_role,
-  // priority->priority, blocks->blocks, label->title, done:false) and stamp
-  // owner=cognitoUserId. Deferred for FEAT-004: it changes the promotion contract
+  // priority->priority, blocks->blocks, label->title, done:false) — without
+  // passing `owner` on the create input (TD-1). Deferred for FEAT-004: it changes the promotion contract
   // that P0/P1 (FEAT-002/003) intentionally left as a pure ProjectPage seed, so
   // it is NOT trivially low-risk; promoteQuote.ts stays unchanged behaviorally.
 

@@ -382,7 +382,6 @@ export default function ProjectDetail() {
       href: input.href || null,
       sortOrder: maxSort + 1,
       isCustom: true,
-      owner: project.owner,
     });
     await createProjectEvent({
       projectId: id,
@@ -438,8 +437,9 @@ export default function ProjectDetail() {
     await refresh();
   }
 
-  // Owner/manager-only: add an action item. Stamped owner=project.owner
-  // (TECH_DEBT #19) so the customer can read it; given a computed sortOrder.
+  // Owner/manager-only: add an action item. Customer reads are carried by the
+  // customer group-read grant (TD-1), not an owner stamp; given a computed
+  // sortOrder. Do NOT pass `owner` on the create input (not a defined field).
   async function addActionItem(input: {
     title: string;
     owner_role: 'client' | 'together' | 'dev';
@@ -460,7 +460,6 @@ export default function ProjectDetail() {
       dueDate: input.dueDate || null,
       done: false,
       sortOrder: maxSort + 1,
-      owner: project.owner,
     });
     await createProjectEvent({
       projectId: id,

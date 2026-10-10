@@ -265,12 +265,14 @@ const schema = a.schema({
 
   // === Project (the software-build lifecycle — new, alongside Gig) ===
   //
-  // OWNERSHIP-STAMPING PITFALL (design doc §8 / Green-Casting TECH_DEBT #19):
-  // allow.owner() below ONLY matches when the owner field is STAMPED at record
-  // creation. The quote->Project promotion step (FEAT-002) MUST set the owner
-  // to the customer's Cognito identity on this Project (and on every child row
-  // a customer reads) or the customer will not be able to read their own
-  // project in the portal. Do not rely on allow.owner() resolving by itself.
+  // OWNERSHIP (design doc §8 / Green-Casting TECH_DEBT #1 / TD-1):
+  // the implicit `owner` field AUTO-POPULATES to the admin that runs the create
+  // mutation — it is NOT a defined CreateXInput field, so do NOT pass `owner`
+  // into any CreateProjectInput / CreateProjectPageInput / CreateActionItemInput
+  // (passing it is what broke quote Accept with 'field not defined for input
+  // object type CreateProjectInput'). Customer reads of their own project (and
+  // its child rows) are carried by the `allow.groups(['customer']).to(['read'])`
+  // grant below (TD-1), not by allow.owner() stamping at create time.
   Project: a.model({
     quoteId: a.string(),                 // provenance: the Quote it was promoted from
     clientId: a.string().required(),
