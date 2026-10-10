@@ -41,7 +41,10 @@ export async function uploadVoice(
 ): Promise<string> {
   const { uploadData } = await import('aws-amplify/storage');
   const slug = pageKey || 'note';
-  const path = `project/${projectId}/notes/${slug}-${Date.now()}.webm`;
+  // Prefix is project-notes/<projectId>/... (not project/<id>/notes/...): the
+  // storage rule must have its wildcard right after the top segment, so the
+  // projectId lives under a single project-notes/* prefix. Access is group-based.
+  const path = `project-notes/${projectId}/${slug}-${Date.now()}.webm`;
   await uploadData({
     path,
     data: blob,

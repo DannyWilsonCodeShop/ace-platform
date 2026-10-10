@@ -110,7 +110,9 @@ export async function uploadDemoImage(
   const blob = await downscaleImage(file);
   const { uploadData } = await import('aws-amplify/storage');
   const safeSlug = slugify(slug);
-  const path = `project/${projectId}/demos/${safeSlug}-${Date.now()}.${ext}`;
+  // Prefix is project-demos/<projectId>/... (not project/<id>/demos/...) so the
+  // storage rule's wildcard sits right after the top segment. Group-based access.
+  const path = `project-demos/${projectId}/${safeSlug}-${Date.now()}.${ext}`;
   await uploadData({
     path,
     data: blob,
