@@ -109,6 +109,7 @@ import {
   materializePlan,
 } from '../projects/templates/payment-plans';
 import { toStates } from './Projects';
+import AppHealthCard from '../platform/monitoring/AppHealthCard';
 
 /** Demo kinds mirror the Demo model enum. */
 const DEMO_KINDS: { v: 'CHOICE_BOARD' | 'PROTOTYPE' | 'PREVIEW_URL' | 'DECK'; label: string }[] = [
@@ -1554,6 +1555,11 @@ export default function ProjectDetail({ projectId }: { projectId?: string } = {}
               </div>
             )}
           </div>
+
+          {/* App health — mock-fed (FEAT-003). Renders not_provisioned for
+              every real client today; binds strictly to the mock monitoring
+              source, so no live AWS SDK is pulled into the bundle. */}
+          <AppHealthCard />
 
           {/* Payment plan */}
           <div className="card">
