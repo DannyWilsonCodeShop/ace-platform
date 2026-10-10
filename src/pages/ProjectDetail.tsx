@@ -11,6 +11,7 @@
  */
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useParams, useNavigate } from 'react-router-dom';
 import { format, parseISO } from 'date-fns';
 import {
@@ -189,71 +190,128 @@ export default function ProjectDetail() {
   const [itemsByPlan, setItemsByPlan] = useState<Record<string, any[]>>({});
   // Maintenance windows keyed by planId, loaded alongside the plans.
   const [windowsByPlan, setWindowsByPlan] = useState<Record<string, any[]>>({});
-  const [loading, setLoading] = useState(true);
+  const queryClient = useQueryClient();
 
+  // Decision D (FEAT-004): per-project reads are driven by @tanstack/react-query.
+  // The combined loader returns ALL slices in one object; a sync effect copies
+  // each slice into the existing useState values so the downstream render and
+  // the row-driven handlers stay untouched. Mutations invalidate ['project', id]
+  // (via the `refresh` wrapper below) so cards, to-do, and progress recompute
+  // together off the same query data.
+  const projectQuery = useQuery({
+    queryKey: ['project', id],
+    enabled: !!id,
+    queryFn: async () => {
+      const pid = id!;
+      const proj = await getProject(pid);
+      const [pg, ns, ev, mt, dm, ct, pl, ai] = await Promise.all([
+        listProjectPages(pid),
+        listProjectNotes(pid),
+        listProjectEvents(pid),
+        listMeetings(pid),
+        listDemos(pid),
+        getContract(pid),
+        listMaintenancePlansByProject(pid),
+        listActionItems(pid),
+      ]);
+
+      // Invoices for this project (listInvoices has no by-project query, so
+      // filter client-side). Tolerate failure with [].
+      let invoices: any[] = [];
+      try {
+        const allInvoices = await listInvoices();
+        invoices = (allInvoices || []).filter((inv: any) => inv.projectId === pid);
+      } catch (err) {
+        console.error('Failed to load invoices', err);
+      }
+
+      // Each maintenance plan's windows so the admin can manage them inline.
+      let windowsByPlan: Record<string, any[]> = {};
+      try {
+        const entries = await Promise.all(
+          (pl || []).map(
+            async (p: any) => [p.id, await listMaintenanceWindowsByPlan(p.id)] as const,
+          ),
+        );
+        windowsByPlan = Object.fromEntries(entries);
+      } catch (err) {
+        console.error('Failed to load maintenance windows', err);
+      }
+
+      // Payment plans + each plan's items (schedule timeline, paid-vs-owed).
+      let paymentPlans: any[] = [];
+      let itemsByPlan: Record<string, any[]> = {};
+      try {
+        const pp = await listPaymentPlansByProject(pid);
+        paymentPlans = pp || [];
+        const itemEntries = await Promise.all(
+          (pp || []).map(
+            async (p: any) => [p.id, await listPaymentPlanItemsByPlan(p.id)] as const,
+          ),
+        );
+        itemsByPlan = Object.fromEntries(itemEntries);
+      } catch (err) {
+        console.error('Failed to load payment plans', err);
+      }
+
+      let client: any = null;
+      if (proj?.clientId) {
+        try {
+          client = await getClient(proj.clientId);
+        } catch (err) {
+          console.error('Failed to load client', err);
+        }
+      }
+
+      return {
+        project: proj,
+        pages: pg,
+        notes: ns,
+        events: ev,
+        meetings: mt,
+        demos: dm,
+        contracts: ct,
+        plans: pl,
+        actionItems: ai,
+        invoices,
+        windowsByPlan,
+        paymentPlans,
+        itemsByPlan,
+        client,
+      };
+    },
+  });
+
+  // Mirror query data into the existing useState slices so the rest of the
+  // component (render + handlers) is unchanged.
+  const queryData = projectQuery.data;
+  useEffect(() => {
+    if (!queryData) return;
+    setProject(queryData.project);
+    setPages(queryData.pages);
+    setNotes(queryData.notes);
+    setEvents(queryData.events);
+    setMeetings(queryData.meetings);
+    setDemos(queryData.demos);
+    setContracts(queryData.contracts);
+    setPlans(queryData.plans);
+    setActionItems(queryData.actionItems);
+    setInvoices(queryData.invoices);
+    setWindowsByPlan(queryData.windowsByPlan);
+    setPaymentPlans(queryData.paymentPlans);
+    setItemsByPlan(queryData.itemsByPlan);
+    setClient(queryData.client);
+  }, [queryData]);
+
+  const loading = projectQuery.isLoading;
+
+  // Mutations call `await refresh()` to re-pull; with react-query this simply
+  // invalidates ['project', id] so the single query refetches and every derived
+  // view (cards, to-do, progress) recomputes together.
   const refresh = useCallback(async () => {
     if (!id) return;
-    const proj = await getProject(id);
-    setProject(proj);
-    const [pg, ns, ev, mt, dm, ct, pl, ai] = await Promise.all([
-      listProjectPages(id),
-      listProjectNotes(id),
-      listProjectEvents(id),
-      listMeetings(id),
-      listDemos(id),
-      getContract(id),
-      listMaintenancePlansByProject(id),
-      listActionItems(id),
-    ]);
-    setPages(pg);
-    setNotes(ns);
-    setEvents(ev);
-    setMeetings(mt);
-    setDemos(dm);
-    setContracts(ct);
-    setPlans(pl);
-    setActionItems(ai);
-    // Load invoices for this project so the admin can mint a Checkout payment
-    // link (listInvoices has no by-project query, so filter client-side).
-    try {
-      const allInvoices = await listInvoices();
-      setInvoices((allInvoices || []).filter((inv: any) => inv.projectId === id));
-    } catch (err) {
-      console.error('Failed to load invoices', err);
-    }
-    // Load each plan's windows so the admin can manage them inline.
-    try {
-      const entries = await Promise.all(
-        (pl || []).map(async (p: any) => [p.id, await listMaintenanceWindowsByPlan(p.id)] as const),
-      );
-      setWindowsByPlan(Object.fromEntries(entries));
-    } catch (err) {
-      console.error('Failed to load maintenance windows', err);
-    }
-    // Load payment plans + each plan's items so the admin can render the
-    // schedule timeline and paid-vs-owed totals.
-    try {
-      const pp = await listPaymentPlansByProject(id);
-      setPaymentPlans(pp || []);
-      const itemEntries = await Promise.all(
-        (pp || []).map(async (p: any) => [p.id, await listPaymentPlanItemsByPlan(p.id)] as const),
-      );
-      setItemsByPlan(Object.fromEntries(itemEntries));
-    } catch (err) {
-      console.error('Failed to load payment plans', err);
-    }
-    if (proj?.clientId) {
-      try {
-        setClient(await getClient(proj.clientId));
-      } catch (err) {
-        console.error('Failed to load client', err);
-      }
-    }
-  }, [id]);
-
-  useEffect(() => {
-    refresh().catch(console.error).finally(() => setLoading(false));
-  }, [refresh]);
+    await queryClient.invalidateQueries({ queryKey: ['project', id] });
+  }, [id, queryClient]);
 
   const template = useMemo(() => {
     const t = getTemplate(project?.templateKey);

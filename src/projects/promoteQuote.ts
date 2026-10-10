@@ -143,6 +143,13 @@ export async function promoteQuote(quote: any): Promise<PromoteResult> {
     });
   }
 
+  // TODO(P2): seed starter ActionItems at promotion. Map the template MIDDLEWARE
+  // items that carry owner/priority/blocks into ActionItem rows (owner->owner_role,
+  // priority->priority, blocks->blocks, label->title, done:false) and stamp
+  // owner=cognitoUserId. Deferred for FEAT-004: it changes the promotion contract
+  // that P0/P1 (FEAT-002/003) intentionally left as a pure ProjectPage seed, so
+  // it is NOT trivially low-risk; promoteQuote.ts stays unchanged behaviorally.
+
   // --- (5) mark the quote accepted ---
   await updateQuote({ id: quote.id, status: 'accepted' });
 

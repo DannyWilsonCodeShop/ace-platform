@@ -18,6 +18,7 @@
  */
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { fetchAuthSession } from 'aws-amplify/auth';
 import { format, parseISO } from 'date-fns';
 import {
@@ -147,80 +148,128 @@ export default function MyProject() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const loadProjectData = useCallback(async (projectId: string) => {
-    const [pg, ns, mt, dm, ct] = await Promise.all([
-      listProjectPages(projectId),
-      listProjectNotes(projectId),
-      listMeetings(projectId),
-      listDemos(projectId),
-      getContract(projectId),
-    ]);
-    setPages(pg);
-    setNotes(ns);
-    setMeetings(mt);
-    setDemos(dm);
-    setContracts(ct);
+  const queryClient = useQueryClient();
 
-    // Action items (to-do list). Tolerate a failure with [] like the other
-    // portal reads — reads may depend on the promotion owner-stamp resolving.
-    try {
-      setActionItems(await listActionItems(projectId));
-    } catch (err) {
-      console.error('Failed to load action items', err);
-      setActionItems([]);
-    }
+  // Decision D (FEAT-004): the per-project customer reads are driven by
+  // @tanstack/react-query, keyed by ['my-project', projectId] and enabled once
+  // resolve() has set the project. The combined loader returns ALL slices in one
+  // object; a sync effect copies each slice into the existing useState values so
+  // the render and the customer mutation handlers stay untouched. Mutations call
+  // `loadProjectData(project.id)` which (below) invalidates this key so cards,
+  // to-do, and progress recompute together off the same query data.
+  const projectDataQuery = useQuery({
+    queryKey: ['my-project', project?.id],
+    enabled: !!project?.id,
+    queryFn: async () => {
+      const projectId = project!.id as string;
+      const [pg, ns, mt, dm, ct] = await Promise.all([
+        listProjectPages(projectId),
+        listProjectNotes(projectId),
+        listMeetings(projectId),
+        listDemos(projectId),
+        getContract(projectId),
+      ]);
 
-    // Maintenance plan + the customer's own windows. Plan reads may depend on
-    // the promotion owner-stamp resolving (same caveat as Project/Contract
-    // reads), so tolerate a failure with a graceful empty state rather than
-    // throwing — mirroring how the rest of this page handles missing data.
-    try {
-      const myPlans = await listMaintenancePlansByProject(projectId);
-      // Prefer an active plan; otherwise show the most recent one.
-      const active = (myPlans || []).find((p: any) => p.status === 'active');
-      const chosen = active
-        || (myPlans || []).sort(
-          (a: any, b: any) =>
-            new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime(),
-        )[0]
-        || null;
-      setPlan(chosen);
-      if (chosen) {
-        const wins = await listMaintenanceWindowsByPlan(chosen.id);
-        setMaintenanceWindows(wins || []);
-      } else {
-        setMaintenanceWindows([]);
+      // Action items (to-do list). Tolerate a failure with [] like the other
+      // portal reads — reads may depend on the promotion owner-stamp resolving.
+      let actionItems: any[] = [];
+      try {
+        actionItems = await listActionItems(projectId);
+      } catch (err) {
+        console.error('Failed to load action items', err);
+        actionItems = [];
       }
-    } catch (err) {
-      console.error('Failed to load maintenance plan', err);
-      setPlan(null);
-      setMaintenanceWindows([]);
-    }
 
-    // Read-only payment plan: prefer an active plan, else the most recent one,
-    // and load its items for the schedule timeline. No writes here (TD-1).
-    try {
-      const myPlans = await listPaymentPlansByProject(projectId);
-      const active = (myPlans || []).find((p: any) => p.status === 'active');
-      const chosen = active
-        || (myPlans || []).sort(
-          (a: any, b: any) =>
-            new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime(),
-        )[0]
-        || null;
-      setPaymentPlan(chosen);
-      if (chosen) {
-        const its = await listPaymentPlanItemsByPlan(chosen.id);
-        setPaymentPlanItems(its || []);
-      } else {
-        setPaymentPlanItems([]);
+      // Maintenance plan + the customer's own windows. Plan reads may depend on
+      // the promotion owner-stamp resolving (same caveat as Project/Contract
+      // reads), so tolerate a failure with a graceful empty state rather than
+      // throwing — mirroring how the rest of this page handles missing data.
+      let plan: any | null = null;
+      let maintenanceWindows: any[] = [];
+      try {
+        const myPlans = await listMaintenancePlansByProject(projectId);
+        // Prefer an active plan; otherwise show the most recent one.
+        const active = (myPlans || []).find((p: any) => p.status === 'active');
+        plan = active
+          || (myPlans || []).sort(
+            (a: any, b: any) =>
+              new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime(),
+          )[0]
+          || null;
+        if (plan) {
+          const wins = await listMaintenanceWindowsByPlan(plan.id);
+          maintenanceWindows = wins || [];
+        }
+      } catch (err) {
+        console.error('Failed to load maintenance plan', err);
+        plan = null;
+        maintenanceWindows = [];
       }
-    } catch (err) {
-      console.error('Failed to load payment plan', err);
-      setPaymentPlan(null);
-      setPaymentPlanItems([]);
-    }
-  }, []);
+
+      // Read-only payment plan: prefer an active plan, else the most recent one,
+      // and load its items for the schedule timeline. No writes here (TD-1).
+      let paymentPlan: any | null = null;
+      let paymentPlanItems: any[] = [];
+      try {
+        const myPlans = await listPaymentPlansByProject(projectId);
+        const active = (myPlans || []).find((p: any) => p.status === 'active');
+        paymentPlan = active
+          || (myPlans || []).sort(
+            (a: any, b: any) =>
+              new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime(),
+          )[0]
+          || null;
+        if (paymentPlan) {
+          const its = await listPaymentPlanItemsByPlan(paymentPlan.id);
+          paymentPlanItems = its || [];
+        }
+      } catch (err) {
+        console.error('Failed to load payment plan', err);
+        paymentPlan = null;
+        paymentPlanItems = [];
+      }
+
+      return {
+        pages: pg,
+        notes: ns,
+        meetings: mt,
+        demos: dm,
+        contracts: ct,
+        actionItems,
+        plan,
+        maintenanceWindows,
+        paymentPlan,
+        paymentPlanItems,
+      };
+    },
+  });
+
+  // Mirror query data into the existing useState slices so the rest of the
+  // component (render + handlers) is unchanged.
+  const projectData = projectDataQuery.data;
+  useEffect(() => {
+    if (!projectData) return;
+    setPages(projectData.pages);
+    setNotes(projectData.notes);
+    setMeetings(projectData.meetings);
+    setDemos(projectData.demos);
+    setContracts(projectData.contracts);
+    setActionItems(projectData.actionItems);
+    setPlan(projectData.plan);
+    setMaintenanceWindows(projectData.maintenanceWindows);
+    setPaymentPlan(projectData.paymentPlan);
+    setPaymentPlanItems(projectData.paymentPlanItems);
+  }, [projectData]);
+
+  // Customer mutations call `await loadProjectData(project.id)` to re-pull; with
+  // react-query this invalidates ['my-project', id] so the single query refetches
+  // and every derived view (cards, to-do, progress) recomputes together.
+  const loadProjectData = useCallback(
+    async (projectId: string) => {
+      await queryClient.invalidateQueries({ queryKey: ['my-project', projectId] });
+    },
+    [queryClient],
+  );
 
   const resolve = useCallback(async () => {
     // Resolve the signed-in customer's Cognito identity.
@@ -260,8 +309,8 @@ export default function MyProject() {
       (a: any, b: any) => new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime(),
     )[0];
     setProject(proj);
-
-    await loadProjectData(proj.id);
+    // Per-project reads are driven by the ['my-project', proj.id] useQuery,
+    // which becomes enabled as soon as `project` is set here — no manual load.
 
     // Invoices scoped to this customer / project.
     try {
@@ -274,7 +323,7 @@ export default function MyProject() {
     } catch (err) {
       console.error('Failed to load invoices', err);
     }
-  }, [loadProjectData]);
+  }, []);
 
   useEffect(() => {
     resolve()
