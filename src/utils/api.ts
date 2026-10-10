@@ -52,6 +52,7 @@ export async function listQuotes() {
           pageCount timeline features designDirection referenceSites
           digitalBudget ongoingSupport digitalNotes
           aiAnalysis internalNotes assignedTo quotedAmount finalAmount source
+          platform clientId
         }
       }
     }
@@ -73,6 +74,7 @@ export async function getQuote(id: string) {
         pageCount timeline features designDirection referenceSites
         digitalBudget ongoingSupport digitalNotes
         aiAnalysis internalNotes assignedTo quotedAmount finalAmount source
+        platform clientId
       }
     }
   `, { id });
@@ -83,7 +85,7 @@ export async function updateQuote(input: Record<string, any>) {
   const data = await graphql(`
     mutation UpdateQuote($input: UpdateQuoteInput!) {
       updateQuote(input: $input) {
-        id status internalNotes quotedAmount
+        id status internalNotes quotedAmount platform clientId
       }
     }
   `, { input });
@@ -144,7 +146,9 @@ export async function listClients() {
       listClients(limit: 100) {
         items {
           id firstName lastName email phone organization
-          totalGigs totalRevenue isRepeatClient notes tags createdAt
+          totalGigs totalProjects totalRevenue isRepeatClient notes tags
+          cognitoUserId stage demoAppDetails demoRequirements expectedDemoDate
+          hasMonthlyMaintenance createdAt
         }
       }
     }
@@ -168,6 +172,7 @@ export async function getClient(id: string) {
         id firstName lastName email phone organization
         totalGigs totalProjects totalRevenue isRepeatClient
         notes tags cognitoUserId createdAt
+        stage demoAppDetails demoRequirements expectedDemoDate hasMonthlyMaintenance
       }
     }
   `, { id });
@@ -179,6 +184,7 @@ export async function updateClient(input: Record<string, any>) {
     mutation UpdateClient($input: UpdateClientInput!) {
       updateClient(input: $input) {
         id cognitoUserId totalProjects
+        stage demoAppDetails demoRequirements expectedDemoDate hasMonthlyMaintenance
       }
     }
   `, { input });
@@ -737,6 +743,7 @@ const PAYMENT_PLAN_FIELDS = `
   ownershipTransfersAtFullPayment minimumPaymentsOwed minimumAmountOwed
   licenseEndsOnDefault stripeScheduleId stripeSubscriptionId
   installmentCount installmentsPaidCount minimumMet defaulted notes
+  dealType buyoutAmount leaseMonthlyAmount leaseTermMonths purchaseOptionAmount
   owner createdAt updatedAt
 `;
 
@@ -812,4 +819,93 @@ export async function updatePaymentPlanItem(input: Record<string, any>) {
     }
   `, { input });
   return data?.updatePaymentPlanItem;
+}
+
+// === ContactAttempt queries (Tab 1 contact log) ===
+const CONTACT_ATTEMPT_FIELDS = `
+  id clientId quoteId method outcome occurredAt notes createdBySub createdAt updatedAt
+`;
+
+export async function createContactAttempt(input: Record<string, any>) {
+  const data = await graphql(`
+    mutation CreateContactAttempt($input: CreateContactAttemptInput!) {
+      createContactAttempt(input: $input) { ${CONTACT_ATTEMPT_FIELDS} }
+    }
+  `, { input });
+  return data?.createContactAttempt;
+}
+
+export async function listContactAttemptsByClient(clientId: string) {
+  const data = await graphql(`
+    query ListContactAttempts($filter: ModelContactAttemptFilterInput) {
+      listContactAttempts(filter: $filter, limit: 200) {
+        items { ${CONTACT_ATTEMPT_FIELDS} }
+      }
+    }
+  `, { filter: { clientId: { eq: clientId } } });
+  return data?.listContactAttempts?.items || [];
+}
+
+export async function updateContactAttempt(input: Record<string, any>) {
+  const data = await graphql(`
+    mutation UpdateContactAttempt($input: UpdateContactAttemptInput!) {
+      updateContactAttempt(input: $input) { ${CONTACT_ATTEMPT_FIELDS} }
+    }
+  `, { input });
+  return data?.updateContactAttempt;
+}
+
+export async function deleteContactAttempt(id: string) {
+  const data = await graphql(`
+    mutation DeleteContactAttempt($input: DeleteContactAttemptInput!) {
+      deleteContactAttempt(input: $input) { id }
+    }
+  `, { input: { id } });
+  return data?.deleteContactAttempt;
+}
+
+// === MonthlyChecklistState queries (Tab 8 persisted completion) ===
+const MONTHLY_CHECKLIST_FIELDS = `
+  id clientId period variant completedItemKeys notes updatedBySub createdAt updatedAt
+`;
+
+export async function createMonthlyChecklistState(input: Record<string, any>) {
+  const data = await graphql(`
+    mutation CreateMonthlyChecklistState($input: CreateMonthlyChecklistStateInput!) {
+      createMonthlyChecklistState(input: $input) { ${MONTHLY_CHECKLIST_FIELDS} }
+    }
+  `, { input });
+  return data?.createMonthlyChecklistState;
+}
+
+export async function listMonthlyChecklistStatesByClient(clientId: string) {
+  const data = await graphql(`
+    query ListMonthlyChecklistStates($filter: ModelMonthlyChecklistStateFilterInput) {
+      listMonthlyChecklistStates(filter: $filter, limit: 200) {
+        items { ${MONTHLY_CHECKLIST_FIELDS} }
+      }
+    }
+  `, { filter: { clientId: { eq: clientId } } });
+  return data?.listMonthlyChecklistStates?.items || [];
+}
+
+export async function updateMonthlyChecklistState(input: Record<string, any>) {
+  const data = await graphql(`
+    mutation UpdateMonthlyChecklistState($input: UpdateMonthlyChecklistStateInput!) {
+      updateMonthlyChecklistState(input: $input) { ${MONTHLY_CHECKLIST_FIELDS} }
+    }
+  `, { input });
+  return data?.updateMonthlyChecklistState;
+}
+
+// === Projects filtered by client (Tab 6 embedding) ===
+export async function listProjectsByClient(clientId: string) {
+  const data = await graphql(`
+    query ListProjects($filter: ModelProjectFilterInput) {
+      listProjects(filter: $filter, limit: 200) {
+        items { ${PROJECT_FIELDS} }
+      }
+    }
+  `, { filter: { clientId: { eq: clientId } } });
+  return data?.listProjects?.items || [];
 }

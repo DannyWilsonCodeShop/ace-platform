@@ -71,6 +71,8 @@ const schema = a.schema({
     quotedAmount: a.float(),
     finalAmount: a.float(),
     source: a.string(),
+    platform: a.string(),  // target platform for software-build quotes (added)
+    clientId: a.string(),  // links an accepted quote to its Client (added)
   }).authorization((allow) => [
     allow.groups(['owner', 'manager']).to(['create', 'read', 'update', 'delete']),
     allow.groups(['crew', 'performer']).to(['read']),
@@ -138,6 +140,16 @@ const schema = a.schema({
     tags: a.string().array(),
     cognitoUserId: a.string(), // linked portal account
 
+    // --- software-build lifecycle pipeline (added) ---
+    // NIT-4: a.enum() cannot carry a DB .default(); the default 'quote_requested'
+    // is applied app-side at creation. Pre-existing rows have stage == null and
+    // are treated as 'quote_requested' everywhere.
+    stage: a.enum(['quote_requested', 'demo_details', 'demo_build', 'agreement', 'payment_setup', 'project', 'post_sale', 'monthly_service']),
+    demoAppDetails: a.string(),       // Tab 2 phone-call app scope
+    demoRequirements: a.json(),       // Tab 2 structured requirements
+    expectedDemoDate: a.date(),       // Tab 2 expected demo delivery
+    hasMonthlyMaintenance: a.boolean().default(false), // Tab 8 variant selector
+
     // Relationships
     gigs: a.hasMany('Gig', 'clientId'),
     invoices: a.hasMany('Invoice', 'clientId'),
@@ -147,6 +159,10 @@ const schema = a.schema({
   }).authorization((allow) => [
     allow.groups(['owner', 'manager']).to(['create', 'read', 'update', 'delete']),
     allow.groups(['crew']).to(['read']),
+    // HIGH-1: the customer portal resolves its own Client row by listing/getting
+    // Client and matching cognitoUserId. Group-read carries that access (TD-1
+    // over-grant shape; portal UI filters to the signed-in identity's own row).
+    allow.groups(['customer']).to(['read']),
   ]),
 
   // === Equipment Inventory ===
@@ -523,6 +539,12 @@ const schema = a.schema({
     minimumMet: a.boolean().default(false),
     defaulted: a.boolean().default(false),
     notes: a.string(),
+    // --- deal-shape fields (added, design §3.5) — the dial PRE-FILLS defaults only ---
+    dealType: a.enum(['installments', 'lease_to_own', 'buyout', 'custom']),
+    buyoutAmount: a.float(),            // dealType=buyout single-charge convenience
+    leaseMonthlyAmount: a.float(),      // lease-to-own recurring amount
+    leaseTermMonths: a.integer(),       // lease-to-own term
+    purchaseOptionAmount: a.float(),    // lease-to-own end-of-term purchase option
     // relationships
     client: a.belongsTo('Client', 'clientId'),
     project: a.belongsTo('Project', 'projectId'),
@@ -536,7 +558,7 @@ const schema = a.schema({
   // === PaymentPlanItem (one row per concrete charge — design §A) ===
   PaymentPlanItem: a.model({
     planId: a.string().required(),
-    kind: a.enum(['down_payment', 'installment', 'maintenance']),
+    kind: a.enum(['down_payment', 'installment', 'maintenance', 'buyout', 'lease']),
     sequence: a.integer().required(),            // ordering within the plan
     label: a.string(),                           // "Down payment 1 of 2", "Installment"
     amount: a.float().required(),                // per-charge amount
@@ -580,6 +602,34 @@ const schema = a.schema({
     subject: a.string(),
     bodyTemplate: a.string(),
     campaign: a.belongsTo('Campaign', 'campaignId'),
+  }).authorization((allow) => [
+    allow.groups(['owner', 'manager']).to(['create', 'read', 'update', 'delete']),
+  ]),
+
+  // === ContactAttempt (Tab 1 contact log — design §3.3) ===
+  // Internal CRM log — NOT customer-visible. No customer grant.
+  ContactAttempt: a.model({
+    clientId: a.string().required(),
+    quoteId: a.string(),
+    method: a.enum(['phone', 'email', 'sms', 'voicemail', 'meeting', 'other']),
+    outcome: a.enum(['no_answer', 'left_message', 'connected', 'scheduled', 'declined', 'other']),
+    occurredAt: a.datetime().required(),  // admin-entered attempt date/time
+    notes: a.string(),
+    createdBySub: a.string(),             // Cognito sub of the admin logging it
+  }).authorization((allow) => [
+    allow.groups(['owner', 'manager']).to(['create', 'read', 'update', 'delete']),
+  ]),
+
+  // === MonthlyChecklistState (Tab 8 persisted completion — design §3.4) ===
+  // Template is code-defined; only completion state persists per client per month.
+  // One row per client per month is enforced app-side (query by clientId + period).
+  MonthlyChecklistState: a.model({
+    clientId: a.string().required(),
+    period: a.string().required(),        // 'YYYY-MM' the checklist month
+    variant: a.enum(['with_maintenance', 'without_maintenance']),
+    completedItemKeys: a.string().array(), // keys from the code template that are ticked
+    notes: a.string(),
+    updatedBySub: a.string(),
   }).authorization((allow) => [
     allow.groups(['owner', 'manager']).to(['create', 'read', 'update', 'delete']),
   ]),
