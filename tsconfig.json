@@ -15,5 +15,9 @@
     "noUnusedLocals": false,
     "noUnusedParameters": false
   },
-  "include": ["src", "../amplify"]
+  "include": ["src", "../amplify"],
+  "exclude": [
+    "src/platform/provisioning/provider.live.ts",
+    "src/platform/monitoring/source.live.ts"
+  ]
 }

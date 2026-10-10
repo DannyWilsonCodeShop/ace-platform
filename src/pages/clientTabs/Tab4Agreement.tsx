@@ -60,7 +60,7 @@ function blankTerms(): Terms {
   };
 }
 
-function fromTerms(raw: any): Terms {
+export function fromTerms(raw: any): Terms {
   let obj = raw;
   if (typeof raw === 'string') {
     try {
@@ -86,7 +86,7 @@ function fromTerms(raw: any): Terms {
 }
 
 /** Numeric + non-negative (empty string is allowed where optional). */
-function nonNeg(v: string): boolean {
+export function nonNeg(v: string): boolean {
   if (v.trim() === '') return true;
   const n = Number(v);
   return !Number.isNaN(n) && n >= 0;
@@ -207,11 +207,23 @@ export default function Tab4Agreement({ client, quote, advanceStage }: PanelProp
   }
 
   async function persistContract(extra?: Record<string, any>) {
-    const pid = await ensureProject();
+    const pid = await ensureProject(); // may now seed a draft Contract via createProjectForClient
     if (!pid) return null;
+    // HIGH-2 fix: adopt a just-seeded Contract so we UPDATE it instead of
+    // creating a duplicate. createProjectForClient seeds a draft Contract, but
+    // component state `contractId` is still null here (the seeded row was never
+    // read back), which would otherwise fall into the create branch.
+    let cid = contractId;
+    if (!cid) {
+      const existing = await getContract(pid); // array; [] if none
+      if (existing.length > 0) {
+        cid = existing[0].id;
+        setContractId(cid);
+      }
+    }
     const amount = terms.fixedPrice.trim() === '' ? null : Number(terms.fixedPrice);
-    if (contractId) {
-      return updateContract({ id: contractId, terms, amount, ...extra });
+    if (cid) {
+      return updateContract({ id: cid, terms, amount, ...extra });
     }
     const created = await createContract({
       projectId: pid,

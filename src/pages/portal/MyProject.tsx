@@ -2,9 +2,13 @@
  * Customer project dashboard. Everything here is scoped to the signed-in
  * customer: we resolve THEIR Client by matching the Cognito identity
  * (sub / username / email from fetchAuthSession) against Client.cognitoUserId,
- * then load the Project(s) linked to that clientId. Ownership was stamped at
- * promotion (FEAT-002) so allow.owner() lets the customer read their own
- * Project / ProjectPage / notes / meetings / demos / contract rows.
+ * then load the Project(s) linked to that clientId.
+ *
+ * OWNERSHIP (TD-1): customer reads of the seeded Demo/Contract/ActionItem are
+ * carried by the `allow.groups(['customer']).to(['read'])` grant because no
+ * `owner` key is stamped at create; the `allow.owner()` grant exists on these
+ * models but is inert for these rows. Do not "fix" this by stamping an `owner`
+ * key — that is what broke quote Accept.
  *
  * The customer can:
  *  - see category + overall progress bars and page cards,
@@ -54,6 +58,13 @@ import {
 } from '../../utils/api';
 import { getTemplate } from '../../projects/templates';
 import { cardsForCategory, openTodos, doneTodos } from '../../projects/pageCards';
+import {
+  parseOptions,
+  parseTerms,
+  summarizeTerms,
+  formatOptionPrice,
+  resolveQuoteTotal,
+} from './choiceBoard';
 import type { Category } from '../../projects/templates/types';
 import {
   categoryDisplayed,
@@ -796,6 +807,16 @@ export default function MyProject() {
                                 <span className="text-xs text-ace-purple">Selected ✓</span>
                               )}
                             </div>
+                            <div className="flex items-center justify-between gap-2 px-3 pb-2">
+                              {opt.tier && (
+                                <span className="badge bg-white/5 text-ace-muted capitalize">
+                                  {opt.tier}
+                                </span>
+                              )}
+                              <span className="text-xs text-white/80">
+                                {formatOptionPrice(opt.price)}
+                              </span>
+                            </div>
                             {opt.previewUrl && (
                               <a
                                 href={opt.previewUrl}
@@ -810,6 +831,13 @@ export default function MyProject() {
                           </button>
                         );
                       })}
+                    </div>
+                  )}
+
+                  {/* Quote total (the "three tier quote at the bottom"). */}
+                  {isChoiceBoard && options.length > 0 && (
+                    <div className="mt-3 text-sm font-medium text-right text-white/90">
+                      {resolveQuoteTotal(options, d.selectedOption)}
                     </div>
                   )}
 
@@ -1266,63 +1294,6 @@ function DemoFeedback({
   );
 }
 
-/** A single choice-board option as stored in Demo.options (json). */
-type DemoOption = { slug: string; name: string; imageKey?: string; previewUrl?: string };
-
-/**
- * Parse Demo.options (a json column that may arrive as an array already, or as
- * a JSON string) into [{slug,name,imageKey,previewUrl}] objects. Tolerates the
- * legacy plain-string shape by wrapping each string into an option object.
- */
-function parseOptions(options: any): DemoOption[] {
-  let raw: any = options;
-  if (typeof raw === 'string') {
-    try {
-      raw = JSON.parse(raw);
-    } catch {
-      return [];
-    }
-  }
-  if (!Array.isArray(raw)) return [];
-  return raw
-    .map((o: any): DemoOption | null => {
-      if (typeof o === 'string') return { slug: o, name: o };
-      if (o && typeof o === 'object' && (o.slug || o.name)) {
-        return {
-          slug: String(o.slug || o.name),
-          name: String(o.name || o.slug),
-          imageKey: o.imageKey || undefined,
-          previewUrl: o.previewUrl || undefined,
-        };
-      }
-      return null;
-    })
-    .filter((o): o is DemoOption => o !== null);
-}
-
-/**
- * Contract.terms is a.json() — it can arrive as an already-parsed object, as a
- * JSON string, or as a plain human-readable string. Parse defensively: return
- * the object when it is one (or a JSON string that decodes to an object),
- * otherwise return the original string so callers can render it as prose.
- */
-function parseTerms(terms: any): any {
-  if (terms == null) return null;
-  if (typeof terms === 'object') return terms;
-  if (typeof terms === 'string') {
-    const trimmed = terms.trim();
-    if (trimmed.startsWith('{') || trimmed.startsWith('[')) {
-      try {
-        return JSON.parse(trimmed);
-      } catch {
-        return terms;
-      }
-    }
-    return terms;
-  }
-  return terms;
-}
-
 /**
  * Signed-URL contract document link mirroring ProjectDetail's ContractDocLink
  * and DemoImage: resolve the signed GET URL in an effect and fall back to a
@@ -1381,6 +1352,7 @@ function CustomerContractCard({
 }) {
   const terms = parseTerms(c.terms);
   const termsIsObject = terms && typeof terms === 'object';
+  const agreementSummary = summarizeTerms(terms);
   const isDropbox = c.provider === 'dropbox_sign';
   const canSign = c.status === 'sent' || c.status === 'viewed';
   const alreadySigned = c.status === 'signed' || c.status === 'countersigned';
@@ -1408,6 +1380,16 @@ function CustomerContractCard({
         terms && (
           <div className="text-xs text-ace-muted mt-2 whitespace-pre-wrap">{String(terms)}</div>
         )
+      )}
+
+      {/* Readable agreement summary (above the sign box). Hidden when terms
+          are prose/empty; missing fields drop their own line. */}
+      {agreementSummary.length > 0 && (
+        <ul className="text-xs text-ace-muted mt-3 space-y-1 list-disc list-inside">
+          {agreementSummary.map((line, i) => (
+            <li key={i}>{line}</li>
+          ))}
+        </ul>
       )}
 
       {/* Document link(s) with graceful fallback for the {entity_id} caveat. */}

@@ -40,10 +40,21 @@ import {
   createProjectPage,
   listProjectsByClient,
   updateQuote,
+  listDemos,
+  createDemo,
+  getContract,
+  createContract,
+  listActionItems,
+  createActionItem,
 } from '../utils/api';
 import { createPortalUser } from '../utils/createPortalUser';
 import { getTemplate } from './templates';
 import type { ProjectTemplate, TrackedItem } from './templates/types';
+import {
+  defaultChoiceBoardOptions,
+  defaultContractTerms,
+  defaultStarterActionItems,
+} from './templates/client-package';
 
 interface PromoteResult {
   projectId: string;
@@ -91,6 +102,41 @@ export function buildProjectPageInput(
     category: item.category,
     baseline: item.baseline,
     href: item.href || null,
+  };
+}
+
+/**
+ * Pure builder for the templated CHOICE_BOARD Demo seeded at promotion. Three
+ * tiered options with prices pinned null (admin sets real prices in Tab 3
+ * before sharing). Status is 'DRAFT' by design — the portal hides DRAFT demos
+ * until the admin shares the board. MUST NOT include an `owner` key (TD-1).
+ */
+export function buildDemoInput(projectId: string): Record<string, any> {
+  return {
+    projectId,
+    title: 'Concept Choice Board',
+    kind: 'CHOICE_BOARD',
+    status: 'DRAFT',
+    options: defaultChoiceBoardOptions(),
+  };
+}
+
+/**
+ * Pure builder for the draft Build & Buy Contract seeded at promotion,
+ * pre-filled from the agency-build-50k terms (scalar numerics as strings, see
+ * client-package.ts / HIGH-1). MUST NOT include an `owner` key (TD-1).
+ */
+export function buildContractInput(
+  projectId: string,
+  clientId: string,
+): Record<string, any> {
+  return {
+    projectId,
+    clientId,
+    status: 'draft',
+    provider: 'manual_upload',
+    amount: 50000,
+    terms: defaultContractTerms(),
   };
 }
 
@@ -234,11 +280,82 @@ export async function createProjectForClient(
     await createProjectPage(buildProjectPageInput(project.id, item));
   }
 
+  // --- seed the templated client package (design §2.3) ---------------------
+  // Idempotent, mirroring the listProjectsByClient guard above. Error rule
+  // (MEDIUM-4): a LOOKUP throw is FATAL and rethrown (never swallowed into [],
+  // which would defeat the guard and double-seed); a single CREATE throw is
+  // RECOVERABLE — caught, warned, and left for an idempotent re-run so a failed
+  // seed never aborts the whole promotion (the Project + portal access exist).
+  await seedClientPackage(project.id, client.id);
+
   // --- advance the lifecycle: quote accepted, client at the agreement stage ---
   await updateQuote({ id: quote.id, status: 'accepted' });
   await updateClient({ id: client.id, stage: 'agreement' });
 
   return { projectId: project.id, clientId: client.id };
+}
+
+/**
+ * Idempotently seed the templated client package (CHOICE_BOARD Demo + draft
+ * Build & Buy Contract + three starter ActionItems) for a just-created Project.
+ * Design §2.3.
+ *
+ * Error rule (MEDIUM-4): a LOOKUP throw is FATAL — it is rethrown with a
+ * descriptive message and no create is attempted (never swallow a lookup error
+ * into `[]`, which would make the `.length === 0` guard pass falsely and
+ * double-seed). A single CREATE throw is RECOVERABLE — isolated to that one
+ * entity and left for an idempotent re-run; it must not abort the promotion.
+ */
+async function seedClientPackage(projectId: string, clientId: string): Promise<void> {
+  // --- Demo (lookup = fatal gate) ---
+  let demos: any[];
+  try {
+    demos = await listDemos(projectId);
+  } catch (err: any) {
+    throw new Error(`Could not look up existing demos to seed: ${err.message || err}`);
+  }
+  if (demos.length === 0) {
+    try {
+      await createDemo(buildDemoInput(projectId));
+    } catch (err: any) {
+      console.warn('Seeding the templated Demo failed (re-run to retry):', err?.message || err);
+    }
+  }
+
+  // --- Contract (lookup = fatal gate) ---
+  let contracts: any[];
+  try {
+    contracts = await getContract(projectId);
+  } catch (err: any) {
+    throw new Error(`Could not look up existing contract to seed: ${err.message || err}`);
+  }
+  if (contracts.length === 0) {
+    try {
+      await createContract(buildContractInput(projectId, clientId));
+    } catch (err: any) {
+      console.warn('Seeding the draft Contract failed (re-run to retry):', err?.message || err);
+    }
+  }
+
+  // --- ActionItems (lookup = fatal gate) ---
+  let items: any[];
+  try {
+    items = await listActionItems(projectId);
+  } catch (err: any) {
+    throw new Error(`Could not look up existing action items to seed: ${err.message || err}`);
+  }
+  if (items.length === 0) {
+    for (const ai of defaultStarterActionItems(projectId)) {
+      try {
+        await createActionItem(ai);
+      } catch (err: any) {
+        console.warn(
+          `Seeding starter action item "${ai.title}" failed (re-run to retry):`,
+          err?.message || err,
+        );
+      }
+    }
+  }
 }
 
 /**
