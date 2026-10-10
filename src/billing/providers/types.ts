@@ -26,6 +26,8 @@ export interface CreateSubscriptionInput {
   successUrl?: string;
   /** URL to return to if the customer cancels. */
   cancelUrl?: string;
+  /** ISO timestamp the trial ends (sub billing starts); forwarded as `trialEnd`. */
+  trialEnd?: string;
 }
 
 /** Result of a createSubscription call. */
@@ -76,6 +78,58 @@ export interface CreateOneOffPaymentLinkResult {
   paymentLink?: string;
 }
 
+/** Input for creating a hosted invoice for a single payment-plan item (e.g. a down payment). */
+export interface CreatePlanInvoiceInput {
+  /** The ACE PaymentPlan.id this invoice belongs to. */
+  planId: string;
+  /** The ACE PaymentPlanItem.id being invoiced. */
+  planItemId: string;
+  /** Amount in major units (dollars); the backend converts to minor units. */
+  amount: number;
+  /** ISO 4217 currency; defaults server-side when omitted. */
+  currency?: string;
+  /** ISO date string the invoice is due. */
+  dueDate: string;
+  /** Customer email to send the hosted invoice to. */
+  clientEmail: string;
+  /** Human-readable description shown on the invoice line item. */
+  description?: string;
+}
+
+/** Result of a createPlanInvoice call. */
+export interface CreatePlanInvoiceResult {
+  /** False when the adapter is not configured (no secret) — no network call was made. */
+  configured: boolean;
+  /** External Stripe invoice reference, if created. */
+  invoiceId?: string;
+  /** Hosted Stripe invoice URL, if created. */
+  hostedInvoiceUrl?: string;
+}
+
+/** Input for creating the installment subscription schedule (the series). */
+export interface CreateSubscriptionScheduleInput {
+  /** The ACE PaymentPlan.id this schedule belongs to. */
+  planId: string;
+  /** Per-installment amount in major units (dollars); the backend converts to minor units. */
+  amount: number;
+  /** ISO 4217 currency; defaults server-side when omitted. */
+  currency?: string;
+  /** Number of installments (schedule iterations). */
+  count: number;
+  /** ISO date string the schedule starts. */
+  startDate: string;
+  /** Customer email to attach to the Stripe customer / schedule. */
+  clientEmail: string;
+}
+
+/** Result of a createSubscriptionSchedule call. */
+export interface CreateSubscriptionScheduleResult {
+  /** False when the adapter is not configured (no secret) — no network call was made. */
+  configured: boolean;
+  /** External Stripe subscription_schedule reference, if created. */
+  scheduleId?: string;
+}
+
 /**
  * Common interface every billing adapter implements. `configured()` lets
  * callers decide whether to offer the live-ish billing flow or stay in the
@@ -105,4 +159,18 @@ export interface StripeAdapter {
   createOneOffPaymentLink(
     input: CreateOneOffPaymentLinkInput,
   ): Promise<CreateOneOffPaymentLinkResult>;
+  /**
+   * Create a hosted invoice for a single payment-plan item. MUST make NO network
+   * call and return { configured: false } when the adapter is not configured.
+   */
+  createPlanInvoice(
+    input: CreatePlanInvoiceInput,
+  ): Promise<CreatePlanInvoiceResult>;
+  /**
+   * Create the installment subscription schedule. MUST make NO network call and
+   * return { configured: false } when the adapter is not configured.
+   */
+  createSubscriptionSchedule(
+    input: CreateSubscriptionScheduleInput,
+  ): Promise<CreateSubscriptionScheduleResult>;
 }

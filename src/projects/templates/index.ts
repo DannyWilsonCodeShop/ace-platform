@@ -30,3 +30,31 @@ export function getTemplate(key?: string | null): ProjectTemplate {
 
 export type { Category, Owner, TrackedItem, ProjectTemplate } from './types';
 export { appBuildTemplate };
+
+// Payment-plan template surface (design §C1) — a SEPARATE registry from the
+// project-template TEMPLATES/getTemplate above; it does not alter that behavior.
+export type {
+  PaymentPlanTemplate,
+  DatedCharge,
+  InstallmentSeries,
+  MaintenanceSpec,
+} from './payment-plan-types';
+export { agencyBuild50k } from './agency-build-50k';
+export {
+  PAYMENT_PLAN_TEMPLATES,
+  listPaymentPlanTemplates,
+  getPaymentPlanTemplate,
+  materializePlan,
+  paid,
+  owedToOwn,
+  minimumRemaining,
+  minimumMet,
+} from './payment-plans';
+export type {
+  MaterializeIds,
+  MaterializedPlan,
+  PaymentPlanInput,
+  PaymentPlanItemInput,
+  MaintenancePlanInput,
+  PaidItemLike,
+} from './payment-plans';

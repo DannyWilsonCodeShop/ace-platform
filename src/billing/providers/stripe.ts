@@ -21,6 +21,10 @@ import type {
   CancelSubscriptionResult,
   CreateOneOffPaymentLinkInput,
   CreateOneOffPaymentLinkResult,
+  CreatePlanInvoiceInput,
+  CreatePlanInvoiceResult,
+  CreateSubscriptionScheduleInput,
+  CreateSubscriptionScheduleResult,
 } from './types';
 import { billingConfigured, billingEndpoint } from '../billing';
 
@@ -61,6 +65,7 @@ export const stripe: StripeAdapter = {
       clientEmail: input.clientEmail,
       successUrl: input.successUrl,
       cancelUrl: input.cancelUrl,
+      trialEnd: input.trialEnd,
     });
 
     if (!result || typeof result.url !== 'string') {
@@ -104,5 +109,59 @@ export const stripe: StripeAdapter = {
       return { configured: false };
     }
     return { configured: true, paymentLink: result.url };
+  },
+
+  async createPlanInvoice(
+    input: CreatePlanInvoiceInput,
+  ): Promise<CreatePlanInvoiceResult> {
+    if (!this.configured()) {
+      // Not configured: no network call, caller stays "billing not connected".
+      return { configured: false };
+    }
+
+    const result = await postJson('/stripe/create-plan-invoice', {
+      planId: input.planId,
+      planItemId: input.planItemId,
+      amount: input.amount,
+      currency: input.currency,
+      dueDate: input.dueDate,
+      clientEmail: input.clientEmail,
+      description: input.description,
+    });
+
+    if (!result || typeof result.hostedInvoiceUrl !== 'string') {
+      return { configured: false };
+    }
+    return {
+      configured: true,
+      invoiceId: result.invoiceId,
+      hostedInvoiceUrl: result.hostedInvoiceUrl,
+    };
+  },
+
+  async createSubscriptionSchedule(
+    input: CreateSubscriptionScheduleInput,
+  ): Promise<CreateSubscriptionScheduleResult> {
+    if (!this.configured()) {
+      // Not configured: no network call, caller stays "billing not connected".
+      return { configured: false };
+    }
+
+    // HIGH-A route naming: this MUST be /stripe/installment-schedule — the
+    // Lambda router matches by substring, so it must not be a substring of
+    // /stripe/create-subscription.
+    const result = await postJson('/stripe/installment-schedule', {
+      planId: input.planId,
+      amount: input.amount,
+      currency: input.currency,
+      count: input.count,
+      startDate: input.startDate,
+      clientEmail: input.clientEmail,
+    });
+
+    if (!result || typeof result.scheduleId !== 'string') {
+      return { configured: false };
+    }
+    return { configured: true, scheduleId: result.scheduleId };
   },
 };
